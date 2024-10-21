@@ -10,12 +10,17 @@ RefCounted::RefCounted()
 
 void RefCounted::addRef()
 {
-    m_count.fetch_add(1, std::memory_order_relaxed);
+    // m_count.fetch_add(1, std::memory_order_relaxed);
+    ++m_count;
 }
 
 void RefCounted::release()
 {
-    delete this;
+    // if (m_count.fetch_sub(1, std::memory_order_acq_rel) <= 1)
+    if (--m_count == 0)
+    {
+        delete this;
+    }
 }
 
 } // namespace jipu
