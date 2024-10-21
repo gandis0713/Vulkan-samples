@@ -129,6 +129,12 @@ void procRenderPassEncoderEnd(WGPURenderPassEncoder renderPassEncoder)
     return webgpuRenderPassEncoder->end();
 }
 
+void procRenderPassEncoderRelease(WGPURenderPassEncoder renderPassEncoder)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->release();
+}
+
 WGPUCommandBuffer procCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUCommandBufferDescriptor const* descriptor)
 {
     WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);

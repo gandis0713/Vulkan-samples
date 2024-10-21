@@ -73,7 +73,7 @@ void WGPUTriangleSample::draw()
     wgpuRenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
     wgpuRenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
     wgpuRenderPassEncoderEnd(renderPassEncoder);
-    // wgpuRenderPassEncoderRelease(renderPassEncoder);
+    wgpuRenderPassEncoderRelease(renderPassEncoder);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
