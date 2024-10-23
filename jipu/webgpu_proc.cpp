@@ -27,6 +27,10 @@ extern void procRenderPassEncoderRelease(WGPURenderPassEncoder renderPassEncoder
 extern WGPUCommandBuffer procCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUCommandBufferDescriptor const* descriptor);
 extern void procQueueSubmit(WGPUQueue queue, size_t commandCount, WGPUCommandBuffer const* commands);
 extern void procSurfacePresent(WGPUSurface surface);
+extern void procCommandBufferRelease(WGPUCommandBuffer commandBuffer);
+extern void procCommandEncoderRelease(WGPUCommandEncoder commandEncoder);
+extern void procTextureViewRelease(WGPUTextureView textureView);
+extern void procTextureRelease(WGPUTexture texture);
 
 } // namespace jipu
 
@@ -152,5 +156,25 @@ extern "C"
     WGPU_EXPORT void wgpuSurfacePresent(WGPUSurface surface) WGPU_FUNCTION_ATTRIBUTE
     {
         return procSurfacePresent(surface);
+    }
+
+    WGPU_EXPORT void wgpuCommandBufferRelease(WGPUCommandBuffer commandBuffer) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procCommandBufferRelease(commandBuffer);
+    }
+
+    WGPU_EXPORT void wgpuCommandEncoderRelease(WGPUCommandEncoder commandEncoder) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procCommandEncoderRelease(commandEncoder);
+    }
+
+    WGPU_EXPORT void wgpuTextureViewRelease(WGPUTextureView textureView) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procTextureViewRelease(textureView);
+    }
+
+    WGPU_EXPORT void wgpuTextureRelease(WGPUTexture texture) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procTextureRelease(texture);
     }
 }

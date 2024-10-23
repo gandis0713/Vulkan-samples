@@ -9,6 +9,7 @@
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
+#include "webgpu/webgpu_texture_view.h"
 
 #include <unordered_map>
 
@@ -151,6 +152,30 @@ void procSurfacePresent(WGPUSurface surface)
 {
     WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
     return webgpuSurface->present();
+}
+
+void procCommandBufferRelease(WGPUCommandBuffer commandBuffer)
+{
+    WebGPUCommandBuffer* webgpuCommandBuffer = reinterpret_cast<WebGPUCommandBuffer*>(commandBuffer);
+    return webgpuCommandBuffer->release();
+}
+
+void procCommandEncoderRelease(WGPUCommandEncoder commandEncoder)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->release();
+}
+
+void procTextureViewRelease(WGPUTextureView textureView)
+{
+    WebGPUTextureView* webgpuTextureView = reinterpret_cast<WebGPUTextureView*>(textureView);
+    return webgpuTextureView->release();
+}
+
+void procTextureRelease(WGPUTexture texture)
+{
+    WebGPUTexture* webgpuTexture = reinterpret_cast<WebGPUTexture*>(texture);
+    return webgpuTexture->release();
 }
 
 namespace
