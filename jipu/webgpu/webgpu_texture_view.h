@@ -22,7 +22,7 @@ public:
     explicit WebGPUTextureView(WebGPUTexture* texture, std::unique_ptr<TextureView> textureView, WGPUTextureViewDescriptor const* descriptor);
 
 public:
-    virtual ~WebGPUTextureView() = default;
+    virtual ~WebGPUTextureView() override = default;
 
     WebGPUTextureView(const WebGPUTextureView&) = delete;
     WebGPUTextureView& operator=(const WebGPUTextureView&) = delete;

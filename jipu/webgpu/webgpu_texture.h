@@ -23,7 +23,7 @@ public:
     explicit WebGPUTexture(WebGPUDevice* wgpuDevice, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor);
 
 public:
-    virtual ~WebGPUTexture() = default;
+    virtual ~WebGPUTexture() override = default;
 
     WebGPUTexture(const WebGPUTexture&) = delete;
     WebGPUTexture& operator=(const WebGPUTexture&) = delete;
