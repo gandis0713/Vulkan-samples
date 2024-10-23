@@ -43,6 +43,7 @@ public:
     virtual uint32_t getHeight() const = 0;
 
     virtual void present() = 0;
+    virtual Texture* acquireNextTexture() = 0;
     virtual TextureView* acquireNextTextureView() = 0;
 };
 

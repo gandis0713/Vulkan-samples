@@ -245,6 +245,25 @@ void VulkanSwapchain::present()
     vulkanQueue->present(presentInfo);
 }
 
+Texture* VulkanSwapchain::acquireNextTexture()
+{
+    VulkanDevice& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+
+    auto semaphore = m_device.getSemaphorePool()->create();
+    uint32_t acquireImageIndex = 0;
+    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice.getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
+    }
+
+    setAcquireImageSemaphore(semaphore, acquireImageIndex);
+    setAcquireImageIndex(acquireImageIndex);
+
+    return m_textures[acquireImageIndex].get();
+}
+
 TextureView* VulkanSwapchain::acquireNextTextureView()
 {
     VulkanDevice& vulkanDevice = downcast(m_device);

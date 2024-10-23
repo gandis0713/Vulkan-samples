@@ -66,6 +66,7 @@ public:
     uint32_t getHeight() const override;
 
     void present() override;
+    Texture* acquireNextTexture() override;
     TextureView* acquireNextTextureView() override;
 
 public:
