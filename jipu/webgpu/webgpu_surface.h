@@ -49,7 +49,7 @@ private:
 
 private:
     std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
+    Swapchain* m_swapchain = nullptr;
 
 private:
     Type m_type = Type::kUndefined;

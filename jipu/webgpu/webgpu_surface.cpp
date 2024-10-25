@@ -137,8 +137,7 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
         descriptor.surface = m_surface.get();
         descriptor.queue = webgpuQueue->getQueue();
 
-        auto device = webgpuDevice->getDevice();
-        m_swapchain = device->createSwapchain(descriptor);
+        m_swapchain = webgpuDevice->getOrCreateSwapchain(descriptor);
     }
 
     m_configuration = *config;

@@ -34,6 +34,11 @@ extern void procTextureRelease(WGPUTexture texture);
 extern void procRenderPipelineRelease(WGPURenderPipeline renderPipeline);
 extern void procPipelineLayoutRelease(WGPUPipelineLayout pipelineLayout);
 extern void procShaderModuleRelease(WGPUShaderModule shaderModule);
+extern void procQueueRelease(WGPUQueue queue);
+extern void procDeviceDestroy(WGPUDevice device);
+extern void procDeviceRelease(WGPUDevice device);
+extern void procAdapterRelease(WGPUAdapter adapter);
+extern void procInstanceRelease(WGPUInstance instance);
 
 } // namespace jipu
 
@@ -194,5 +199,30 @@ extern "C"
     WGPU_EXPORT void wgpuShaderModuleRelease(WGPUShaderModule shaderModule) WGPU_FUNCTION_ATTRIBUTE
     {
         return procShaderModuleRelease(shaderModule);
+    }
+
+    WGPU_EXPORT void wgpuQueueRelease(WGPUQueue queue) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procQueueRelease(queue);
+    }
+
+    WGPU_EXPORT void wgpuDeviceDestroy(WGPUDevice device) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceDestroy(device);
+    }
+
+    WGPU_EXPORT void wgpuDeviceRelease(WGPUDevice device) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceRelease(device);
+    }
+
+    WGPU_EXPORT void wgpuAdapterRelease(WGPUAdapter adapter) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procAdapterRelease(adapter);
+    }
+
+    WGPU_EXPORT void wgpuInstanceRelease(WGPUInstance instance) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procInstanceRelease(instance);
     }
 }

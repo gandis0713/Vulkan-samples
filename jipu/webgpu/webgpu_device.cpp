@@ -27,8 +27,15 @@ WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> d
     : m_wgpuAdapter(wgpuAdapter)
     , m_wgpuQueue(nullptr)
     , m_descriptor(*descriptor)
+    , m_swapchain{}
     , m_device(std::move(device))
 {
+}
+
+WebGPUDevice::~WebGPUDevice()
+{
+    m_swapchain = std::make_pair(nullptr, SwapchainDescriptor{});
+    m_device.reset();
 }
 
 WebGPUQueue* WebGPUDevice::getQueue()
@@ -89,6 +96,30 @@ WebGPUCommandEncoder* WebGPUDevice::createCommandEncoder(WGPUCommandEncoderDescr
 Device* WebGPUDevice::getDevice() const
 {
     return m_device.get();
+}
+
+Swapchain* WebGPUDevice::getOrCreateSwapchain(const SwapchainDescriptor& descriptor)
+{
+    if (m_swapchain.first)
+    {
+        const auto& lhs = m_swapchain.second;
+        const auto& rhs = descriptor;
+
+        if (lhs.surface == rhs.surface &&
+            lhs.textureFormat == rhs.textureFormat &&
+            lhs.presentMode == rhs.presentMode &&
+            lhs.colorSpace == rhs.colorSpace &&
+            lhs.width == rhs.width &&
+            lhs.height == rhs.height &&
+            lhs.queue == rhs.queue)
+        {
+            return m_swapchain.first.get();
+        }
+    }
+
+    m_swapchain = std::make_pair(m_device->createSwapchain(descriptor), descriptor);
+
+    return m_swapchain.first.get();
 }
 
 // Generators

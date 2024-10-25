@@ -21,11 +21,11 @@ WGPUTriangleSample::~WGPUTriangleSample()
     // wgpuShaderModuleRelease(m_vertWGSLShaderModule);
     // wgpuShaderModuleRelease(m_fragWGSLShaderModule);
 
-    // wgpuQueueRelease(m_queue);
-    // wgpuDeviceDestroy(m_device);
-    // wgpuDeviceRelease(m_device);
-    // wgpuAdapterRelease(m_adapter);
-    // wgpuInstanceRelease(m_instance);
+    wgpuQueueRelease(m_queue);
+    wgpuDeviceDestroy(m_device);
+    wgpuDeviceRelease(m_device);
+    wgpuAdapterRelease(m_adapter);
+    wgpuInstanceRelease(m_instance);
 }
 
 void WGPUTriangleSample::init()

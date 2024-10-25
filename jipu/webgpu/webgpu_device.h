@@ -2,6 +2,7 @@
 
 #include "common/ref_counted.h"
 #include "jipu/device.h"
+#include "jipu/swapchain.h"
 #include "jipu/texture.h"
 #include "webgpu_header.h"
 
@@ -28,7 +29,7 @@ public:
     explicit WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device, WGPUDeviceDescriptor const* wgpuDescriptor);
 
 public:
-    virtual ~WebGPUDevice() = default;
+    ~WebGPUDevice() override;
 
     WebGPUDevice(const WebGPUDevice&) = delete;
     WebGPUDevice& operator=(const WebGPUDevice&) = delete;
@@ -47,13 +48,17 @@ public: // WebGPU API
 
 public:
     Device* getDevice() const;
+    Swapchain* getOrCreateSwapchain(const SwapchainDescriptor& descriptor);
 
 private:
     [[maybe_unused]] WebGPUAdapter* m_wgpuAdapter = nullptr;
-    [[maybe_unused]] WebGPUQueue* m_wgpuQueue = nullptr;
-    [[maybe_unused]] const WGPUDeviceDescriptor m_descriptor{};
+    WebGPUQueue* m_wgpuQueue = nullptr;
+    const WGPUDeviceDescriptor m_descriptor{};
 
 private:
+    /* TODO: Currently, the wgpu device have a only one swapchain in wgpu device.
+             Consider swapchain pool or other ways. */
+    std::pair<std::unique_ptr<Swapchain>, SwapchainDescriptor> m_swapchain{};
     std::unique_ptr<Device> m_device = nullptr;
 };
 

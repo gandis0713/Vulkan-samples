@@ -199,6 +199,35 @@ void procShaderModuleRelease(WGPUShaderModule shaderModule)
     return webgpuShaderModule->release();
 }
 
+void procQueueRelease(WGPUQueue queue)
+{
+    WebGPUQueue* webgpuQueue = reinterpret_cast<WebGPUQueue*>(queue);
+    return webgpuQueue->release();
+}
+
+void procDeviceDestroy(WGPUDevice device)
+{
+    // TODO
+}
+
+void procDeviceRelease(WGPUDevice device)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return webgpuDevice->release();
+}
+
+void procAdapterRelease(WGPUAdapter adapter)
+{
+    WebGPUAdapter* webgpuAdapter = reinterpret_cast<WebGPUAdapter*>(adapter);
+    return webgpuAdapter->release();
+}
+
+void procInstanceRelease(WGPUInstance instance)
+{
+    WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
+    return webgpuInstance->release();
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{
