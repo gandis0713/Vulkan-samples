@@ -36,6 +36,7 @@ public: // WebGPU API
     void requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
 
 public:
+    std::shared_ptr<Instance> getInstance() const;
     PhysicalDevice* getPhysicalDevice() const;
 
 private:
@@ -43,7 +44,7 @@ private:
     [[maybe_unused]] const WGPURequestAdapterOptions m_options{};
 
 private:
-    std::unique_ptr<Instance> m_instance = nullptr;
+    std::shared_ptr<Instance> m_instance = nullptr; // shared with surface.
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
 };
 

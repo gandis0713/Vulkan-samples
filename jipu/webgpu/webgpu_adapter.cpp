@@ -60,6 +60,11 @@ void WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURe
     }
 }
 
+std::shared_ptr<Instance> WebGPUAdapter::getInstance() const
+{
+    return m_instance;
+}
+
 PhysicalDevice* WebGPUAdapter::getPhysicalDevice() const
 {
     return m_physicalDevice.get();

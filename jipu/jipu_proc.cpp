@@ -222,6 +222,12 @@ void procAdapterRelease(WGPUAdapter adapter)
     return webgpuAdapter->release();
 }
 
+void procSurfaceRelease(WGPUSurface surface)
+{
+    WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
+    return webgpuSurface->release();
+}
+
 void procInstanceRelease(WGPUInstance instance)
 {
     WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);

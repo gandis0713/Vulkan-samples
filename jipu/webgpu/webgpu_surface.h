@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/ref_counted.h"
+#include "jipu/instance.h"
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
 #include "webgpu_header.h"
@@ -22,7 +23,7 @@ public:
     explicit WebGPUSurface(WebGPUInstance* instance, WGPUSurfaceDescriptor const* descriptor);
 
 public:
-    virtual ~WebGPUSurface() = default;
+    ~WebGPUSurface() override = default;
 
     WebGPUSurface(const WebGPUSurface&) = delete;
     WebGPUSurface& operator=(const WebGPUSurface&) = delete;
@@ -48,6 +49,7 @@ private:
     [[maybe_unused]] WGPUSurfaceConfiguration m_configuration{};
 
 private:
+    std::shared_ptr<Instance> m_instance = nullptr; // shared with adapter.
     std::unique_ptr<Surface> m_surface = nullptr;
     Swapchain* m_swapchain = nullptr;
 
