@@ -25,6 +25,7 @@ WGPUTriangleSample::~WGPUTriangleSample()
     wgpuDeviceDestroy(m_device);
     wgpuDeviceRelease(m_device);
     wgpuAdapterRelease(m_adapter);
+    wgpuSurfaceRelease(m_surface);
     wgpuInstanceRelease(m_instance);
 }
 
