@@ -236,6 +236,7 @@ void procInstanceRelease(WGPUInstance instance)
 
 namespace
 {
+
 std::unordered_map<const char*, WGPUProc> sProcMap{
     { "wgpuCreateInstance", reinterpret_cast<WGPUProc>(procCreateInstance) },
     { "wgpuInstanceRequestAdapter", reinterpret_cast<WGPUProc>(procInstanceRequestAdapter) },
@@ -248,6 +249,31 @@ std::unordered_map<const char*, WGPUProc> sProcMap{
     { "wgpuDeviceCreateBindGroupLayout", reinterpret_cast<WGPUProc>(procDeviceCreateBindGroupLayout) },
     { "wgpuDeviceCreatePipelineLayout", reinterpret_cast<WGPUProc>(procDeviceCreatePipelineLayout) },
     { "wgpuDeviceCreateRenderPipeline", reinterpret_cast<WGPUProc>(procDeviceCreateRenderPipeline) },
+    { "wpugDeviceCreateShaderModule", reinterpret_cast<WGPUProc>(procDeviceCreateShaderModule) },
+    { "wgpuSurfaceGetCurrentTexture", reinterpret_cast<WGPUProc>(procSurfaceGetCurrentTexture) },
+    { "wgpuTextureCreateView", reinterpret_cast<WGPUProc>(procTextureCreateView) },
+    { "wgpuDeviceCreateCommandEncoder", reinterpret_cast<WGPUProc>(procDeviceCreateCommandEncoder) },
+    { "wgpuCommandEncoderBeginRenderPass", reinterpret_cast<WGPUProc>(procCommandEncoderBeginRenderPass) },
+    { "wgpuRenderPassEncoderSetPipeline", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetPipeline) },
+    { "wgpuRenderPassEncoderDraw", reinterpret_cast<WGPUProc>(procRenderPassEncoderDraw) },
+    { "wgpuRenderPassEncoderEnd", reinterpret_cast<WGPUProc>(procRenderPassEncoderEnd) },
+    { "wgpuRenderPassEncoderRelease", reinterpret_cast<WGPUProc>(procRenderPassEncoderRelease) },
+    { "wgpuCommandEncoderFinish", reinterpret_cast<WGPUProc>(procCommandEncoderFinish) },
+    { "wgpuQueueSubmit", reinterpret_cast<WGPUProc>(procQueueSubmit) },
+    { "wgpuSurfacePresent", reinterpret_cast<WGPUProc>(procSurfacePresent) },
+    { "wgpuCommandBufferRelease", reinterpret_cast<WGPUProc>(procCommandBufferRelease) },
+    { "wgpuCommandEncoderRelease", reinterpret_cast<WGPUProc>(procCommandEncoderRelease) },
+    { "wgpuTextureViewRelease", reinterpret_cast<WGPUProc>(procTextureViewRelease) },
+    { "wgpuTextureRelease", reinterpret_cast<WGPUProc>(procTextureRelease) },
+    { "wgpuRenderPipelineRelease", reinterpret_cast<WGPUProc>(procRenderPipelineRelease) },
+    { "wgpuPipelineLayoutRelease", reinterpret_cast<WGPUProc>(procPipelineLayoutRelease) },
+    { "wgpuShaderModuleRelease", reinterpret_cast<WGPUProc>(procShaderModuleRelease) },
+    { "wgpuQueueRelease", reinterpret_cast<WGPUProc>(procQueueRelease) },
+    { "wgpuDeviceDestroy", reinterpret_cast<WGPUProc>(procDeviceDestroy) },
+    { "wgpuDeviceRelease", reinterpret_cast<WGPUProc>(procDeviceRelease) },
+    { "wgpuAdapterRelease", reinterpret_cast<WGPUProc>(procAdapterRelease) },
+    { "wgpuSurfaceRelease", reinterpret_cast<WGPUProc>(procSurfaceRelease) },
+    { "wgpuInstanceRelease", reinterpret_cast<WGPUProc>(procInstanceRelease) },
 };
 
 } // namespace
