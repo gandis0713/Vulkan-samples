@@ -51,8 +51,7 @@ void WGPUTriangleSample::draw()
     WGPUSurfaceTexture surfaceTexture{};
     wgpuSurfaceGetCurrentTexture(m_surface, &surfaceTexture);
 
-    WGPUTextureView surfaceTextureView{};
-    surfaceTextureView = wgpuTextureCreateView(surfaceTexture.texture, NULL);
+    WGPUTextureView surfaceTextureView = wgpuTextureCreateView(surfaceTexture.texture, NULL);
 
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
     WGPUCommandEncoder commandEncoder = wgpuDeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
@@ -81,10 +80,10 @@ void WGPUTriangleSample::draw()
     wgpuQueueSubmit(m_queue, 1, &commandBuffer);
     wgpuSurfacePresent(m_surface);
 
-    // wgpuCommandBufferRelease(commandBuffer);
-    // wgpuCommandEncoderRelease(commandEncoder);
-    // wgpuTextureViewRelease(surfaceTextureView);
-    // wgpuTextureRelease(surfaceTexture.texture);
+    wgpuCommandBufferRelease(commandBuffer);
+    wgpuCommandEncoderRelease(commandEncoder);
+    wgpuTextureViewRelease(surfaceTextureView);
+    wgpuTextureRelease(surfaceTexture.texture);
 }
 
 void WGPUTriangleSample::createInstance()
