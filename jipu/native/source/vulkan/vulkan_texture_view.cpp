@@ -38,6 +38,10 @@ VulkanTextureView::VulkanTextureView(VulkanTexture& texture, const TextureViewDe
 VulkanTextureView::~VulkanTextureView()
 {
     auto& vulkanDevice = downcast(m_texture.getDevice());
+
+    auto framebufferCache = vulkanDevice.getFramebufferCache();
+    framebufferCache->invalidate(this);
+
     vulkanDevice.vkAPI.DestroyImageView(vulkanDevice.getVkDevice(), m_imageView, nullptr);
 }
 

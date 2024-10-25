@@ -68,6 +68,8 @@ public:
     VulkanPhysicalDevice& getPhysicalDevice() const;
     VulkanSemaphorePool* getSemaphorePool();
     VulkanFencePool* getFencePool();
+    VulkanRenderPassCache* getRenderPassCache();
+    VulkanFramebufferCache* getFramebufferCache();
     VulkanCommandPool* getCommandPool();
     VulkanInflightContext* getInflightContext();
 

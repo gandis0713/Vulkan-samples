@@ -63,6 +63,9 @@ public:
 
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
+    bool invalidate(VulkanTextureView* textureView);
+    bool invalidate(VulkanRenderPass* renderPass);
+
     void clear();
 
 private:

@@ -187,6 +187,16 @@ VulkanFencePool* VulkanDevice::getFencePool()
     return m_fencePool.get();
 }
 
+VulkanRenderPassCache* VulkanDevice::getRenderPassCache()
+{
+    return &m_renderPassCache;
+}
+
+VulkanFramebufferCache* VulkanDevice::getFramebufferCache()
+{
+    return &m_frameBufferCache;
+}
+
 VulkanCommandPool* VulkanDevice::getCommandPool()
 {
     return m_commandBufferPool.get();

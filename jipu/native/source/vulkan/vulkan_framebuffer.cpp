@@ -137,6 +137,43 @@ VulkanFramebuffer* VulkanFramebufferCache::getFrameBuffer(const VulkanFramebuffe
     return framebufferPtr;
 }
 
+bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
+{
+    for (auto& [descriptor, _] : m_cache)
+    {
+        for (auto& attachment : descriptor.colorAttachments)
+        {
+            if (attachment.renderView == textureView)
+            {
+                m_cache.erase(descriptor);
+                return true;
+            }
+
+            if (attachment.resolveView != nullptr && attachment.resolveView == textureView)
+            {
+                m_cache.erase(descriptor);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool VulkanFramebufferCache::invalidate(VulkanRenderPass* renderPass)
+{
+    for (auto& [descriptor, _] : m_cache)
+    {
+        if (descriptor.renderPass == renderPass)
+        {
+            m_cache.erase(descriptor);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void VulkanFramebufferCache::clear()
 {
     m_cache.clear();
