@@ -46,8 +46,8 @@ private:
     WGPURenderPipeline m_renderPipeline = nullptr;
     WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
     WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
-    WGPUShaderModule m_vertShaderModule = nullptr;
-    WGPUShaderModule m_fragShaderModule = nullptr;
+    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
+    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
 
     bool m_useSPIRV = false;
 };

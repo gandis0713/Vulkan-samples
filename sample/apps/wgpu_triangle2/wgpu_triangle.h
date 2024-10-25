@@ -48,7 +48,6 @@ private:
     [[maybe_unused]] WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
     [[maybe_unused]] WGPUShaderModule m_vertWGSLShaderModule = nullptr;
     [[maybe_unused]] WGPUShaderModule m_fragWGSLShaderModule = nullptr;
-    [[maybe_unused]] WGPUShaderModule m_shaderModuleWGSL = nullptr;
 };
 
 } // namespace jipu

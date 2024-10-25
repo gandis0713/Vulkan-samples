@@ -18,8 +18,8 @@ WGPUTriangleSample::~WGPUTriangleSample()
     wgpuPipelineLayoutRelease(m_pipelineLayout);
     wgpuShaderModuleRelease(m_vertSPIRVShaderModule);
     wgpuShaderModuleRelease(m_fragSPIRVShaderModule);
-    wgpuShaderModuleRelease(m_vertShaderModule);
-    wgpuShaderModuleRelease(m_fragShaderModule);
+    wgpuShaderModuleRelease(m_vertWGSLShaderModule);
+    wgpuShaderModuleRelease(m_fragWGSLShaderModule);
 
     wgpuQueueRelease(m_queue);
     wgpuDeviceDestroy(m_device);
@@ -230,7 +230,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        m_vertShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
         fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
@@ -239,7 +239,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-        m_fragShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
+        m_fragWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
     }
 }
 
@@ -263,7 +263,7 @@ void WGPUTriangleSample::createPipeline()
     if (m_useSPIRV)
         vertexState.module = m_vertSPIRVShaderModule;
     else
-        vertexState.module = m_vertShaderModule;
+        vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceCapabilities.formats[0];
@@ -274,7 +274,7 @@ void WGPUTriangleSample::createPipeline()
     if (m_useSPIRV)
         fragState.module = m_fragSPIRVShaderModule;
     else
-        fragState.module = m_fragShaderModule;
+        fragState.module = m_fragWGSLShaderModule;
 
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;

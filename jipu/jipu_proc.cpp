@@ -5,8 +5,11 @@
 #include "webgpu/webgpu_command_encoder.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
+#include "webgpu/webgpu_pipeline_layout.h"
 #include "webgpu/webgpu_queue.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
+#include "webgpu/webgpu_render_pipeline.h"
+#include "webgpu/webgpu_shader_module.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
 #include "webgpu/webgpu_texture_view.h"
@@ -176,6 +179,24 @@ void procTextureRelease(WGPUTexture texture)
 {
     WebGPUTexture* webgpuTexture = reinterpret_cast<WebGPUTexture*>(texture);
     return webgpuTexture->release();
+}
+
+void procRenderPipelineRelease(WGPURenderPipeline renderPipeline)
+{
+    WebGPURenderPipeline* webgpuRenderPipeline = reinterpret_cast<WebGPURenderPipeline*>(renderPipeline);
+    return webgpuRenderPipeline->release();
+}
+
+void procPipelineLayoutRelease(WGPUPipelineLayout pipelineLayout)
+{
+    WebGPUPipelineLayout* webgpuPipelineLayout = reinterpret_cast<WebGPUPipelineLayout*>(pipelineLayout);
+    return webgpuPipelineLayout->release();
+}
+
+void procShaderModuleRelease(WGPUShaderModule shaderModule)
+{
+    WebGPUShaderModule* webgpuShaderModule = reinterpret_cast<WebGPUShaderModule*>(shaderModule);
+    return webgpuShaderModule->release();
 }
 
 namespace

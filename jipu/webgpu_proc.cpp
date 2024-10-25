@@ -31,6 +31,9 @@ extern void procCommandBufferRelease(WGPUCommandBuffer commandBuffer);
 extern void procCommandEncoderRelease(WGPUCommandEncoder commandEncoder);
 extern void procTextureViewRelease(WGPUTextureView textureView);
 extern void procTextureRelease(WGPUTexture texture);
+extern void procRenderPipelineRelease(WGPURenderPipeline renderPipeline);
+extern void procPipelineLayoutRelease(WGPUPipelineLayout pipelineLayout);
+extern void procShaderModuleRelease(WGPUShaderModule shaderModule);
 
 } // namespace jipu
 
@@ -176,5 +179,20 @@ extern "C"
     WGPU_EXPORT void wgpuTextureRelease(WGPUTexture texture) WGPU_FUNCTION_ATTRIBUTE
     {
         return procTextureRelease(texture);
+    }
+
+    WGPU_EXPORT void wgpuRenderPipelineRelease(WGPURenderPipeline renderPipeline) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderPipelineRelease(renderPipeline);
+    }
+
+    WGPU_EXPORT void wgpuPipelineLayoutRelease(WGPUPipelineLayout pipelineLayout) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procPipelineLayoutRelease(pipelineLayout);
+    }
+
+    WGPU_EXPORT void wgpuShaderModuleRelease(WGPUShaderModule shaderModule) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procShaderModuleRelease(shaderModule);
     }
 }
