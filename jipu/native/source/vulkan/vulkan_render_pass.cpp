@@ -62,6 +62,9 @@ VulkanRenderPass::~VulkanRenderPass()
 {
     auto& vulkanDevice = downcast(m_device);
 
+    auto framebufferCache = vulkanDevice.getFramebufferCache();
+    framebufferCache->invalidate(this);
+
     vulkanDevice.vkAPI.DestroyRenderPass(vulkanDevice.getVkDevice(), m_renderPass, nullptr);
 }
 
