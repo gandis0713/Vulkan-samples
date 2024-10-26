@@ -113,6 +113,8 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 if(EXPORT_JIPU_WEBGPU)
+  message(STATUS "jipu::webgpu will be installed")
+
   install(TARGETS jipu_webgpu
     EXPORT jipu_webgpu_targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

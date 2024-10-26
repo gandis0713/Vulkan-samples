@@ -207,6 +207,7 @@ if(MSVC)
 endif()
 
 if(EXPORT_JIPU_NATIVE)
+  message(STATUS "jipu::native will be installed")
   install(TARGETS jipu_native
     EXPORT jipu_native_targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
