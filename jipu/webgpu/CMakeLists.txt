@@ -59,13 +59,6 @@ target_include_directories(jipu_webgpu
   $<BUILD_INTERFACE:${WEBGPU_HEADERS_INCLUDE_DIRS}>
 )
 
-if(EXPORT_JIPU_WEBGPU)
-  target_include_directories(jipu_webgpu
-    PUBLIC
-    $<INSTALL_INTERFACE:include>
-  )
-endif()
-
 # link libraries
 target_link_libraries(jipu_webgpu
   PUBLIC
@@ -109,27 +102,5 @@ if(BUILD_SHARED_LIBS)
   target_compile_definitions(jipu_webgpu
     PRIVATE
     "WGPU_SHARED_LIBRARY"
-  )
-endif()
-
-if(EXPORT_JIPU_WEBGPU)
-  message(STATUS "jipu::webgpu will be installed")
-
-  install(TARGETS jipu_webgpu
-    EXPORT jipu_webgpu_targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-  )
-
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-    DESTINATION include/jipu/webgpu
-    FILES_MATCHING PATTERN "*.h"
-  )
-
-  install(EXPORT jipu_webgpu_targets
-    FILE jipu_webgpu-config.cmake
-    NAMESPACE jipu::
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_webgpu
   )
 endif()

@@ -17,36 +17,30 @@ set(COMMON_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/result.h
 )
 
-add_library(jipu_common
+add_library(common
     STATIC # SHARED or STATIC
     ${COMMON_SRC_FILES}
 )
 
-add_library(jipu::common ALIAS jipu_common)
+add_library(jipu::common ALIAS common)
 
 # include directories
-target_include_directories(jipu_common
+target_include_directories(common
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
 )
 
-target_link_libraries(jipu_common
+target_link_libraries(common
     PRIVATE
     spdlog::spdlog_header_only
 )
 
-if(false)
+if(EXPORT_JIPU_COMMON)
     message(STATUS "jipu::common will be installed")
-    target_include_directories(jipu_common
+
+    target_include_directories(common
         PUBLIC
         $<INSTALL_INTERFACE:include>
-    )
-
-    install(TARGETS jipu_common
-        EXPORT jipu_common_targets
-        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
@@ -54,9 +48,16 @@ if(false)
         FILES_MATCHING PATTERN "*.h"
     )
 
-    install(EXPORT jipu_common_targets
-        FILE jipu_common-config.cmake
-        NAMESPACE jipu::
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_common
-    )
+    # install(TARGETS common
+    # EXPORT common_targets
+    # RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    # LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    # ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    # )
+
+    # install(EXPORT common_targets
+    # FILE common-config.cmake
+    # NAMESPACE jipu::
+    # DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu
+    # )
 endif()

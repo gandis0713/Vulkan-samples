@@ -46,6 +46,4 @@ endif()
 if(JIPU_TEST)
   enable_testing()
   add_subdirectory(test)
-
-  # add_dependencies(test_jipu jipu::native)
 endif()

@@ -122,38 +122,30 @@ if(BUILD_SHARED_LIBS)
   set(LIB_TYPE SHARED)
 endif()
 
-add_library(jipu_native
+add_library(native
   ${LIB_TYPE} # SHARED or STATIC
   ${NATIVE_SRC_FILES}
 )
-add_library(jipu::native ALIAS jipu_native)
+add_library(jipu::native ALIAS native)
 
-target_include_directories(jipu_native
+# include directories
+target_include_directories(native
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan>
 )
 
-# include directories
-if(EXPORT_JIPU_NATIVE)
-  target_include_directories(jipu_native
-    PUBLIC
-    $<INSTALL_INTERFACE:include>
-  )
-endif()
-
 # link libraries
-target_link_libraries(jipu_native
-  PUBLIC
-  jipu::common
+target_link_libraries(native
   PRIVATE
+  jipu::common
   Vulkan::Headers
   GPUOpen::VulkanMemoryAllocator
 )
 
 if(APPLE)
-  target_link_libraries(jipu_native
+  target_link_libraries(native
     PRIVATE
     "-framework Cocoa"
   )
@@ -163,7 +155,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-  target_compile_options(jipu_native
+  target_compile_options(native
     PRIVATE
     -Wall
     -Werror
@@ -180,27 +172,21 @@ elseif(APPLE)
   )
 endif()
 
-target_compile_definitions(jipu_native
+target_compile_definitions(native
   PRIVATE
   "JIPU_IMPLEMENTATION"
+  "VULKAN_IMPLEMENTATION"
 )
 
-if(EXPORT_JIPU_VULKAN)
-  target_compile_definitions(jipu_native
-    PRIVATE
-    "VULKAN_IMPLEMENTATION"
-  )
-endif()
-
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(jipu_native
+  target_compile_definitions(native
     PRIVATE
     "JIPU_SHARED_LIBRARY"
   )
 endif()
 
 if(MSVC)
-  target_compile_definitions(jipu_native
+  target_compile_definitions(native
     PRIVATE
     "NOMINMAX" # to undefine max, min macro
   )
@@ -208,27 +194,27 @@ endif()
 
 if(EXPORT_JIPU_NATIVE)
   message(STATUS "jipu::native will be installed")
-  install(TARGETS jipu_native
-    EXPORT jipu_native_targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+
+  target_include_directories(native
+    PUBLIC
+    $<INSTALL_INTERFACE:include>
   )
 
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
-    DESTINATION jipu/native
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include/jipu/native
+    FILES_MATCHING PATTERN "*.h"
   )
 
-  if(EXPORT_JIPU_VULKAN)
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vulkan
-      DESTINATION jipu/native/vulkan
-      FILES_MATCHING PATTERN "*.h"
-    )
-  endif()
+  # install(TARGETS native
+  # EXPORT native_targets
+  # RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+  # LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  # ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  # )
 
-  install(EXPORT jipu_native_targets
-    FILE jipu_native-config.cmake
-    NAMESPACE jipu::
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_native
-  )
+  # install(EXPORT native_targets
+  # FILE native-config.cmake
+  # NAMESPACE jipu::
+  # DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu
+  # )
 endif()
