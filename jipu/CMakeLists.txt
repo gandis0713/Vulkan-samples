@@ -29,7 +29,7 @@ install(TARGETS jipu_jipu
 )
 
 install(EXPORT jipu_jipu_targets
-  FILE jipu_jipu-config.cmake
+  FILE jipu-config.cmake
   NAMESPACE jipu::
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_jipu
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu
 )
