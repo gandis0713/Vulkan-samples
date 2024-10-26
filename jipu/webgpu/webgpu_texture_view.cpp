@@ -1,6 +1,6 @@
 #include "webgpu_texture_view.h"
 
-#include "jipu/native/include/texture_view.h"
+#include "jipu/native/texture_view.h"
 #include "webgpu_texture.h"
 
 namespace jipu

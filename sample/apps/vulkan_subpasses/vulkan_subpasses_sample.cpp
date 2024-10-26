@@ -240,7 +240,7 @@ void VulkanSubpassesSample::updateImGui()
 void VulkanSubpassesSample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     auto vulkanDevice = downcast(m_device.get());
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
@@ -346,8 +346,8 @@ void VulkanSubpassesSample::draw()
     else
     {
         // subpasses
-        auto& vulkanRenderPass = getSubpassesRenderPass();
-        auto& vulkanFramebuffer = getSubpassesFrameBuffer(*renderView);
+        auto vulkanRenderPass = getSubpassesRenderPass();
+        auto vulkanFramebuffer = getSubpassesFrameBuffer(renderView);
 
         RenderPassTimestampWrites timestampWrites;
         if (m_useTimestamp)
@@ -359,8 +359,8 @@ void VulkanSubpassesSample::draw()
 
         // first pass
         VulkanRenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.renderPass = vulkanRenderPass.getVkRenderPass();
-        renderPassEncoderDescriptor.framebuffer = vulkanFramebuffer.getVkFrameBuffer();
+        renderPassEncoderDescriptor.renderPass = vulkanRenderPass;
+        renderPassEncoderDescriptor.framebuffer = vulkanFramebuffer;
         renderPassEncoderDescriptor.renderArea.offset = { 0, 0 };
         renderPassEncoderDescriptor.renderArea.extent = { m_swapchain->getWidth(), m_swapchain->getHeight() };
         renderPassEncoderDescriptor.timestampWrites = timestampWrites;
@@ -417,7 +417,11 @@ void VulkanSubpassesSample::draw()
         }
     }
 
-    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+    CommandBufferDescriptor descriptor{};
+    auto commandBuffer = commandEncoder->finish(descriptor);
+
+    m_queue->submit({ commandBuffer.get() });
+    m_swapchain->present();
 
     if (m_useTimestamp)
     {
@@ -671,14 +675,12 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         extent.height = ktx.getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{};
-        m_copyColorTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = m_copyColorTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
+        auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-        commandEncoder->finish();
+
+        CommandBufferDescriptor commandBufferDescriptor{};
+        m_copyColorTextureCommandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
         m_queue->submit({ m_copyColorTextureCommandBuffer.get() });
     }
@@ -741,14 +743,12 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         extent.height = ktx.getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{};
-        m_copyNomralTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = m_copyNomralTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
+        auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-        commandEncoder->finish();
+
+        CommandBufferDescriptor commandBufferDescriptor{};
+        m_copyNomralTextureCommandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
         m_queue->submit({ m_copyNomralTextureCommandBuffer.get() });
     }
@@ -1798,12 +1798,12 @@ void VulkanSubpassesSample::createCompositionVertexBuffer()
     vertexBuffer->unmap();
 }
 
-VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
     // attachment descriptors
-    renderPassDescriptor.attachmentDescriptions.resize(5);
+    renderPassDescriptor.colorAttachmentDescriptions.resize(4);
     {
         // first pass
         {
@@ -1821,7 +1821,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
-                renderPassDescriptor.attachmentDescriptions[0] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[0] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
 
             // normal
@@ -1838,7 +1838,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
-                renderPassDescriptor.attachmentDescriptions[1] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[1] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
 
             // albedo
@@ -1855,7 +1855,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
-                renderPassDescriptor.attachmentDescriptions[2] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[2] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
         }
 
@@ -1873,7 +1873,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-            renderPassDescriptor.attachmentDescriptions[3] = attachment;
+            renderPassDescriptor.colorAttachmentDescriptions[3] = RenderPassColorAttachment{ .renderAttachment = attachment };
         }
 
         // depth
@@ -1890,7 +1890,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-            renderPassDescriptor.attachmentDescriptions[4] = attachment;
+            renderPassDescriptor.depthStencilAttachment = attachment;
         }
     }
 
@@ -2045,12 +2045,12 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
     return vulkanDevice.getRenderPass(renderPassDescriptor);
 }
 
-VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
     // attachment descriptors
-    renderPassDescriptor.attachmentDescriptions.resize(5);
+    renderPassDescriptor.colorAttachmentDescriptions.resize(4);
     {
         // first pass
         {
@@ -2068,7 +2068,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-                renderPassDescriptor.attachmentDescriptions[0] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[0] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
 
             // normal
@@ -2085,7 +2085,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-                renderPassDescriptor.attachmentDescriptions[1] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[1] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
 
             // albedo
@@ -2102,7 +2102,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-                renderPassDescriptor.attachmentDescriptions[2] = attachment;
+                renderPassDescriptor.colorAttachmentDescriptions[2] = RenderPassColorAttachment{ .renderAttachment = attachment };
             }
         }
 
@@ -2120,7 +2120,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-            renderPassDescriptor.attachmentDescriptions[3] = attachment;
+            renderPassDescriptor.colorAttachmentDescriptions[3] = RenderPassColorAttachment{ .renderAttachment = attachment };
         }
 
         // depth
@@ -2137,7 +2137,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
 
-            renderPassDescriptor.attachmentDescriptions[4] = attachment;
+            renderPassDescriptor.depthStencilAttachment = attachment;
         }
     }
 
@@ -2304,24 +2304,24 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
     return vulkanDevice.getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer& VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView& renderView)
+VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* renderView)
 {
     VulkanFramebufferDescriptor descriptor{};
-    descriptor.renderPass = getSubpassesRenderPass().getVkRenderPass();
+    descriptor.renderPass = getSubpassesRenderPass();
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.layers = 1;
 
     // first pass
-    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getVkImageView());
-    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getVkImageView());
-    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getVkImageView());
+    descriptor.colorAttachments.push_back(FramebufferColorAttachment{ .renderView = downcast(m_offscreen.subPasses.positionColorAttachmentTextureView.get()) });
+    descriptor.colorAttachments.push_back(FramebufferColorAttachment{ .renderView = downcast(m_offscreen.subPasses.normalColorAttachmentTextureView.get()) });
+    descriptor.colorAttachments.push_back(FramebufferColorAttachment{ .renderView = downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView.get()) });
 
     // second pass
-    descriptor.attachments.push_back(downcast(renderView).getVkImageView());
+    descriptor.colorAttachments.push_back(FramebufferColorAttachment{ .renderView = downcast(renderView) });
 
     // depth
-    descriptor.attachments.push_back(downcast(*m_depthStencilTextureView).getVkImageView());
+    descriptor.depthStencilAttachment = downcast(m_depthStencilTextureView.get());
 
     auto& vulkanDevice = downcast(*m_device);
     return vulkanDevice.getFrameBuffer(descriptor);

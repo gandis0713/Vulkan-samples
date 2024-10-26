@@ -2,7 +2,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/include/pipeline_layout.h"
+#include "jipu/native/pipeline_layout.h"
 #include "webgpu_header.h"
 
 namespace jipu

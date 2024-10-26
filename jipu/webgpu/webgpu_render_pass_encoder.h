@@ -2,7 +2,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/include/render_pass_encoder.h"
+#include "jipu/native/render_pass_encoder.h"
 #include "webgpu_header.h"
 
 #include <memory>

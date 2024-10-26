@@ -5,7 +5,7 @@
 
 #include "jipu/common/ref_counted.h"
 
-#include "jipu/native/include/binding_group.h"
+#include "jipu/native/binding_group.h"
 
 namespace jipu
 {

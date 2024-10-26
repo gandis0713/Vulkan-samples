@@ -2,7 +2,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/include/command_buffer.h"
+#include "jipu/native/command_buffer.h"
 #include "webgpu_header.h"
 
 #include <memory>

@@ -13,6 +13,7 @@
 				"VCPKG_INSTALLED_DIR": "${sourceDir}/externals",
 				"JIPU_SAMPLE": "ON",
 				"JIPU_TEST": "ON",
+				"EXPORT_JIPU_WEBGPU": "ON",
 				"EXPORT_JIPU_NATIVE": "ON",
 				"EXPORT_JIPU_VULKAN": "ON",
 				"USE_DAWN_WEBGPU": "ON"

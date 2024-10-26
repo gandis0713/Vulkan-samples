@@ -5,17 +5,17 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "jipu/native/include/buffer.h"
-#include "jipu/native/include/command_buffer.h"
-#include "jipu/native/include/command_encoder.h"
-#include "jipu/native/include/device.h"
-#include "jipu/native/include/instance.h"
-#include "jipu/native/include/physical_device.h"
-#include "jipu/native/include/pipeline.h"
-#include "jipu/native/include/pipeline_layout.h"
-#include "jipu/native/include/queue.h"
-#include "jipu/native/include/surface.h"
-#include "jipu/native/include/swapchain.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/instance.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
 namespace jipu
 {

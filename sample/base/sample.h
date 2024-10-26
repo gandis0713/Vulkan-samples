@@ -10,12 +10,12 @@
 #include <optional>
 #include <unordered_set>
 
-#include <jipu/native/include/device.h>
-#include <jipu/native/include/instance.h>
-#include <jipu/native/include/physical_device.h>
-#include <jipu/native/include/queue.h>
-#include <jipu/native/include/surface.h>
-#include <jipu/native/include/swapchain.h>
+#include <jipu/native/device.h>
+#include <jipu/native/instance.h>
+#include <jipu/native/physical_device.h>
+#include <jipu/native/queue.h>
+#include <jipu/native/surface.h>
+#include <jipu/native/swapchain.h>
 
 #include "hpc/instance.h"
 

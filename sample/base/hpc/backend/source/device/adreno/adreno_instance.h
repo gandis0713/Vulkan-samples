@@ -2,7 +2,7 @@
 
 #include "handle.h"
 #include "hpc/backend/instance.h"
-#include "jipu/native/include/common/cast.h"
+#include "jipu/native/common/cast.h"
 
 namespace hpc
 {

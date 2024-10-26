@@ -9,20 +9,20 @@
 #include "model.h"
 #include "sample.h"
 
-#include "jipu/native/include/buffer.h"
-#include "jipu/native/include/command_buffer.h"
-#include "jipu/native/include/command_encoder.h"
-#include "jipu/native/include/device.h"
-#include "jipu/native/include/instance.h"
-#include "jipu/native/include/physical_device.h"
-#include "jipu/native/include/pipeline_layout.h"
-#include "jipu/native/include/query_set.h"
-#include "jipu/native/include/queue.h"
-#include "jipu/native/include/render_pass_encoder.h"
-#include "jipu/native/include/surface.h"
-#include "jipu/native/include/swapchain.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/instance.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/query_set.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/render_pass_encoder.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
-#include "vulkan_pipeline.h"
+#include "jipu/native/vulkan/vulkan_pipeline.h"
 
 #include "khronos_texture.h"
 
@@ -82,9 +82,9 @@ private:
     void createMultipassQuerySet();
     void createSubpassQuerySet();
 
-    VulkanRenderPass& getSubpassesRenderPass();
-    VulkanRenderPass& getSubpassesCompatibleRenderPass();
-    VulkanFramebuffer& getSubpassesFrameBuffer(TextureView& renderView);
+    VulkanRenderPass* getSubpassesRenderPass();
+    VulkanRenderPass* getSubpassesCompatibleRenderPass();
+    VulkanFramebuffer* getSubpassesFrameBuffer(TextureView* renderView);
 
 private:
     struct CompositionUBO

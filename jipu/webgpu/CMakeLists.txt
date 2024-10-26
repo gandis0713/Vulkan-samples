@@ -56,9 +56,15 @@ add_library(jipu::webgpu ALIAS jipu_webgpu)
 target_include_directories(jipu_webgpu
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-  $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${WEBGPU_HEADERS_INCLUDE_DIRS}>
 )
+
+if(EXPORT_JIPU_WEBGPU)
+  target_include_directories(jipu_webgpu
+    PUBLIC
+    $<INSTALL_INTERFACE:include>
+  )
+endif()
 
 # link libraries
 target_link_libraries(jipu_webgpu
@@ -106,20 +112,22 @@ if(BUILD_SHARED_LIBS)
   )
 endif()
 
-install(TARGETS jipu_webgpu
-  EXPORT jipu_webgpu_targets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-)
+if(EXPORT_JIPU_WEBGPU)
+  install(TARGETS jipu_webgpu
+    EXPORT jipu_webgpu_targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-  DESTINATION include/jipu/webgpu
-  FILES_MATCHING PATTERN "*.h"
-)
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION include/jipu/webgpu
+    FILES_MATCHING PATTERN "*.h"
+  )
 
-install(EXPORT jipu_webgpu_targets
-  FILE jipu_webgpu-config.cmake
-  NAMESPACE jipu::
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_webgpu
-)
+  install(EXPORT jipu_webgpu_targets
+    FILE jipu_webgpu-config.cmake
+    NAMESPACE jipu::
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu_webgpu
+  )
+endif()

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/include/buffer.h"
+#include "jipu/native/buffer.h"
 #include "webgpu_header.h"
 
 namespace jipu

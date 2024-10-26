@@ -4,8 +4,8 @@
 
 #include "jipu/common/ref_counted.h"
 
-#include "jipu/native/include/instance.h"
-#include "jipu/native/include/physical_device.h"
+#include "jipu/native/instance.h"
+#include "jipu/native/physical_device.h"
 
 namespace jipu
 {

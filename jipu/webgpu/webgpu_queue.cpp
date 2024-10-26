@@ -3,7 +3,7 @@
 #include "webgpu_command_buffer.h"
 #include "webgpu_device.h"
 
-#include "jipu/native/include/queue.h"
+#include "jipu/native/queue.h"
 
 namespace jipu
 {

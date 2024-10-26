@@ -110,25 +110,25 @@ function(configure_sample target)
     endforeach(resource)
 endfunction()
 
+# for jipu
 add_subdirectory(wgpu_triangle)
 add_subdirectory(wgpu_triangle2)
 
-# experimental
-if(EXPORT_JIPU_NATIVE)
-    add_subdirectory(triangle)
-    add_subdirectory(query)
-    add_subdirectory(blend)
-    add_subdirectory(obj_model)
-    add_subdirectory(particle)
-    add_subdirectory(deferred)
-    add_subdirectory(imgui)
-    add_subdirectory(instancing)
-    add_subdirectory(offscreen)
-endif()
+# experimental for webgpu
 
-# experimental
-if(EXPORT_JIPU_VULKAN)
-    # add_subdirectory(vulkan_subpasses)
-    # add_subdirectory(vulkan_n_buffering)
-    # add_subdirectory(vulkan_pipeline_barrier)
-endif()
+# experimental for native
+add_subdirectory(triangle)
+add_subdirectory(query)
+add_subdirectory(blend)
+add_subdirectory(obj_model)
+add_subdirectory(particle)
+add_subdirectory(deferred)
+add_subdirectory(imgui)
+add_subdirectory(instancing)
+add_subdirectory(offscreen)
+
+# experimental for vulkan
+add_subdirectory(vulkan_subpasses)
+
+# add_subdirectory(vulkan_n_buffering)
+# add_subdirectory(vulkan_pipeline_barrier)
