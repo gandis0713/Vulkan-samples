@@ -2,10 +2,10 @@
 
 #include "webgpu_header.h"
 
-#include "common/ref_counted.h"
+#include "jipu/common/ref_counted.h"
 
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
+#include "jipu/native/include/instance.h"
+#include "jipu/native/include/physical_device.h"
 
 namespace jipu
 {

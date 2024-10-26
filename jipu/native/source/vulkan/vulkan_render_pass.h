@@ -1,7 +1,7 @@
 #pragma once
 
-#include "jipu/render_pass_encoder.h"
-#include "jipu/texture.h"
+#include "render_pass_encoder.h"
+#include "texture.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 

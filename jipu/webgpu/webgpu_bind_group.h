@@ -3,9 +3,9 @@
 
 #include "webgpu_header.h"
 
-#include "common/ref_counted.h"
+#include "jipu/common/ref_counted.h"
 
-#include "jipu/binding_group.h"
+#include "jipu/native/include/binding_group.h"
 
 namespace jipu
 {

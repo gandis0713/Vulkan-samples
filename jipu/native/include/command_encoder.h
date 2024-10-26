@@ -1,10 +1,10 @@
 #pragma once
 
+#include "command_buffer.h"
+#include "compute_pass_encoder.h"
 #include "export.h"
-#include "jipu/command_buffer.h"
-#include "jipu/compute_pass_encoder.h"
-#include "jipu/render_pass_encoder.h"
-#include "jipu/texture.h"
+#include "render_pass_encoder.h"
+#include "texture.h"
 #include <vector>
 
 namespace jipu

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "device.h"
 #include "export.h"
-#include "jipu/device.h"
-#include "jipu/surface.h"
+#include "surface.h"
 
 #include <memory>
 

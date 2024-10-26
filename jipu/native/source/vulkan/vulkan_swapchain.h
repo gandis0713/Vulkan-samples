@@ -1,13 +1,13 @@
 #pragma once
 
-#include "jipu/swapchain.h"
+#include "swapchain.h"
 
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
-#include "common/cast.h"
+#include "jipu/common/cast.h"
 
 #include <memory>
 #include <vector>

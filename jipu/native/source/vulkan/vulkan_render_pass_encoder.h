@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jipu/render_pass_encoder.h"
+#include "render_pass_encoder.h"
 #include "vulkan_api.h"
 #include "vulkan_command.h"
 #include "vulkan_export.h"
@@ -8,7 +8,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_render_pass.h"
 
-#include "common/cast.h"
+#include "jipu/common/cast.h"
 
 namespace jipu
 {

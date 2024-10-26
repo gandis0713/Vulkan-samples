@@ -1,6 +1,6 @@
 #include "texture_test.h"
 
-#include "jipu/texture.h"
+#include "jipu/native/include/texture.h"
 
 using namespace jipu;
 

@@ -1,6 +1,6 @@
 #include "buffer_test.h"
 
-#include "jipu/buffer.h"
+#include "jipu/native/include/buffer.h"
 
 using namespace jipu;
 

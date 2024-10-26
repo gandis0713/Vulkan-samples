@@ -1,19 +1,19 @@
 #pragma once
 
+#include "binding_group.h"
+#include "binding_group_layout.h"
+#include "buffer.h"
+#include "command_buffer.h"
+#include "command_encoder.h"
 #include "export.h"
-#include "jipu/binding_group.h"
-#include "jipu/binding_group_layout.h"
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/query_set.h"
-#include "jipu/queue.h"
-#include "jipu/sampler.h"
-#include "jipu/shader_module.h"
-#include "jipu/swapchain.h"
-#include "jipu/texture.h"
+#include "pipeline.h"
+#include "pipeline_layout.h"
+#include "query_set.h"
+#include "queue.h"
+#include "sampler.h"
+#include "shader_module.h"
+#include "swapchain.h"
+#include "texture.h"
 
 #include <memory>
 

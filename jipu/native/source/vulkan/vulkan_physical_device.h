@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cast.h"
-#include "jipu/physical_device.h"
+#include "jipu/common/cast.h"
+#include "physical_device.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_surface.h"

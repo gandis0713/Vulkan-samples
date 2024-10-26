@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cast.h"
-#include "jipu/texture_view.h"
+#include "jipu/common/cast.h"
+#include "texture_view.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 

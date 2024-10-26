@@ -1,6 +1,6 @@
 #include "vulkan_api.h"
 
-#include "common/dylib.h"
+#include "jipu/common/dylib.h"
 #include <spdlog/spdlog.h>
 
 namespace jipu

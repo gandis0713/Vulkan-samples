@@ -1,6 +1,6 @@
-#include "jipu/instance.h"
+#include "instance.h"
 
-#include "vulkan_instance.h"
+#include "vulkan/vulkan_instance.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
 #include "spdlog/sinks/android_sink.h"

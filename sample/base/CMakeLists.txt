@@ -85,11 +85,10 @@ target_include_directories(jipu_sample_base
 target_link_libraries(jipu_sample_base
     PUBLIC
     glm::glm
+    jipu::webgpu
     PRIVATE
     tinyobjloader::tinyobjloader
-    spdlog::spdlog_header_only
     KTX::ktx
-    jipu::native
     hpc::hpc
     imgui::imgui
 )

@@ -2,8 +2,8 @@
 
 #include "export.h"
 
-#include "jipu/command_buffer.h"
-#include "jipu/swapchain.h"
+#include "command_buffer.h"
+#include "swapchain.h"
 
 #include <functional>
 #include <stdint.h>

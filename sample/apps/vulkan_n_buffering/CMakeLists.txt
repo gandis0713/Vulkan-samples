@@ -1,3 +1,1 @@
 configure_sample(vulkan_n_buffering)
-
-target_link_libraries(vulkan_n_buffering PRIVATE jipu::native)

@@ -35,7 +35,6 @@ add_library(backend STATIC
 )
 add_library(hpc::backend ALIAS backend)
 
-target_link_libraries(backend PRIVATE spdlog::spdlog_header_only)
 target_include_directories(backend
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

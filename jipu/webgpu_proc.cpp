@@ -1,4 +1,4 @@
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {

@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "common/ref_counted.h"
-#include "jipu/buffer.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/buffer.h"
 #include "webgpu_header.h"
 
 namespace jipu

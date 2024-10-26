@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/assert.h"
-#include "common/cast.h"
-#include "jipu/texture.h"
+#include "jipu/common/assert.h"
+#include "jipu/common/cast.h"
+#include "texture.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_resource.h"

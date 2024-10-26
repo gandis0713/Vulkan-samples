@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "common/ref_counted.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/command_buffer.h"
+#include "jipu/native/include/command_encoder.h"
 #include "webgpu_header.h"
 
 #include <memory>

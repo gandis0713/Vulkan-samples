@@ -2,7 +2,7 @@
 
 #include "export.h"
 
-#include "jipu/texture.h"
+#include "texture.h"
 
 namespace jipu
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "export.h"
-#include "jipu/texture_view.h"
+#include "texture_view.h"
 #include <memory>
 #include <stdint.h>
 

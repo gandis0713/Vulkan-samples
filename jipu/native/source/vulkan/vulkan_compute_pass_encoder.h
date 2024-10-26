@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jipu/compute_pass_encoder.h"
+#include "compute_pass_encoder.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_pipeline.h"

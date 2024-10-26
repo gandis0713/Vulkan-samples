@@ -62,10 +62,6 @@ if(ANDROID)
     )
 endif()
 
-target_link_libraries(hpc PRIVATE
-    spdlog::spdlog_header_only
-)
-
 if(ANDROID)
     # for custom backend
     target_link_libraries(hpc PRIVATE

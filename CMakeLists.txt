@@ -39,11 +39,6 @@ endif()
 
 add_subdirectory(jipu)
 
-install(EXPORT ${PROJECT_NAME}-config
-  NAMESPACE jipu::
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}
-)
-
 if(JIPU_SAMPLE)
   add_subdirectory(sample)
 endif()

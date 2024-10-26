@@ -1,4 +1,4 @@
-#include "common/dylib.h"
+#include "dylib.h"
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>

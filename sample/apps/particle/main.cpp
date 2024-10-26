@@ -2,13 +2,13 @@
 #include "file.h"
 #include "sample.h"
 
-#include "jipu/buffer.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/shader_module.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/include/buffer.h"
+#include "jipu/native/include/device.h"
+#include "jipu/native/include/instance.h"
+#include "jipu/native/include/physical_device.h"
+#include "jipu/native/include/shader_module.h"
+#include "jipu/native/include/surface.h"
+#include "jipu/native/include/swapchain.h"
 
 #include <chrono>
 #include <cstdint>

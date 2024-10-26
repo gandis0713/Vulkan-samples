@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "common/ref_counted.h"
-#include "jipu/shader_module.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/shader_module.h"
 #include "webgpu_header.h"
 
 namespace jipu

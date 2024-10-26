@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/ref_counted.h"
-#include "jipu/device.h"
-#include "jipu/swapchain.h"
-#include "jipu/texture.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/device.h"
+#include "jipu/native/include/swapchain.h"
+#include "jipu/native/include/texture.h"
 #include "webgpu_header.h"
 
 namespace jipu

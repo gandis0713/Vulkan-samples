@@ -1,10 +1,10 @@
 #pragma once
 
-#include "jipu/shader_module.h"
+#include "shader_module.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 
-#include "common/cast.h"
+#include "jipu/common/cast.h"
 
 namespace jipu
 {

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "jipu/binding_group.h"
-#include "jipu/buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/pipeline.h"
-#include "jipu/query_set.h"
-#include "jipu/render_pass_encoder.h"
-#include "jipu/texture_view.h"
+#include "binding_group.h"
+#include "buffer.h"
+#include "command_encoder.h"
+#include "pipeline.h"
+#include "query_set.h"
+#include "render_pass_encoder.h"
+#include "texture_view.h"
 
 #include "vulkan_api.h"
 

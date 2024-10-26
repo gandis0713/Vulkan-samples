@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/cast.h"
-#include "common/dylib.h"
-#include "jipu/instance.h"
+#include "instance.h"
+#include "jipu/common/cast.h"
+#include "jipu/common/dylib.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_surface.h"

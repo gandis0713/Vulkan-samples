@@ -3,9 +3,9 @@
 #include <SDL2/SDL.h>
 #include <gtest/gtest.h>
 
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/include/queue.h"
+#include "jipu/native/include/surface.h"
+#include "jipu/native/include/swapchain.h"
 #include "test.h"
 
 namespace jipu

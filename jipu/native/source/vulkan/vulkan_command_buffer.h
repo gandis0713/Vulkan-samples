@@ -2,8 +2,8 @@
 
 #include "export.h"
 
-#include "common/cast.h"
-#include "jipu/command_buffer.h"
+#include "command_buffer.h"
+#include "jipu/common/cast.h"
 
 #include "vulkan_api.h"
 #include "vulkan_command_encoder.h"

@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "common/ref_counted.h"
-#include "jipu/pipeline.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/pipeline.h"
 #include "webgpu_header.h"
 
 namespace jipu

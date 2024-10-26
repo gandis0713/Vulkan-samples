@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "common/ref_counted.h"
-#include "jipu/sampler.h"
+#include "jipu/common/ref_counted.h"
+#include "jipu/native/include/sampler.h"
 #include "webgpu_header.h"
 
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cast.h"
-#include "jipu/binding_group_layout.h"
+#include "binding_group_layout.h"
+#include "jipu/common/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 
