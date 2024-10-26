@@ -128,11 +128,20 @@ void WGPUTriangleSample::createAdapter()
     };
 
     WGPURequestAdapterOptions descriptor{
+#if defined(__ANDROID__) || defined(ANDROID)
+        .backendType = WGPUBackendType_Vulkan,
+#elif defined(__linux__)
+        .backendType = WGPUBackendType_Vulkan,
+#elif defined(__APPLE__)
         .backendType = WGPUBackendType_Metal,
+#elif defined(WIN32)
+        .backendType = WGPUBackendType_D3D12,
+#endif
         .compatibleSurface = m_surface,
         .forceFallbackAdapter = false,
         .powerPreference = WGPUPowerPreference_HighPerformance
     };
+
     wgpuInstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
 
     assert(m_adapter);

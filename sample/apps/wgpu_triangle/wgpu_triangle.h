@@ -32,15 +32,12 @@ public:
 
 private:
     WGPUInstance m_instance = nullptr;
-
     WGPUSurface m_surface = nullptr;
-    WGPUSurfaceCapabilities m_surfaceCapabilities{};
-    WGPUSurfaceConfiguration m_surfaceConfigure{};
-
     WGPUAdapter m_adapter = nullptr;
     WGPUDevice m_device = nullptr;
-
     WGPUQueue m_queue = nullptr;
+    WGPUSurfaceCapabilities m_surfaceCapabilities{};
+    WGPUSurfaceConfiguration m_surfaceConfigure{};
 
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;

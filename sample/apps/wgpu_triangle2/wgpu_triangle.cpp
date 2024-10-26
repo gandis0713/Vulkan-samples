@@ -144,7 +144,7 @@ void WGPUTriangleSample::createDevice()
     auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, char const* message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestDeviceStatus_Success)
         {
-            throw std::runtime_error("Failed to request device.");
+            throw std::runtime_error(fmt::format("Failed to request device. {}", message));
         }
 
         *static_cast<WGPUDevice*>(userdata) = device;
