@@ -4,24 +4,32 @@
 [![Build Status](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)
 [![Build Status](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)
 
-JIPU to abstract the modern graphics API.
+JIPU to implement WebGPU headers (https://github.com/webgpu-native/webgpu-headers).
 
 ## Status
 |Graphics API| Support | Platform |
 |-|-|-|
 |DirectX 12 | planed | Windows |
-|Vulkan| in progress | Android, Linux, Windows |
+|Vulkan| in progress | Android, Linux, Windows, macOS |
 |Metal | Planed | macOS, iOS |
 
-## Requirement
+## Requirements
 
 - vulkan ( currently, only support vulkan )
-- vcpkg ( 2023.06.20 )
-- cmake ( 3.25 or higher )
+  - If you're on macOS, MoltelVk must be installed.
+- vcpkg ( 2023.2024.10.21 )
+- cmake ( 3.22 or higher )
 - ninja ( if you want to build as ninja )
 
 ## How to build
+### macOS
 ```shell
-$> cmake --preset $(preset)
-$> cmake --build preset $(preset)
+$> cmake --preset arm64-osx-ninja-release
+$> cmake --build arm64-osx-ninja-release --target install
+```
+
+### Windows
+```shell
+$> cmake --preset x64-windows-ninja-release
+$> cmake --build x64-windows-ninja-release --target install
 ```

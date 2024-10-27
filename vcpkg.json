@@ -32,10 +32,6 @@
     {
       "name": "hwcpipe",
       "version": "2.3.0"
-    },
-    {
-      "name": "sdl2",
-      "version": "2.30.6"
     }
   ]
 }
