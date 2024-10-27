@@ -3,7 +3,7 @@
 
 #include "jipu/common/ref_counted.h"
 #include "jipu/native/render_pass_encoder.h"
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 #include <memory>
 

@@ -5,7 +5,7 @@
 
 #include "jipu/common/ref_counted.h"
 #include "jipu/native/shader_module.h"
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {

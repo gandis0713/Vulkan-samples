@@ -1,11 +1,9 @@
 
 #pragma once
 
-#include "webgpu_header.h"
-
 #include "jipu/common/ref_counted.h"
-
 #include "jipu/native/bind_group_layout.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {

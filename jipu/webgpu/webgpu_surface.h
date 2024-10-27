@@ -4,7 +4,7 @@
 #include "jipu/native/instance.h"
 #include "jipu/native/surface.h"
 #include "jipu/native/swapchain.h"
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {

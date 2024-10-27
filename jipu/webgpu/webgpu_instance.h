@@ -1,7 +1,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {

@@ -4,7 +4,7 @@
 #include "jipu/common/ref_counted.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/command_encoder.h"
-#include "webgpu_header.h"
+#include "jipu/webgpu/webgpu_header.h"
 
 #include <memory>
 
