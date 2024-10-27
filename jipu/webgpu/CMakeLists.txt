@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 
 # find header library
-find_path(WEBGPU_HEADERS_INCLUDE_DIRS "webgpu.h")
+find_path(WEBGPU_HEADERS_INCLUDE_DIRS
+  NAMES "webgpu.h"
+  HINTS ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
+  REQUIRED
+)
 
 set(WEBGPU_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_adapter.cpp
