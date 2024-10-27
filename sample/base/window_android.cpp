@@ -50,7 +50,7 @@ int Window::exec()
     // Main loop
     do
     {
-        if (ALooper_pollAll(m_initialized, nullptr, &events, (void**)&source) >= 0)
+        if (ALooper_pollOnce(m_initialized, nullptr, &events, (void**)&source) >= 0)
         {
             if (source != NULL)
                 source->process(app, source);
