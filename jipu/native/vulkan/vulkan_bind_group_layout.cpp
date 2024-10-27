@@ -90,10 +90,10 @@ std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts(
     for (const auto& buffer : m_descriptor.buffers)
     {
         layouts.push_back({ .index = buffer.binding,
+                            .stages = ToBindingStageFlags(buffer.stageFlags),
                             .type = ToBufferBindingType(buffer.descriptorType),
                             .dynamicOffset = buffer.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
-                                             buffer.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,
-                            .stages = ToBindingStageFlags(buffer.stageFlags) });
+                                             buffer.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC });
     }
 
     return layouts;

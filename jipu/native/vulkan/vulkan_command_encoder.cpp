@@ -32,9 +32,9 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
 {
     CopyBufferToBufferCommand command{
         { .type = CommandType::kCopyBufferToBuffer },
-        .src = src,
-        .dst = dst,
-        .size = size
+        src,
+        dst,
+        size
     };
 
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
@@ -44,9 +44,9 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, 
 {
     CopyBufferToTextureCommand command{
         { .type = CommandType::kCopyBufferToTexture },
-        .buffer = buffer,
-        .texture = texture,
-        .extent = extent
+        buffer,
+        texture,
+        extent
     };
 
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
@@ -56,9 +56,9 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
 {
     CopyTextureToBufferCommand command{
         { .type = CommandType::kCopyTextureToBuffer },
-        .texture = texture,
-        .buffer = buffer,
-        .extent = extent
+        texture,
+        buffer,
+        extent
     };
 
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
@@ -68,9 +68,9 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
 {
     CopyTextureToTextureCommand command{
         { .type = CommandType::kCopyTextureToTexture },
-        .src = src,
-        .dst = dst,
-        .extent = extent
+        src,
+        dst,
+        extent
     };
 
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToTextureCommand>(std::move(command)));
@@ -85,11 +85,11 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
 
     ResolveQuerySetCommand command{
         { .type = CommandType::kResolveQuerySet },
-        .querySet = querySet,
-        .firstQuery = firstQuery,
-        // .queryCount = queryCount,
-        .destination = destination,
-        .destinationOffset = destinationOffset
+        querySet,
+        firstQuery,
+        // queryCount,
+        destination,
+        destinationOffset
     };
 
     m_commandEncodingContext.commands.push_back(std::make_unique<ResolveQuerySetCommand>(std::move(command)));
