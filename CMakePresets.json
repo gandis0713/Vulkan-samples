@@ -11,11 +11,11 @@
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
 				"VCPKG_INSTALLED_DIR": "${sourceDir}/externals",
-				"JIPU_SAMPLE": true,
-				"JIPU_TEST": true,
-				"EXPORT_JIPU_COMMON": false,
-				"EXPORT_JIPU_NATIVE": false,
-				"USE_DAWN_WEBGPU": true
+				"JIPU_SAMPLE": "ON",
+				"JIPU_TEST": "ON",
+				"EXPORT_JIPU_COMMON": "OFF",
+				"EXPORT_JIPU_NATIVE": "OFF",
+				"USE_DAWN_WEBGPU": "ON"
 			},
 			"environment": {
 				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries"

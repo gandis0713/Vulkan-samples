@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 if(ANDROID)
     find_package(hwcpipe CONFIG REQUIRED)

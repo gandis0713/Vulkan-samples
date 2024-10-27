@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 if(APPLE)
     # Scheme Environment should be set to Xcode project.
@@ -9,7 +9,7 @@ if(APPLE)
 endif()
 
 function(configure_sample target)
-    cmake_minimum_required(VERSION 3.21)
+    cmake_minimum_required(VERSION 3.22)
 
     project(
         ${target}

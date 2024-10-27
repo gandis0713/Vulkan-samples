@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 find_package(Gtest CONFIG REQUIRED)
 find_package(sdl2 CONFIG REQUIRED)

@@ -1,8 +1,18 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
+
+project(
+  jipu
+  VERSION 0.0.1
+  DESCRIPTION "Implement WebGPU header"
+  LANGUAGES CXX
+)
 
 # set options.
 option(JIPU_TEST "JIPU Test" OFF)
-option(JIPU_SAMPLE "JIPU Sample" ON)
+option(JIPU_SAMPLE "JIPU Sample" OFF)
+option(EXPORT_JIPU_COMMON "JIPU Sample" OFF)
+option(EXPORT_JIPU_NATIVE "JIPU Sample" OFF)
+option(USE_DAWN_WEBGPU "JIPU Sample" OFF)
 
 # TODO: move cmake/ directory.
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -18,13 +28,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     endif()
   endif()
 endif()
-
-project(
-  jipu
-  VERSION 0.0.1
-  DESCRIPTION "Abstract modern graphics API"
-  LANGUAGES CXX
-)
 
 # set compile options.
 set(CMAKE_CXX_STANDARD 20)
