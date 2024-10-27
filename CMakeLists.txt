@@ -8,11 +8,11 @@ project(
 )
 
 # set options.
-option(JIPU_TEST "JIPU Test" OFF)
-option(JIPU_SAMPLE "JIPU Sample" OFF)
-option(EXPORT_JIPU_COMMON "JIPU Sample" OFF)
-option(EXPORT_JIPU_NATIVE "JIPU Sample" OFF)
-option(USE_DAWN_WEBGPU "JIPU Sample" OFF)
+option(JIPU_TEST "JIPU Test" ON)
+option(JIPU_SAMPLE "JIPU Sample" ON)
+option(EXPORT_JIPU_COMMON "Export JIPU common library" OFF)
+option(EXPORT_JIPU_NATIVE "Export JIPU common library" OFF)
+option(USE_DAWN_WEBGPU "Use Dawn header" ON)
 
 # TODO: move cmake/ directory.
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
