@@ -114,8 +114,6 @@ endfunction()
 add_subdirectory(wgpu_triangle)
 add_subdirectory(wgpu_triangle2)
 
-# experimental for webgpu
-
 # experimental for native
 add_subdirectory(triangle)
 add_subdirectory(query)
@@ -128,7 +126,6 @@ add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
 # experimental for vulkan
-add_subdirectory(vulkan_subpasses)
-
+# add_subdirectory(vulkan_subpasses)
 # add_subdirectory(vulkan_n_buffering)
 # add_subdirectory(vulkan_pipeline_barrier)

@@ -238,14 +238,42 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, devicePropertyLimists.maxDescriptorSetUniformBuffers };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, devicePropertyLimists.maxDescriptorSetSamplers };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, devicePropertyLimists.maxDescriptorSetSampledImages };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxDescriptorSetSampledImages }; // TODO: need check
-        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxDescriptorSetInputAttachments };
-        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxDescriptorSetStorageBuffers };
-        poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic };
+        uint32_t kDescriptorSetUniformBufferCount = 32;
+        if (devicePropertyLimists.maxDescriptorSetUniformBuffers < kDescriptorSetUniformBufferCount)
+            kDescriptorSetUniformBufferCount = devicePropertyLimists.maxDescriptorSetUniformBuffers;
+
+        uint32_t kDescriptorSetUniformBufferDynamicCount = 32;
+        if (devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic < kDescriptorSetUniformBufferDynamicCount)
+            kDescriptorSetUniformBufferDynamicCount = devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic;
+
+        uint32_t kDescriptorSetSamplers = 32;
+        if (devicePropertyLimists.maxDescriptorSetSamplers < kDescriptorSetSamplers)
+            kDescriptorSetSamplers = devicePropertyLimists.maxDescriptorSetSamplers;
+
+        uint32_t kDescriptorSetSampledImages = 32;
+        if (devicePropertyLimists.maxDescriptorSetSampledImages < kDescriptorSetSampledImages)
+            kDescriptorSetSampledImages = devicePropertyLimists.maxDescriptorSetSampledImages;
+
+        uint32_t kDescriptorSetInputAttachments = 32;
+        if (devicePropertyLimists.maxDescriptorSetInputAttachments < kDescriptorSetInputAttachments)
+            kDescriptorSetInputAttachments = devicePropertyLimists.maxDescriptorSetInputAttachments;
+
+        uint32_t kDescriptorSetStorageBuffers = 32;
+        if (devicePropertyLimists.maxDescriptorSetStorageBuffers < kDescriptorSetStorageBuffers)
+            kDescriptorSetStorageBuffers = devicePropertyLimists.maxDescriptorSetStorageBuffers;
+
+        uint32_t kDescriptorSetStorageBuffersDynamic = 32;
+        if (devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic < kDescriptorSetStorageBuffersDynamic)
+            kDescriptorSetStorageBuffersDynamic = devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic;
+
+        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kDescriptorSetUniformBufferCount };
+        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, kDescriptorSetUniformBufferDynamicCount };
+        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, kDescriptorSetSamplers };
+        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, kDescriptorSetSampledImages };
+        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kDescriptorSetSampledImages };
+        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, kDescriptorSetInputAttachments };
+        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, kDescriptorSetStorageBuffers };
+        poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, kDescriptorSetStorageBuffersDynamic };
 
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)
