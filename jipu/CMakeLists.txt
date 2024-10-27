@@ -5,8 +5,8 @@ add_subdirectory(native)
 add_subdirectory(webgpu)
 
 set(JIPU_SRC_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/native_proc.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_proc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_table.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu.cpp
 )
 
 add_library(jipu
