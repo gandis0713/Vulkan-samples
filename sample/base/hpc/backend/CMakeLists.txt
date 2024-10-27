@@ -7,6 +7,8 @@ project(
     LANGUAGES CXX
 )
 
+find_package(spdlog REQUIRED)
+
 set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle.cpp
@@ -41,4 +43,9 @@ target_include_directories(backend
     $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>
+)
+
+target_link_libraries(backend
+    PUBLIC
+    spdlog::spdlog_header_only
 )
