@@ -40,8 +40,6 @@ android {
                 arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
                 arguments += "-DANDROID_ARM_NEON=ON"
                 arguments += "-DANDROID_STL=c++_shared"
-                arguments += "-EXPORT_JIPU_COMMON=ON"
-                arguments += "-EXPORT_JIPU_NATIVE=ON"
 
                 targets += "${sampleName}"
             }
