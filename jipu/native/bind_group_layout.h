@@ -47,7 +47,7 @@ struct TextureBindingLayout
     BindingStageFlags stages = 0u;
 };
 
-struct BindingGroupLayoutDescriptor
+struct BindGroupLayoutDescriptor
 {
     std::vector<BufferBindingLayout> buffers = {};
     std::vector<SamplerBindingLayout> samplers = {};
@@ -55,10 +55,10 @@ struct BindingGroupLayoutDescriptor
 };
 
 class Device;
-class JIPU_EXPORT BindingGroupLayout
+class JIPU_EXPORT BindGroupLayout
 {
 public:
-    virtual ~BindingGroupLayout() = default;
+    virtual ~BindGroupLayout() = default;
 
 public:
     virtual std::vector<BufferBindingLayout> getBufferBindingLayouts() const = 0;
@@ -66,7 +66,7 @@ public:
     virtual std::vector<TextureBindingLayout> getTextureBindingLayouts() const = 0;
 
 protected:
-    BindingGroupLayout() = default;
+    BindGroupLayout() = default;
 };
 
 } // namespace jipu

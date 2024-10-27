@@ -5,8 +5,8 @@
 #include "model.h"
 #include "sample.h"
 
-#include "jipu/native/binding_group.h"
-#include "jipu/native/binding_group_layout.h"
+#include "jipu/native/bind_group.h"
+#include "jipu/native/bind_group_layout.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/device.h"
@@ -60,8 +60,8 @@ private:
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createBindGroupLayout();
+    void createBindGroup();
 
     void createPipelineLayout();
     void createRenderPipeline();
@@ -98,8 +98,8 @@ private:
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
-    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
-    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
+    std::vector<std::unique_ptr<BindGroupLayout>> m_bindGroupLayouts{};
+    std::vector<std::unique_ptr<BindGroup>> m_bindGroups{};
 
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
@@ -123,8 +123,8 @@ OBJModelSample::~OBJModelSample()
     m_renderPipeline.reset();
     m_pipelineLayout.reset();
 
-    m_bindingGroupLayouts.clear();
-    m_bindingGroups.clear();
+    m_bindGroupLayouts.clear();
+    m_bindGroups.clear();
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
@@ -162,8 +162,8 @@ void OBJModelSample::init()
     createDepthStencilTexture();
     createDepthStencilTextureView();
 
-    createBindingGroupLayout();
-    createBindingGroup();
+    createBindGroupLayout();
+    createBindGroup();
 
     createPipelineLayout();
     createRenderPipeline();
@@ -209,8 +209,8 @@ void OBJModelSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
-    renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
+    renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
+    renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
     renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
     renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
@@ -385,9 +385,9 @@ void OBJModelSample::createImageSampler()
     m_imageSampler = m_device->createSampler(descriptor);
 }
 
-void OBJModelSample::createBindingGroupLayout()
+void OBJModelSample::createBindGroupLayout()
 {
-    m_bindingGroupLayouts.resize(2);
+    m_bindGroupLayouts.resize(2);
     {
         // Uniform Buffer
         BufferBindingLayout bufferBindingLayout{};
@@ -396,9 +396,9 @@ void OBJModelSample::createBindingGroupLayout()
         bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
         std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
 
-        m_bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_bindGroupLayouts[0] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
     {
         // Sampler
@@ -415,17 +415,17 @@ void OBJModelSample::createBindingGroupLayout()
 
         std::vector<TextureBindingLayout> textureBindingLayouts{ textureBindingLayout };
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = {},
-                                                                   .samplers = samplerBindingLayouts,
-                                                                   .textures = textureBindingLayouts };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{ .buffers = {},
+                                                             .samplers = samplerBindingLayouts,
+                                                             .textures = textureBindingLayouts };
 
-        m_bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_bindGroupLayouts[1] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
 }
 
-void OBJModelSample::createBindingGroup()
+void OBJModelSample::createBindGroup()
 {
-    m_bindingGroups.resize(2);
+    m_bindGroups.resize(2);
     {
         BufferBinding bufferBinding{
             .index = 0,
@@ -434,12 +434,12 @@ void OBJModelSample::createBindingGroup()
             .buffer = m_uniformBuffer.get(),
         };
 
-        BindingGroupDescriptor descriptor{
-            .layout = m_bindingGroupLayouts[0].get(),
+        BindGroupDescriptor descriptor{
+            .layout = m_bindGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
-        m_bindingGroups[0] = m_device->createBindingGroup(descriptor);
+        m_bindGroups[0] = m_device->createBindGroup(descriptor);
     }
 
     {
@@ -453,19 +453,19 @@ void OBJModelSample::createBindingGroup()
             .textureView = m_imageTextureView.get(),
         };
 
-        BindingGroupDescriptor descriptor{
-            .layout = m_bindingGroupLayouts[1].get(),
+        BindGroupDescriptor descriptor{
+            .layout = m_bindGroupLayouts[1].get(),
             .samplers = { samplerBinding },
             .textures = { textureBinding },
         };
 
-        m_bindingGroups[1] = m_device->createBindingGroup(descriptor);
+        m_bindGroups[1] = m_device->createBindGroup(descriptor);
     }
 }
 
 void OBJModelSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindGroupLayouts[0].get(), m_bindGroupLayouts[1].get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 

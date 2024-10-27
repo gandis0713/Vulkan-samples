@@ -217,17 +217,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 
     // create binding group layout
     {
-        m_bindingGroupLayouts.resize(2);
+        m_bindGroupLayouts.resize(2);
         {
             BufferBindingLayout uiTransformBindingLayout{};
             uiTransformBindingLayout.index = 0;
             uiTransformBindingLayout.stages = BindingStageFlagBits::kVertexStage;
             uiTransformBindingLayout.type = BufferBindingType::kUniform;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.buffers = { uiTransformBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.buffers = { uiTransformBindingLayout };
 
-            m_bindingGroupLayouts[0] = device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_bindGroupLayouts[0] = device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
         {
             SamplerBindingLayout fontSamplerBindingLayout{};
@@ -238,17 +238,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
             fontTextureBindingLayout.index = 1;
             fontTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.samplers = { fontSamplerBindingLayout };
-            bindingGroupLayoutDescriptor.textures = { fontTextureBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.samplers = { fontSamplerBindingLayout };
+            bindGroupLayoutDescriptor.textures = { fontTextureBindingLayout };
 
-            m_bindingGroupLayouts[1] = device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_bindGroupLayouts[1] = device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
     }
 
     // create binding group
     {
-        m_bindingGroups.resize(2);
+        m_bindGroups.resize(2);
         {
             BufferBinding uiTransformBinding{
                 .index = 0,
@@ -257,12 +257,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
                 .buffer = m_uniformBuffer.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_bindingGroupLayouts[0].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_bindGroupLayouts[0].get(),
                 .buffers = { uiTransformBinding },
             };
 
-            m_bindingGroups[0] = device->createBindingGroup(bindingGroupDescriptor);
+            m_bindGroups[0] = device->createBindGroup(bindGroupDescriptor);
         }
 
         {
@@ -276,20 +276,20 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
                 .textureView = m_fontTextureView.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_bindingGroupLayouts[1].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_bindGroupLayouts[1].get(),
                 .samplers = { fontSamplerBinding },
                 .textures = { fontTextureBinding },
             };
 
-            m_bindingGroups[1] = device->createBindingGroup(bindingGroupDescriptor);
+            m_bindGroups[1] = device->createBindGroup(bindGroupDescriptor);
         }
     }
 
     // create pipeline layout
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-        pipelineLayoutDescriptor.layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() };
+        pipelineLayoutDescriptor.layouts = { m_bindGroupLayouts[0].get(), m_bindGroupLayouts[1].get() };
 
         m_pipelineLayout = device->createPipelineLayout(pipelineLayoutDescriptor);
     }
@@ -472,8 +472,8 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_pipeline.get());
-        renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
-        renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
+        renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
+        renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
@@ -515,8 +515,8 @@ void Im_Gui::clear()
 
     m_pipeline.reset();
     m_pipelineLayout.reset();
-    m_bindingGroups.clear();
-    m_bindingGroupLayouts.clear();
+    m_bindGroups.clear();
+    m_bindGroupLayouts.clear();
 }
 
 } // namespace jipu

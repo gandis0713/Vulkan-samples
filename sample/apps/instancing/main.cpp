@@ -50,14 +50,14 @@ private:
 
     void createInstancingUniformBuffer();
     void createInstancingTransformBuffer();
-    void createInstancingBindingGroupLayout();
-    void createInstancingBindingGroup();
+    void createInstancingBindGroupLayout();
+    void createInstancingBindGroup();
     void createInstancingRenderPipeline();
 
     void createNonInstancingUniformBuffer();
     void createNonInstancingTransformBuffer();
-    void createNonInstancingBindingGroupLayout();
-    void createNonInstancingBindingGroup();
+    void createNonInstancingBindGroupLayout();
+    void createNonInstancingBindGroup();
     void createNonInstancingRenderPipeline();
 
     void createCamera();
@@ -110,8 +110,8 @@ private:
 
     struct
     {
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> transformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
@@ -120,8 +120,8 @@ private:
 
     struct
     {
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> transformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
@@ -168,15 +168,15 @@ InstancingSample::~InstancingSample()
     m_instancing.renderPipelineLayout.reset();
     m_instancing.uniformBuffer.reset();
     m_instancing.transformBuffer.reset();
-    m_instancing.bindingGroup.reset();
-    m_instancing.bindingGroupLayout.reset();
+    m_instancing.bindGroup.reset();
+    m_instancing.bindGroupLayout.reset();
 
     m_nonInstancing.renderPipeline.reset();
     m_nonInstancing.renderPipelineLayout.reset();
     m_nonInstancing.transformBuffer.reset();
     m_nonInstancing.uniformBuffer.reset();
-    m_nonInstancing.bindingGroup.reset();
-    m_nonInstancing.bindingGroupLayout.reset();
+    m_nonInstancing.bindGroup.reset();
+    m_nonInstancing.bindGroupLayout.reset();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
@@ -196,14 +196,14 @@ void InstancingSample::init()
 
     createInstancingUniformBuffer();
     createInstancingTransformBuffer();
-    createInstancingBindingGroupLayout();
-    createInstancingBindingGroup();
+    createInstancingBindGroupLayout();
+    createInstancingBindGroup();
     createInstancingRenderPipeline();
 
     createNonInstancingUniformBuffer();
     createNonInstancingTransformBuffer();
-    createNonInstancingBindingGroupLayout();
-    createNonInstancingBindingGroup();
+    createNonInstancingBindGroupLayout();
+    createNonInstancingBindGroup();
     createNonInstancingRenderPipeline();
 }
 
@@ -256,7 +256,7 @@ void InstancingSample::draw()
         {
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
-            renderPassEncoder->setBindingGroup(0, *m_instancing.bindingGroup);
+            renderPassEncoder->setBindGroup(0, *m_instancing.bindGroup);
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, *m_vertexBuffer);
             renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, *m_instancing.transformBuffer);
             renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
@@ -282,7 +282,7 @@ void InstancingSample::draw()
             for (auto i = 0; i < m_imguiSettings.objectCount; ++i)
             {
                 uint32_t offset = i * sizeof(Transform);
-                renderPassEncoder->setBindingGroup(0, *m_nonInstancing.bindingGroup, { offset });
+                renderPassEncoder->setBindGroup(0, *m_nonInstancing.bindGroup, { offset });
                 renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
             }
             renderPassEncoder->end();
@@ -368,7 +368,7 @@ void InstancingSample::createInstancingTransformBuffer()
     m_vertexBuffer->unmap();
 }
 
-void InstancingSample::createInstancingBindingGroupLayout()
+void InstancingSample::createInstancingBindGroupLayout()
 {
     BufferBindingLayout mvpBufferBindingLayout{};
     mvpBufferBindingLayout.index = 0;
@@ -380,13 +380,13 @@ void InstancingSample::createInstancingBindingGroupLayout()
     instancingBufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
     instancingBufferBindingLayout.type = BufferBindingType::kUniform;
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout, instancingBufferBindingLayout };
+    BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout, instancingBufferBindingLayout };
 
-    m_instancing.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    m_instancing.bindGroupLayout = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
 }
 
-void InstancingSample::createInstancingBindingGroup()
+void InstancingSample::createInstancingBindGroup()
 {
     BufferBinding mvpBufferBinding{
         .index = 0,
@@ -395,12 +395,12 @@ void InstancingSample::createInstancingBindingGroup()
         .buffer = m_instancing.uniformBuffer.get(),
     };
 
-    BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = m_instancing.bindingGroupLayout.get(),
+    BindGroupDescriptor bindGroupDescriptor{
+        .layout = m_instancing.bindGroupLayout.get(),
         .buffers = { mvpBufferBinding }
     };
 
-    m_instancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+    m_instancing.bindGroup = m_device->createBindGroup(bindGroupDescriptor);
 }
 
 void InstancingSample::createInstancingRenderPipeline()
@@ -408,7 +408,7 @@ void InstancingSample::createInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_instancing.bindingGroupLayout.get() };
+        descriptor.layouts = { m_instancing.bindGroupLayout.get() };
 
         m_instancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -540,7 +540,7 @@ void InstancingSample::createNonInstancingTransformBuffer()
     m_nonInstancing.transformBuffer->unmap();
 }
 
-void InstancingSample::createNonInstancingBindingGroupLayout()
+void InstancingSample::createNonInstancingBindGroupLayout()
 {
     BufferBindingLayout mvpBufferBindingLayout{};
     mvpBufferBindingLayout.index = 0;
@@ -553,13 +553,13 @@ void InstancingSample::createNonInstancingBindingGroupLayout()
     instancingBufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
     instancingBufferBindingLayout.type = BufferBindingType::kUniform;
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout, instancingBufferBindingLayout };
+    BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout, instancingBufferBindingLayout };
 
-    m_nonInstancing.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    m_nonInstancing.bindGroupLayout = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
 }
 
-void InstancingSample::createNonInstancingBindingGroup()
+void InstancingSample::createNonInstancingBindGroup()
 {
     BufferBinding bufferBinding{
         .index = 0,
@@ -575,12 +575,12 @@ void InstancingSample::createNonInstancingBindingGroup()
         .buffer = m_nonInstancing.transformBuffer.get(),
     };
 
-    BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = m_nonInstancing.bindingGroupLayout.get(),
+    BindGroupDescriptor bindGroupDescriptor{
+        .layout = m_nonInstancing.bindGroupLayout.get(),
         .buffers = { bufferBinding, instancingBufferBinding }
     };
 
-    m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+    m_nonInstancing.bindGroup = m_device->createBindGroup(bindGroupDescriptor);
 }
 
 void InstancingSample::createNonInstancingRenderPipeline()
@@ -588,7 +588,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_nonInstancing.bindingGroupLayout.get() };
+        descriptor.layouts = { m_nonInstancing.bindGroupLayout.get() };
 
         m_nonInstancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

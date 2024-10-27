@@ -12,7 +12,7 @@ WebGPUPipelineLayout* WebGPUPipelineLayout::create(WebGPUDevice* wgpuDevice, WGP
 
     for (auto i = 0; i < descriptor->bindGroupLayoutCount; ++i)
     {
-        layoutDescriptor.layouts.push_back(reinterpret_cast<WebGPUBindGroupLayout*>(descriptor->bindGroupLayouts[i])->getBindingGroupLayout());
+        layoutDescriptor.layouts.push_back(reinterpret_cast<WebGPUBindGroupLayout*>(descriptor->bindGroupLayouts[i])->getBindGroupLayout());
     }
 
     auto device = wgpuDevice->getDevice();

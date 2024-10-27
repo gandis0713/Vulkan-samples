@@ -63,15 +63,15 @@ private:
     void createOffscreenCamera();
     void createOffscreenUniformBuffer();
     void createOffscreenVertexBuffer();
-    void createOffscreenBindingGroupLayout();
-    void createOffscreenBindingGroup();
+    void createOffscreenBindGroupLayout();
+    void createOffscreenBindGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
 
     void updateOffscreenUniformBuffer();
 
-    void createCompositionBindingGroupLayout();
-    void createCompositionBindingGroup();
+    void createCompositionBindGroupLayout();
+    void createCompositionBindGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
     void createCompositionUniformBuffer();
@@ -120,8 +120,8 @@ private:
             std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
             std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
             std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -136,8 +136,8 @@ private:
             std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
             std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
             std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -168,8 +168,8 @@ private:
     {
         struct
         {
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -181,8 +181,8 @@ private:
             std::unique_ptr<Sampler> positionSampler = nullptr;
             std::unique_ptr<Sampler> normalSampler = nullptr;
             std::unique_ptr<Sampler> albedoSampler = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;

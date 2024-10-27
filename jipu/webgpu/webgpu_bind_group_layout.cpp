@@ -7,7 +7,7 @@ namespace jipu
 
 WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, WGPUBindGroupLayoutDescriptor const* descriptor)
 {
-    BindingGroupLayoutDescriptor layoutDescriptor{};
+    BindGroupLayoutDescriptor layoutDescriptor{};
     for (auto i = 0; i < descriptor->entryCount; i++)
     {
         auto entry = descriptor->entries[i];
@@ -41,19 +41,19 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
     }
 
     auto device = wgpuDevice->getDevice();
-    auto layout = device->createBindingGroupLayout(layoutDescriptor);
+    auto layout = device->createBindGroupLayout(layoutDescriptor);
 
     return new WebGPUBindGroupLayout(wgpuDevice, std::move(layout), descriptor);
 }
 
-WebGPUBindGroupLayout::WebGPUBindGroupLayout(WebGPUDevice* wgpuDevice, std::unique_ptr<BindingGroupLayout> layout, WGPUBindGroupLayoutDescriptor const* descriptor)
+WebGPUBindGroupLayout::WebGPUBindGroupLayout(WebGPUDevice* wgpuDevice, std::unique_ptr<BindGroupLayout> layout, WGPUBindGroupLayoutDescriptor const* descriptor)
     : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
     , m_layout(std::move(layout))
 {
 }
 
-BindingGroupLayout* WebGPUBindGroupLayout::getBindingGroupLayout() const
+BindGroupLayout* WebGPUBindGroupLayout::getBindGroupLayout() const
 {
     return m_layout.get();
 }

@@ -61,15 +61,15 @@ private:
     void createOffscreenCamera();
     void createOffscreenUniformBuffer();
     void createOffscreenVertexBuffer();
-    void createOffscreenBindingGroupLayout();
-    void createOffscreenBindingGroup();
+    void createOffscreenBindGroupLayout();
+    void createOffscreenBindGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
 
     void updateOffscreenUniformBuffer();
 
-    void createCompositionBindingGroupLayout();
-    void createCompositionBindingGroup();
+    void createCompositionBindGroupLayout();
+    void createCompositionBindGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
     void createCompositionUniformBuffer();
@@ -109,8 +109,8 @@ private:
         std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
         std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+        std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+        std::vector<std::unique_ptr<BindGroup>> bindGroups{};
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -139,8 +139,8 @@ private:
         std::unique_ptr<Sampler> positionSampler = nullptr;
         std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<Sampler> albedoSampler = nullptr;
-        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+        std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+        std::vector<std::unique_ptr<BindGroup>> bindGroups{};
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -184,8 +184,8 @@ DeferredSample::~DeferredSample()
     m_composition.fragmentShaderModule.reset();
     m_composition.renderPipeline.reset();
     m_composition.pipelineLayout.reset();
-    m_composition.bindingGroupLayouts.clear();
-    m_composition.bindingGroups.clear();
+    m_composition.bindGroupLayouts.clear();
+    m_composition.bindGroups.clear();
     m_composition.albedoSampler.reset();
     m_composition.normalSampler.reset();
     m_composition.positionSampler.reset();
@@ -205,8 +205,8 @@ DeferredSample::~DeferredSample()
     m_offscreen.fragmentShaderModule.reset();
     m_offscreen.renderPipeline.reset();
     m_offscreen.pipelineLayout.reset();
-    m_offscreen.bindingGroupLayouts.clear();
-    m_offscreen.bindingGroups.clear();
+    m_offscreen.bindGroupLayouts.clear();
+    m_offscreen.bindGroups.clear();
     m_offscreen.albedoColorAttachmentTextureView.reset();
     m_offscreen.albedoColorAttachmentTexture.reset();
     m_offscreen.normalColorAttachmentTextureView.reset();
@@ -238,16 +238,16 @@ void DeferredSample::init()
     createOffscreenNormalColorAttachmentTextureView();
     createOffscreenAlbedoColorAttachmentTexture();
     createOffscreenAlbedoColorAttachmentTextureView();
-    createOffscreenBindingGroupLayout();
-    createOffscreenBindingGroup();
+    createOffscreenBindGroupLayout();
+    createOffscreenBindGroup();
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
 
     createCompositionUniformBuffer();
     createCompositionVertexBuffer();
 
-    createCompositionBindingGroupLayout();
-    createCompositionBindingGroup();
+    createCompositionBindGroupLayout();
+    createCompositionBindGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
 }
@@ -382,8 +382,8 @@ void DeferredSample::draw()
         renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
-        renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroups[0]);
-        renderPassEncoder->setBindingGroup(1, *m_offscreen.bindingGroups[1]);
+        renderPassEncoder->setBindGroup(0, *m_offscreen.bindGroups[0]);
+        renderPassEncoder->setBindGroup(1, *m_offscreen.bindGroups[1]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
@@ -413,7 +413,7 @@ void DeferredSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_composition.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
-        renderPassEncoder->setBindingGroup(0, *m_composition.bindingGroups[0]);
+        renderPassEncoder->setBindGroup(0, *m_composition.bindGroups[0]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
@@ -695,9 +695,9 @@ void DeferredSample::createOffscreenVertexBuffer()
     }
 }
 
-void DeferredSample::createOffscreenBindingGroupLayout()
+void DeferredSample::createOffscreenBindGroupLayout()
 {
-    m_offscreen.bindingGroupLayouts.resize(2);
+    m_offscreen.bindGroupLayouts.resize(2);
 
     {
         BufferBindingLayout bufferBindingLayout{};
@@ -705,10 +705,10 @@ void DeferredSample::createOffscreenBindingGroupLayout()
         bufferBindingLayout.index = 0;
         bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-        bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+        bindGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-        m_offscreen.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_offscreen.bindGroupLayouts[0] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
 
     {
@@ -728,15 +728,15 @@ void DeferredSample::createOffscreenBindingGroupLayout()
         normalTextureBindingLayout.index = 3;
         normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-        bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
-        bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+        bindGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+        bindGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
 
-        m_offscreen.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_offscreen.bindGroupLayouts[1] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
 }
 
-void DeferredSample::createOffscreenBindingGroup()
+void DeferredSample::createOffscreenBindGroup()
 {
     { // create color map sampler
 
@@ -768,7 +768,7 @@ void DeferredSample::createOffscreenBindingGroup()
         m_offscreen.normalMapSampler = m_device->createSampler(samplerDescriptor);
     }
 
-    m_offscreen.bindingGroups.resize(2);
+    m_offscreen.bindGroups.resize(2);
     {
         BufferBinding bufferBinding{
             .index = 0,
@@ -777,12 +777,12 @@ void DeferredSample::createOffscreenBindingGroup()
             .buffer = m_offscreen.uniformBuffer.get(),
         };
 
-        BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = m_offscreen.bindingGroupLayouts[0].get(),
+        BindGroupDescriptor bindGroupDescriptor{
+            .layout = m_offscreen.bindGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
-        m_offscreen.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
+        m_offscreen.bindGroups[0] = m_device->createBindGroup(bindGroupDescriptor);
     }
 
     {
@@ -806,20 +806,20 @@ void DeferredSample::createOffscreenBindingGroup()
             .textureView = m_offscreen.normalMapTextureView.get(),
         };
 
-        BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = m_offscreen.bindingGroupLayouts[1].get(),
+        BindGroupDescriptor bindGroupDescriptor{
+            .layout = m_offscreen.bindGroupLayouts[1].get(),
             .samplers = { colorSamplerBinding, normalSamplerBinding },
             .textures = { colorTextureBinding, normalTextureBinding },
         };
 
-        m_offscreen.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
+        m_offscreen.bindGroups[1] = m_device->createBindGroup(bindGroupDescriptor);
     }
 }
 
 void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_offscreen.bindingGroupLayouts[0].get(), m_offscreen.bindingGroupLayouts[1].get() };
+    descriptor.layouts = { m_offscreen.bindGroupLayouts[0].get(), m_offscreen.bindGroupLayouts[1].get() };
 
     m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
@@ -924,11 +924,11 @@ void DeferredSample::createOffscreenPipeline()
     m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void DeferredSample::createCompositionBindingGroupLayout()
+void DeferredSample::createCompositionBindGroupLayout()
 {
-    m_composition.bindingGroupLayouts.resize(1);
+    m_composition.bindGroupLayouts.resize(1);
 
-    BindingGroupLayoutDescriptor descriptor{};
+    BindGroupLayoutDescriptor descriptor{};
 
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
@@ -963,12 +963,12 @@ void DeferredSample::createCompositionBindingGroupLayout()
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
     descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-    m_composition.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(descriptor);
+    m_composition.bindGroupLayouts[0] = m_device->createBindGroupLayout(descriptor);
 }
 
-void DeferredSample::createCompositionBindingGroup()
+void DeferredSample::createCompositionBindGroup()
 {
-    m_composition.bindingGroups.resize(1);
+    m_composition.bindGroups.resize(1);
 
     {
         SamplerDescriptor samplerDescriptor{};
@@ -1053,20 +1053,20 @@ void DeferredSample::createCompositionBindingGroup()
         .buffer = m_composition.uniformBuffer.get(),
     };
 
-    BindingGroupDescriptor descriptor{
-        .layout = m_composition.bindingGroupLayouts[0].get(),
+    BindGroupDescriptor descriptor{
+        .layout = m_composition.bindGroupLayouts[0].get(),
         .buffers = { uniformBufferBinding },
         .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
         .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
     };
 
-    m_composition.bindingGroups[0] = m_device->createBindingGroup(descriptor);
+    m_composition.bindGroups[0] = m_device->createBindGroup(descriptor);
 }
 
 void DeferredSample::createCompositionPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_composition.bindingGroupLayouts[0].get() };
+    descriptor.layouts = { m_composition.bindGroupLayouts[0].get() };
 
     m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }

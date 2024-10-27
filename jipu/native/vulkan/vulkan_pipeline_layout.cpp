@@ -1,5 +1,5 @@
 #include "vulkan_pipeline_layout.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_device.h"
 
 #include <stdexcept>

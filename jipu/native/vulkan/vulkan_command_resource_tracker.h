@@ -11,7 +11,7 @@ namespace jipu
 
 class Buffer;
 class Texture;
-class BindingGroup;
+class BindGroup;
 
 struct BufferUsageInfo
 {
@@ -49,7 +49,7 @@ public:
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
     void setComputePipeline(SetComputePipelineCommand* command);
-    void setComputeBindingGroup(SetBindGroupCommand* command);
+    void setComputeBindGroup(SetBindGroupCommand* command);
     void dispatch(DispatchCommand* command);
     void dispatchIndirect(DispatchIndirectCommand* command);
     void endComputePass(EndComputePassCommand* command);
@@ -57,7 +57,7 @@ public:
     // render pass
     void beginRenderPass(BeginRenderPassCommand* command);
     void setRenderPipeline(SetRenderPipelineCommand* command);
-    void setRenderBindingGroup(SetBindGroupCommand* command);
+    void setRenderBindGroup(SetBindGroupCommand* command);
     void setVertexBuffer(SetVertexBufferCommand* command);
     void setIndexBuffer(SetIndexBufferCommand* command);
     void setViewport(SetViewportCommand* command);

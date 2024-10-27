@@ -3,8 +3,8 @@
 #include "model.h"
 #include "sample.h"
 
-#include "jipu/native/binding_group.h"
-#include "jipu/native/binding_group_layout.h"
+#include "jipu/native/bind_group.h"
+#include "jipu/native/bind_group_layout.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/device.h"
@@ -64,8 +64,8 @@ private:
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createBindGroupLayout();
+    void createBindGroup();
 
     void createPipelineLayout();
     void createRenderPipeline();
@@ -104,8 +104,8 @@ private:
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
-    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
-    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
+    std::vector<std::unique_ptr<BindGroupLayout>> m_bindGroupLayouts{};
+    std::vector<std::unique_ptr<BindGroup>> m_bindGroups{};
 
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;

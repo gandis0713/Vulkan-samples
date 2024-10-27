@@ -1,7 +1,7 @@
 #include "vulkan_device.h"
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_instance.h"
@@ -77,14 +77,14 @@ std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descr
     return std::make_unique<VulkanBuffer>(*this, descriptor);
 }
 
-std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGroupDescriptor& descriptor)
+std::unique_ptr<BindGroup> VulkanDevice::createBindGroup(const BindGroupDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroup>(*this, descriptor);
+    return std::make_unique<VulkanBindGroup>(*this, descriptor);
 }
 
-std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
+std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const BindGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(*this, descriptor);
+    return std::make_unique<VulkanBindGroupLayout>(*this, descriptor);
 }
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
@@ -137,9 +137,9 @@ std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanR
     return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
 }
 
-std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor)
+std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(*this, descriptor);
+    return std::make_unique<VulkanBindGroupLayout>(*this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)

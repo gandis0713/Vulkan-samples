@@ -51,7 +51,7 @@ private:
     void createShaderStorageBuffer();
     void createColorAttachmentTexture();
     void createColorAttachmentTextureView();
-    void createComputeBindingGroup();
+    void createComputeBindGroup();
     void createComputePipeline();
     void createRenderPipeline();
 
@@ -65,10 +65,10 @@ private:
         glm::vec4 color;
     };
 
-    std::unique_ptr<BindingGroupLayout> m_computeBindingGroupLayout = nullptr;
-    std::vector<std::unique_ptr<BindingGroup>> m_computeBindingGroups{};
-    std::unique_ptr<BindingGroupLayout> m_renderBindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_renderBindingGroup = nullptr;
+    std::unique_ptr<BindGroupLayout> m_computeBindGroupLayout = nullptr;
+    std::vector<std::unique_ptr<BindGroup>> m_computeBindGroups{};
+    std::unique_ptr<BindGroupLayout> m_renderBindGroupLayout = nullptr;
+    std::unique_ptr<BindGroup> m_renderBindGroup = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
@@ -111,8 +111,8 @@ ParticleSample::~ParticleSample()
     m_fragmentShaderModule.reset();
     m_vertexShaderModule.reset();
 
-    m_computeBindingGroups.clear();
-    m_computeBindingGroupLayout.reset();
+    m_computeBindGroups.clear();
+    m_computeBindGroupLayout.reset();
 
     m_colorAttachmentTextureView.reset();
     m_colorAttachmentTexture.reset();
@@ -131,7 +131,7 @@ void ParticleSample::init()
     createColorAttachmentTexture();
     createColorAttachmentTextureView();
 
-    createComputeBindingGroup();
+    createComputeBindGroup();
 
     createComputePipeline();
     createRenderPipeline();
@@ -164,7 +164,7 @@ void ParticleSample::draw()
     ComputePassEncoderDescriptor computePassDescriptor{};
     std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
     computePassEncoder->setPipeline(*m_computePipeline);
-    computePassEncoder->setBindingGroup(0, *m_computeBindingGroups[(m_vertexIndex + 1) % 2]);
+    computePassEncoder->setBindGroup(0, *m_computeBindGroups[(m_vertexIndex + 1) % 2]);
     computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
     computePassEncoder->end();
 
@@ -291,7 +291,7 @@ void ParticleSample::createColorAttachmentTextureView()
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
 }
 
-void ParticleSample::createComputeBindingGroup()
+void ParticleSample::createComputeBindGroup()
 {
     BufferBindingLayout bufferUBOBindingLayout{};
     bufferUBOBindingLayout.index = 0;
@@ -308,13 +308,13 @@ void ParticleSample::createComputeBindingGroup()
     bufferOutBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
     bufferOutBindingLayout.type = BufferBindingType::kStorage;
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = {
+    BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.buffers = {
         bufferUBOBindingLayout,
         bufferInBindingLayout,
         bufferOutBindingLayout
     };
-    m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    m_computeBindGroupLayout = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
 
     {
         BufferBinding bufferUBOBinding{
@@ -338,8 +338,8 @@ void ParticleSample::createComputeBindingGroup()
             .buffer = m_vertexBuffers[1].get(),
         };
 
-        BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = m_computeBindingGroupLayout.get(),
+        BindGroupDescriptor bindGroupDescriptor{
+            .layout = m_computeBindGroupLayout.get(),
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,
@@ -349,8 +349,8 @@ void ParticleSample::createComputeBindingGroup()
             .textures = {},
         };
 
-        auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
-        m_computeBindingGroups.push_back(std::move(computeBindingGroup));
+        auto computeBindGroup = m_device->createBindGroup(bindGroupDescriptor);
+        m_computeBindGroups.push_back(std::move(computeBindGroup));
     }
 
     {
@@ -375,8 +375,8 @@ void ParticleSample::createComputeBindingGroup()
             .buffer = m_vertexBuffers[0].get(),
         };
 
-        BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = m_computeBindingGroupLayout.get(),
+        BindGroupDescriptor bindGroupDescriptor{
+            .layout = m_computeBindGroupLayout.get(),
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,
@@ -386,8 +386,8 @@ void ParticleSample::createComputeBindingGroup()
             .textures = {},
         };
 
-        auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
-        m_computeBindingGroups.push_back(std::move(computeBindingGroup));
+        auto computeBindGroup = m_device->createBindGroup(bindGroupDescriptor);
+        m_computeBindGroups.push_back(std::move(computeBindGroup));
     }
 }
 
@@ -395,7 +395,7 @@ void ParticleSample::createComputePipeline()
 {
     // pipeline layout
     PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    pipelineLayoutDescriptor.layouts = { m_computeBindingGroupLayout.get() };
+    pipelineLayoutDescriptor.layouts = { m_computeBindGroupLayout.get() };
     m_computePipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 
     // compute shader

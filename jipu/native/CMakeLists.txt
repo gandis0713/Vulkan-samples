@@ -9,8 +9,8 @@ find_package(spdlog CONFIG REQUIRED)
 
 set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_api.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_binding_group_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_binding_group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_bind_group_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_bind_group.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.cpp
@@ -43,8 +43,8 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_texture_view.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_api.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_binding_group_layout.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_binding_group.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_bind_group_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.h
@@ -79,7 +79,7 @@ set(NATIVE_SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/instance.cpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/binding_group.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/command_encoder.h

@@ -42,15 +42,15 @@ private:
     void createOffscreenVertexBuffer();
     void createOffscreenIndexBuffer();
     void createOffscreenUniformBuffer();
-    void createOffscreenBindingGroupLayout();
-    void createOffscreenBindingGroup();
+    void createOffscreenBindGroupLayout();
+    void createOffscreenBindGroup();
     void createOffscreenRenderPipeline();
 
     void createOnscreenVertexBuffer();
     void createOnscreenIndexBuffer();
     void createOnscreenSampler();
-    void createOnscreenBindingGroupLayout();
-    void createOnscreenBindingGroup();
+    void createOnscreenBindGroupLayout();
+    void createOnscreenBindGroup();
     void createOnscreenRenderPipeline();
 
     void createCamera();
@@ -63,8 +63,8 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_offscreen;
@@ -74,8 +74,8 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Sampler> sampler = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_onscreen;

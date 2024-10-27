@@ -1,7 +1,7 @@
 #include "vulkan_command_resource_synchronizer.h"
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
 #include "vulkan_command_encoder.h"
@@ -30,15 +30,15 @@ void VulkanCommandResourceSynchronizer::setComputePipeline(SetComputePipelineCom
     // do nothing.
 }
 
-void VulkanCommandResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceSynchronizer::setComputeBindGroup(SetBindGroupCommand* command)
 {
-    auto bufferBindings = command->bindingGroup->getBufferBindings();
+    auto bufferBindings = command->bindGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
     {
         m_activatedDstResource.buffers.insert(bufferBinding.buffer);
     }
 
-    auto textureBindings = command->bindingGroup->getTextureBindings();
+    auto textureBindings = command->bindGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
         m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());
@@ -135,15 +135,15 @@ void VulkanCommandResourceSynchronizer::endRenderPass(EndRenderPassCommand* comm
     // do nothing.
 }
 
-void VulkanCommandResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceSynchronizer::setRenderBindGroup(SetBindGroupCommand* command)
 {
-    auto bufferBindings = command->bindingGroup->getBufferBindings();
+    auto bufferBindings = command->bindGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
     {
         m_activatedDstResource.buffers.insert(bufferBinding.buffer);
     }
 
-    auto textureBindings = command->bindingGroup->getTextureBindings();
+    auto textureBindings = command->bindGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
         m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());

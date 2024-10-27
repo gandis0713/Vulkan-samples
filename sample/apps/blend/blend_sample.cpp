@@ -19,9 +19,9 @@ BlendSample::~BlendSample()
     m_renderPipeline1.reset();
     m_renderPipeline2.reset();
     m_renderPipelineLayout.reset();
-    m_bindingGroup1.reset();
-    m_bindingGroup2.reset();
-    m_bindingGroupLayout.reset();
+    m_bindGroup1.reset();
+    m_bindGroup2.reset();
+    m_bindGroupLayout.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
 }
@@ -39,9 +39,9 @@ void BlendSample::init()
     m_textureView1 = createTextureView(m_texture1.get());
     m_textureView2 = createTextureView(m_texture2.get());
     createSampler();
-    createBindingGroupLayout();
-    m_bindingGroup1 = createBindingGroup(m_textureView1.get());
-    m_bindingGroup2 = createBindingGroup(m_textureView2.get());
+    createBindGroupLayout();
+    m_bindGroup1 = createBindGroup(m_textureView1.get());
+    m_bindGroup2 = createBindGroup(m_textureView2.get());
     createRenderPipelineLayout();
     m_renderPipeline1 = createRenderPipeline(BlendState{}); // default blend state.
     m_renderPipeline2 = createRenderPipeline(BlendState{}); // default blend state.
@@ -76,14 +76,14 @@ void BlendSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline1.get());
-        renderPassEncoder->setBindingGroup(0, *m_bindingGroup1);
+        renderPassEncoder->setBindGroup(0, *m_bindGroup1);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->setPipeline(m_renderPipeline2.get());
-        renderPassEncoder->setBindingGroup(0, *m_bindingGroup2);
+        renderPassEncoder->setBindGroup(0, *m_bindGroup2);
         renderPassEncoder->setBlendConstant({ 0.5, 0.5, 0.5, 0.0 });
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
@@ -236,7 +236,7 @@ std::unique_ptr<TextureView> BlendSample::createTextureView(Texture* texture)
     return texture->createTextureView(descriptor);
 }
 
-void BlendSample::createBindingGroupLayout()
+void BlendSample::createBindGroupLayout()
 {
     SamplerBindingLayout imageSamplerBindingLayout{};
     imageSamplerBindingLayout.index = 0;
@@ -246,14 +246,14 @@ void BlendSample::createBindingGroupLayout()
     imageTextureBindingLayout.index = 1;
     imageTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.samplers = { imageSamplerBindingLayout };
-    bindingGroupLayoutDescriptor.textures = { imageTextureBindingLayout };
+    BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.samplers = { imageSamplerBindingLayout };
+    bindGroupLayoutDescriptor.textures = { imageTextureBindingLayout };
 
-    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    m_bindGroupLayout = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
 }
 
-std::unique_ptr<BindingGroup> BlendSample::createBindingGroup(TextureView* textureView)
+std::unique_ptr<BindGroup> BlendSample::createBindGroup(TextureView* textureView)
 {
     SamplerBinding imageSamplerBinding{
         .index = 0,
@@ -264,13 +264,13 @@ std::unique_ptr<BindingGroup> BlendSample::createBindingGroup(TextureView* textu
         .index = 1,
         .textureView = textureView,
     };
-    BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = m_bindingGroupLayout.get(),
+    BindGroupDescriptor bindGroupDescriptor{
+        .layout = m_bindGroupLayout.get(),
         .samplers = { imageSamplerBinding },
         .textures = { imageTextureBinding },
     };
 
-    return m_device->createBindingGroup(bindingGroupDescriptor);
+    return m_device->createBindGroup(bindGroupDescriptor);
 }
 
 void BlendSample::createRenderPipelineLayout()
@@ -278,7 +278,7 @@ void BlendSample::createRenderPipelineLayout()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_bindingGroupLayout.get() };
+        descriptor.layouts = { m_bindGroupLayout.get() };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

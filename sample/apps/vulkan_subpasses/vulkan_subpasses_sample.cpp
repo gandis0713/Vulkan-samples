@@ -6,8 +6,8 @@
 #include <random>
 #include <stdexcept>
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
@@ -52,15 +52,15 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_composition.subPasses.fragmentShaderModule.reset();
     m_composition.subPasses.renderPipeline.reset();
     m_composition.subPasses.pipelineLayout.reset();
-    m_composition.subPasses.bindingGroupLayouts.clear();
-    m_composition.subPasses.bindingGroups.clear();
+    m_composition.subPasses.bindGroupLayouts.clear();
+    m_composition.subPasses.bindGroups.clear();
 
     m_composition.renderPasses.vertexShaderModule.reset();
     m_composition.renderPasses.fragmentShaderModule.reset();
     m_composition.renderPasses.renderPipeline.reset();
     m_composition.renderPasses.pipelineLayout.reset();
-    m_composition.renderPasses.bindingGroupLayouts.clear();
-    m_composition.renderPasses.bindingGroups.clear();
+    m_composition.renderPasses.bindGroupLayouts.clear();
+    m_composition.renderPasses.bindGroups.clear();
     m_composition.renderPasses.albedoSampler.reset();
     m_composition.renderPasses.normalSampler.reset();
     m_composition.renderPasses.positionSampler.reset();
@@ -82,8 +82,8 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_offscreen.subPasses.fragmentShaderModule.reset();
     m_offscreen.subPasses.renderPipeline.reset();
     m_offscreen.subPasses.pipelineLayout.reset();
-    m_offscreen.subPasses.bindingGroupLayouts.clear();
-    m_offscreen.subPasses.bindingGroups.clear();
+    m_offscreen.subPasses.bindGroupLayouts.clear();
+    m_offscreen.subPasses.bindGroups.clear();
     m_offscreen.subPasses.albedoColorAttachmentTextureView.reset();
     m_offscreen.subPasses.albedoColorAttachmentTexture.reset();
     m_offscreen.subPasses.normalColorAttachmentTextureView.reset();
@@ -95,8 +95,8 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_offscreen.renderPasses.fragmentShaderModule.reset();
     m_offscreen.renderPasses.renderPipeline.reset();
     m_offscreen.renderPasses.pipelineLayout.reset();
-    m_offscreen.renderPasses.bindingGroupLayouts.clear();
-    m_offscreen.renderPasses.bindingGroups.clear();
+    m_offscreen.renderPasses.bindGroupLayouts.clear();
+    m_offscreen.renderPasses.bindGroups.clear();
     m_offscreen.renderPasses.albedoColorAttachmentTextureView.reset();
     m_offscreen.renderPasses.albedoColorAttachmentTexture.reset();
     m_offscreen.renderPasses.normalColorAttachmentTextureView.reset();
@@ -136,16 +136,16 @@ void VulkanSubpassesSample::init()
     createOffscreenNormalColorAttachmentTextureView();
     createOffscreenAlbedoColorAttachmentTexture();
     createOffscreenAlbedoColorAttachmentTextureView();
-    createOffscreenBindingGroupLayout();
-    createOffscreenBindingGroup();
+    createOffscreenBindGroupLayout();
+    createOffscreenBindGroup();
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
 
     createCompositionUniformBuffer();
     createCompositionVertexBuffer();
 
-    createCompositionBindingGroupLayout();
-    createCompositionBindingGroup();
+    createCompositionBindGroupLayout();
+    createCompositionBindGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
 }
@@ -296,8 +296,8 @@ void VulkanSubpassesSample::draw()
             renderPassEncoder->setPipeline(m_offscreen.renderPasses.renderPipeline.get());
             renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
             renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
-            renderPassEncoder->setBindingGroup(0, *m_offscreen.renderPasses.bindingGroups[0]);
-            renderPassEncoder->setBindingGroup(1, *m_offscreen.renderPasses.bindingGroups[1]);
+            renderPassEncoder->setBindGroup(0, *m_offscreen.renderPasses.bindGroups[0]);
+            renderPassEncoder->setBindGroup(1, *m_offscreen.renderPasses.bindGroups[1]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
@@ -336,7 +336,7 @@ void VulkanSubpassesSample::draw()
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_composition.renderPasses.renderPipeline.get());
             renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
-            renderPassEncoder->setBindingGroup(0, *m_composition.renderPasses.bindingGroups[0]);
+            renderPassEncoder->setBindGroup(0, *m_composition.renderPasses.bindGroups[0]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
@@ -386,8 +386,8 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->setPipeline(m_offscreen.subPasses.renderPipeline.get());
         vulkanRenderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
         vulkanRenderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
-        vulkanRenderPassEncoder->setBindingGroup(0, *m_offscreen.subPasses.bindingGroups[0]);
-        vulkanRenderPassEncoder->setBindingGroup(1, *m_offscreen.subPasses.bindingGroups[1]);
+        vulkanRenderPassEncoder->setBindGroup(0, *m_offscreen.subPasses.bindGroups[0]);
+        vulkanRenderPassEncoder->setBindGroup(1, *m_offscreen.subPasses.bindGroups[1]);
         vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
 
         vulkanRenderPassEncoder->nextPass();
@@ -395,8 +395,8 @@ void VulkanSubpassesSample::draw()
         // second pass
         vulkanRenderPassEncoder->setPipeline(m_composition.subPasses.renderPipeline.get());
         vulkanRenderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
-        vulkanRenderPassEncoder->setBindingGroup(0, *m_composition.subPasses.bindingGroups[0]);
-        vulkanRenderPassEncoder->setBindingGroup(1, *m_composition.subPasses.bindingGroups[1]);
+        vulkanRenderPassEncoder->setBindGroup(0, *m_composition.subPasses.bindGroups[0]);
+        vulkanRenderPassEncoder->setBindGroup(1, *m_composition.subPasses.bindGroups[1]);
         vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
 
         vulkanRenderPassEncoder->end();
@@ -819,11 +819,11 @@ void VulkanSubpassesSample::createOffscreenVertexBuffer()
     }
 }
 
-void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
+void VulkanSubpassesSample::createOffscreenBindGroupLayout()
 {
     // render passes
     {
-        m_offscreen.renderPasses.bindingGroupLayouts.resize(2);
+        m_offscreen.renderPasses.bindGroupLayouts.resize(2);
 
         {
             BufferBindingLayout bufferBindingLayout{};
@@ -831,10 +831,10 @@ void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
             bufferBindingLayout.index = 0;
             bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-            m_offscreen.renderPasses.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_offscreen.renderPasses.bindGroupLayouts[0] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
 
         {
@@ -854,17 +854,17 @@ void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
             normalTextureBindingLayout.index = 3;
             normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
-            bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+            bindGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
 
-            m_offscreen.renderPasses.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_offscreen.renderPasses.bindGroupLayouts[1] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
     }
 
     // subpasses
     {
-        m_offscreen.subPasses.bindingGroupLayouts.resize(2);
+        m_offscreen.subPasses.bindGroupLayouts.resize(2);
 
         {
             BufferBindingLayout bufferBindingLayout{};
@@ -872,10 +872,10 @@ void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
             bufferBindingLayout.index = 0;
             bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-            m_offscreen.subPasses.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_offscreen.subPasses.bindGroupLayouts[0] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
 
         {
@@ -895,16 +895,16 @@ void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
             normalTextureBindingLayout.index = 3;
             normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
-            bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+            bindGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
 
-            m_offscreen.subPasses.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_offscreen.subPasses.bindGroupLayouts[1] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
     }
 }
 
-void VulkanSubpassesSample::createOffscreenBindingGroup()
+void VulkanSubpassesSample::createOffscreenBindGroup()
 {
     { // create color map sampler
 
@@ -938,7 +938,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
 
     // render passes
     {
-        m_offscreen.renderPasses.bindingGroups.resize(2);
+        m_offscreen.renderPasses.bindGroups.resize(2);
         {
             BufferBinding bufferBinding{
                 .index = 0,
@@ -947,12 +947,12 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .buffer = m_offscreen.uniformBuffer.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_offscreen.renderPasses.bindingGroupLayouts[0].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_offscreen.renderPasses.bindGroupLayouts[0].get(),
                 .buffers = { bufferBinding },
             };
 
-            m_offscreen.renderPasses.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
+            m_offscreen.renderPasses.bindGroups[0] = m_device->createBindGroup(bindGroupDescriptor);
         }
 
         {
@@ -976,19 +976,19 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .textureView = m_offscreen.normalMapTextureView.get()
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_offscreen.renderPasses.bindingGroupLayouts[1].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_offscreen.renderPasses.bindGroupLayouts[1].get(),
                 .samplers = { colorSamplerBinding, normalSamplerBinding },
                 .textures = { colorTextureBinding, normalTextureBinding }
             };
 
-            m_offscreen.renderPasses.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
+            m_offscreen.renderPasses.bindGroups[1] = m_device->createBindGroup(bindGroupDescriptor);
         }
     }
 
     // subpasses
     {
-        m_offscreen.subPasses.bindingGroups.resize(2);
+        m_offscreen.subPasses.bindGroups.resize(2);
         {
             BufferBinding bufferBinding{
                 .index = 0,
@@ -997,12 +997,12 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .buffer = m_offscreen.uniformBuffer.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_offscreen.subPasses.bindingGroupLayouts[0].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_offscreen.subPasses.bindGroupLayouts[0].get(),
                 .buffers = { bufferBinding }
             };
 
-            m_offscreen.subPasses.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
+            m_offscreen.subPasses.bindGroups[0] = m_device->createBindGroup(bindGroupDescriptor);
         }
 
         {
@@ -1028,13 +1028,13 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .textureView = m_offscreen.normalMapTextureView.get()
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = m_offscreen.subPasses.bindingGroupLayouts[1].get(),
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_offscreen.subPasses.bindGroupLayouts[1].get(),
                 .samplers = { colorSamplerBinding, normalSamplerBinding },
                 .textures = { colorTextureBinding, normalTextureBinding }
             };
 
-            m_offscreen.subPasses.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
+            m_offscreen.subPasses.bindGroups[1] = m_device->createBindGroup(bindGroupDescriptor);
         }
     }
 }
@@ -1044,7 +1044,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.renderPasses.bindingGroupLayouts[0].get(), m_offscreen.renderPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { m_offscreen.renderPasses.bindGroupLayouts[0].get(), m_offscreen.renderPasses.bindGroupLayouts[1].get() };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1053,7 +1053,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.subPasses.bindingGroupLayouts[0].get(), m_offscreen.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { m_offscreen.subPasses.bindGroupLayouts[0].get(), m_offscreen.subPasses.bindGroupLayouts[1].get() };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1281,13 +1281,13 @@ void VulkanSubpassesSample::createOffscreenPipeline()
     }
 }
 
-void VulkanSubpassesSample::createCompositionBindingGroupLayout()
+void VulkanSubpassesSample::createCompositionBindGroupLayout()
 {
     // render passes
     {
-        m_composition.renderPasses.bindingGroupLayouts.resize(1);
+        m_composition.renderPasses.bindGroupLayouts.resize(1);
 
-        BindingGroupLayoutDescriptor descriptor{};
+        BindGroupLayoutDescriptor descriptor{};
 
         SamplerBindingLayout positionSamplerBindingLayout{};
         positionSamplerBindingLayout.index = 0;
@@ -1322,12 +1322,12 @@ void VulkanSubpassesSample::createCompositionBindingGroupLayout()
         descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
         descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-        m_composition.renderPasses.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(descriptor);
+        m_composition.renderPasses.bindGroupLayouts[0] = m_device->createBindGroupLayout(descriptor);
     }
 
     // subpasses
     {
-        m_composition.subPasses.bindingGroupLayouts.resize(2);
+        m_composition.subPasses.bindGroupLayouts.resize(2);
 
         {
             VkDescriptorSetLayoutBinding uniformBufferBindingLayout{};
@@ -1336,10 +1336,10 @@ void VulkanSubpassesSample::createCompositionBindingGroupLayout()
             uniformBufferBindingLayout.descriptorCount = 1;
             uniformBufferBindingLayout.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-            VulkanBindingGroupLayoutDescriptor descriptor{};
+            VulkanBindGroupLayoutDescriptor descriptor{};
             descriptor.buffers = { uniformBufferBindingLayout };
 
-            m_composition.subPasses.bindingGroupLayouts[0] = downcast(m_device.get())->createBindingGroupLayout(descriptor);
+            m_composition.subPasses.bindGroupLayouts[0] = downcast(m_device.get())->createBindGroupLayout(descriptor);
         }
 
         {
@@ -1355,19 +1355,19 @@ void VulkanSubpassesSample::createCompositionBindingGroupLayout()
             VkDescriptorSetLayoutBinding albedoTextureBindingLayout = positionTextureBindingLayout;
             albedoTextureBindingLayout.binding = 2;
 
-            VulkanBindingGroupLayoutDescriptor descriptor{};
+            VulkanBindGroupLayoutDescriptor descriptor{};
             descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-            m_composition.subPasses.bindingGroupLayouts[1] = downcast(m_device.get())->createBindingGroupLayout(descriptor);
+            m_composition.subPasses.bindGroupLayouts[1] = downcast(m_device.get())->createBindGroupLayout(descriptor);
         }
     }
 }
 
-void VulkanSubpassesSample::createCompositionBindingGroup()
+void VulkanSubpassesSample::createCompositionBindGroup()
 {
     // render passes
     {
-        m_composition.renderPasses.bindingGroups.resize(1);
+        m_composition.renderPasses.bindGroups.resize(1);
 
         {
             SamplerDescriptor samplerDescriptor{};
@@ -1448,19 +1448,19 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             .buffer = m_composition.uniformBuffer.get(),
         };
 
-        BindingGroupDescriptor descriptor{
-            .layout = m_composition.renderPasses.bindingGroupLayouts[0].get(),
+        BindGroupDescriptor descriptor{
+            .layout = m_composition.renderPasses.bindGroupLayouts[0].get(),
             .buffers = { uniformBufferBinding },
             .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
             .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
         };
 
-        m_composition.renderPasses.bindingGroups[0] = m_device->createBindingGroup(descriptor);
+        m_composition.renderPasses.bindGroups[0] = m_device->createBindGroup(descriptor);
     }
 
     // subpasses
     {
-        m_composition.subPasses.bindingGroups.resize(2);
+        m_composition.subPasses.bindGroups.resize(2);
 
         {
             BufferBinding uniformBufferBinding{
@@ -1470,12 +1470,12 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
                 .buffer = m_composition.uniformBuffer.get(),
             };
 
-            BindingGroupDescriptor descriptor{
-                .layout = m_composition.subPasses.bindingGroupLayouts[0].get(),
+            BindGroupDescriptor descriptor{
+                .layout = m_composition.subPasses.bindGroupLayouts[0].get(),
                 .buffers = { uniformBufferBinding }
             };
 
-            m_composition.subPasses.bindingGroups[0] = m_device->createBindingGroup(descriptor);
+            m_composition.subPasses.bindGroups[0] = m_device->createBindGroup(descriptor);
         }
 
         {
@@ -1494,12 +1494,12 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
                 .textureView = m_offscreen.subPasses.albedoColorAttachmentTextureView.get()
             };
 
-            BindingGroupDescriptor descriptor{
-                .layout = m_composition.subPasses.bindingGroupLayouts[1].get(),
+            BindGroupDescriptor descriptor{
+                .layout = m_composition.subPasses.bindGroupLayouts[1].get(),
                 .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
             };
 
-            m_composition.subPasses.bindingGroups[1] = m_device->createBindingGroup(descriptor);
+            m_composition.subPasses.bindGroups[1] = m_device->createBindGroup(descriptor);
         }
     }
 }
@@ -1509,7 +1509,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.renderPasses.bindingGroupLayouts[0].get() };
+        descriptor.layouts = { m_composition.renderPasses.bindGroupLayouts[0].get() };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1518,7 +1518,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.subPasses.bindingGroupLayouts[0].get(), m_composition.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { m_composition.subPasses.bindGroupLayouts[0].get(), m_composition.subPasses.bindGroupLayouts[1].get() };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);

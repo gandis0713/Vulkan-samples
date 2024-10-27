@@ -377,17 +377,17 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kSetComputeBindGroup: {
                         auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                        currentSubmit.add(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
-                        for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                        currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
+                        for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {
                             currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
                             currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
                         }
-                        for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                        for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                         {
                             currentSubmit.add(downcast(binding.sampler)->getVkSampler());
                         }
-                        for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                        for (auto& binding : cmd->bindGroup->getTextureBindings())
                         {
                             currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
                             currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());
@@ -419,17 +419,17 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kSetRenderBindGroup: {
                         auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                        currentSubmit.add(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
-                        for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                        currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
+                        for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {
                             currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
                             currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
                         }
-                        for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                        for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                         {
                             currentSubmit.add(downcast(binding.sampler)->getVkSampler());
                         }
-                        for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                        for (auto& binding : cmd->bindGroup->getTextureBindings())
                         {
                             currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
                             currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());

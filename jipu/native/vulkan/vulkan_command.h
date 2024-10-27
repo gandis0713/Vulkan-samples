@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binding_group.h"
+#include "bind_group.h"
 #include "buffer.h"
 #include "command_encoder.h"
 #include "pipeline.h"
@@ -208,7 +208,7 @@ struct SetBlendConstantCommand : public Command
 struct SetBindGroupCommand : public Command
 {
     uint32_t index = 0;
-    BindingGroup* bindingGroup = nullptr;
+    BindGroup* bindGroup = nullptr;
     std::vector<uint32_t> dynamicOffset{};
 };
 

@@ -1,7 +1,7 @@
 #include "vulkan_inflight_context.h"
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
@@ -40,16 +40,16 @@ VulkanInflightObject VulkanInflightContext::generate(std::vector<CommandBuffer*>
             break;
             case CommandType::kSetComputeBindGroup: {
                 auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
-                for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
+                for (auto& binding : cmd->bindGroup->getBufferBindings())
                 {
                     inflightObject.buffers.insert(downcast(binding.buffer)->getVkBuffer());
                 }
-                for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                 {
                     inflightObject.samplers.insert(downcast(binding.sampler)->getVkSampler());
                 }
-                for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                for (auto& binding : cmd->bindGroup->getTextureBindings())
                 {
                     inflightObject.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
                     inflightObject.imageViews.insert(downcast(binding.textureView)->getVkImageView());
@@ -79,16 +79,16 @@ VulkanInflightObject VulkanInflightContext::generate(std::vector<CommandBuffer*>
             break;
             case CommandType::kSetRenderBindGroup: {
                 auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
-                for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
+                for (auto& binding : cmd->bindGroup->getBufferBindings())
                 {
                     inflightObject.buffers.insert(downcast(binding.buffer)->getVkBuffer());
                 }
-                for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                 {
                     inflightObject.samplers.insert(downcast(binding.sampler)->getVkSampler());
                 }
-                for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                for (auto& binding : cmd->bindGroup->getTextureBindings())
                 {
                     inflightObject.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
                     inflightObject.imageViews.insert(downcast(binding.textureView)->getVkImageView());

@@ -5,7 +5,7 @@
 
 #include "jipu/common/ref_counted.h"
 
-#include "jipu/native/binding_group_layout.h"
+#include "jipu/native/bind_group_layout.h"
 
 namespace jipu
 {
@@ -19,7 +19,7 @@ public:
 
 public:
     WebGPUBindGroupLayout() = delete;
-    explicit WebGPUBindGroupLayout(WebGPUDevice* device, std::unique_ptr<BindingGroupLayout> layout, WGPUBindGroupLayoutDescriptor const* descriptor);
+    explicit WebGPUBindGroupLayout(WebGPUDevice* device, std::unique_ptr<BindGroupLayout> layout, WGPUBindGroupLayoutDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUBindGroupLayout() = default;
@@ -29,14 +29,14 @@ public:
 
 public: // WebGPU API
 public:
-    BindingGroupLayout* getBindingGroupLayout() const;
+    BindGroupLayout* getBindGroupLayout() const;
 
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUBindGroupLayoutDescriptor m_descriptor{};
 
 private:
-    std::unique_ptr<BindingGroupLayout> m_layout = nullptr;
+    std::unique_ptr<BindGroupLayout> m_layout = nullptr;
 };
 
 // Convert from WebGPU to JIPU

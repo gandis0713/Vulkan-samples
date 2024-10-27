@@ -18,8 +18,8 @@ OffscreenSample::~OffscreenSample()
 {
     m_offscreen.renderPipeline.reset();
     m_offscreen.renderPipelineLayout.reset();
-    m_offscreen.bindingGroup.reset();
-    m_offscreen.bindingGroupLayout.reset();
+    m_offscreen.bindGroup.reset();
+    m_offscreen.bindGroupLayout.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
@@ -28,8 +28,8 @@ OffscreenSample::~OffscreenSample()
 
     m_onscreen.renderPipeline.reset();
     m_onscreen.renderPipelineLayout.reset();
-    m_onscreen.bindingGroup.reset();
-    m_onscreen.bindingGroupLayout.reset();
+    m_onscreen.bindGroup.reset();
+    m_onscreen.bindGroupLayout.reset();
     m_onscreen.vertexBuffer.reset();
     m_onscreen.indexBuffer.reset();
     m_onscreen.sampler.reset();
@@ -46,15 +46,15 @@ void OffscreenSample::init()
     createOffscreenVertexBuffer();
     createOffscreenIndexBuffer();
     createOffscreenUniformBuffer();
-    createOffscreenBindingGroupLayout();
-    createOffscreenBindingGroup();
+    createOffscreenBindGroupLayout();
+    createOffscreenBindGroup();
     createOffscreenRenderPipeline();
 
     createOnscreenVertexBuffer();
     createOnscreenIndexBuffer();
     createOnscreenSampler();
-    createOnscreenBindingGroupLayout();
-    createOnscreenBindingGroup();
+    createOnscreenBindGroupLayout();
+    createOnscreenBindGroup();
     createOnscreenRenderPipeline();
 
     createCamera();
@@ -117,7 +117,7 @@ void OffscreenSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroup);
+        renderPassEncoder->setBindGroup(0, *m_offscreen.bindGroup);
         renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -147,7 +147,7 @@ void OffscreenSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
+        renderPassEncoder->setBindGroup(0, *m_onscreen.bindGroup);
         renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_onscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -239,20 +239,20 @@ void OffscreenSample::createOffscreenUniformBuffer()
     // m_offscreen.uniformBuffer->unmap();
 }
 
-void OffscreenSample::createOffscreenBindingGroupLayout()
+void OffscreenSample::createOffscreenBindGroupLayout()
 {
     BufferBindingLayout bufferLayout{};
     bufferLayout.index = 0;
     bufferLayout.stages = BindingStageFlagBits::kVertexStage;
     bufferLayout.type = BufferBindingType::kUniform;
 
-    BindingGroupLayoutDescriptor descriptor{};
+    BindGroupLayoutDescriptor descriptor{};
     descriptor.buffers = { bufferLayout };
 
-    m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+    m_offscreen.bindGroupLayout = m_device->createBindGroupLayout(descriptor);
 }
 
-void OffscreenSample::createOffscreenBindingGroup()
+void OffscreenSample::createOffscreenBindGroup()
 {
     BufferBinding bufferBinding{
         .index = 0,
@@ -261,12 +261,12 @@ void OffscreenSample::createOffscreenBindingGroup()
         .buffer = m_offscreen.uniformBuffer.get(),
     };
 
-    BindingGroupDescriptor descriptor{
-        .layout = m_offscreen.bindingGroupLayout.get(),
+    BindGroupDescriptor descriptor{
+        .layout = m_offscreen.bindGroupLayout.get(),
         .buffers = { bufferBinding }
     };
 
-    m_offscreen.bindingGroup = m_device->createBindingGroup(descriptor);
+    m_offscreen.bindGroup = m_device->createBindGroup(descriptor);
 }
 
 void OffscreenSample::createOffscreenRenderPipeline()
@@ -274,7 +274,7 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
+        descriptor.layouts = { m_offscreen.bindGroupLayout.get() };
 
         m_offscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -401,7 +401,7 @@ void OffscreenSample::createOnscreenSampler()
     m_onscreen.sampler = m_device->createSampler(samplerDescriptor);
 }
 
-void OffscreenSample::createOnscreenBindingGroupLayout()
+void OffscreenSample::createOnscreenBindGroupLayout()
 {
     SamplerBindingLayout samplerLayout{};
     samplerLayout.index = 0;
@@ -411,14 +411,14 @@ void OffscreenSample::createOnscreenBindingGroupLayout()
     textureLayout.index = 1;
     textureLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    BindingGroupLayoutDescriptor descriptor{};
+    BindGroupLayoutDescriptor descriptor{};
     descriptor.samplers = { samplerLayout };
     descriptor.textures = { textureLayout };
 
-    m_onscreen.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+    m_onscreen.bindGroupLayout = m_device->createBindGroupLayout(descriptor);
 }
 
-void OffscreenSample::createOnscreenBindingGroup()
+void OffscreenSample::createOnscreenBindGroup()
 {
     SamplerBinding samplerBinding{
         .index = 0,
@@ -430,13 +430,13 @@ void OffscreenSample::createOnscreenBindingGroup()
         .textureView = m_offscreen.renderTextureView.get()
     };
 
-    BindingGroupDescriptor descriptor{
-        .layout = m_onscreen.bindingGroupLayout.get(),
+    BindGroupDescriptor descriptor{
+        .layout = m_onscreen.bindGroupLayout.get(),
         .samplers = { samplerBinding },
         .textures = { textureBinding }
     };
 
-    m_onscreen.bindingGroup = m_device->createBindingGroup(descriptor);
+    m_onscreen.bindGroup = m_device->createBindGroup(descriptor);
 }
 
 void OffscreenSample::createOnscreenRenderPipeline()
@@ -444,7 +444,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_onscreen.bindingGroupLayout.get() };
+        descriptor.layouts = { m_onscreen.bindGroupLayout.get() };
 
         m_onscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

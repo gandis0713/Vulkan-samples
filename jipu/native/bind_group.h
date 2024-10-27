@@ -33,29 +33,29 @@ struct TextureBinding
     TextureView* textureView = nullptr;
 };
 
-class BindingGroupLayout;
-struct BindingGroupDescriptor
+class BindGroupLayout;
+struct BindGroupDescriptor
 {
-    BindingGroupLayout* layout = nullptr;
+    BindGroupLayout* layout = nullptr;
     std::vector<BufferBinding> buffers{};
     std::vector<SamplerBinding> samplers{};
     std::vector<TextureBinding> textures{};
 };
 
 class Device;
-class JIPU_EXPORT BindingGroup
+class JIPU_EXPORT BindGroup
 {
 public:
-    virtual ~BindingGroup() = default;
+    virtual ~BindGroup() = default;
 
 public:
-    virtual BindingGroupLayout* getLayout() const = 0;
+    virtual BindGroupLayout* getLayout() const = 0;
     virtual const std::vector<BufferBinding>& getBufferBindings() const = 0;
     virtual const std::vector<SamplerBinding>& getSmaplerBindings() const = 0;
     virtual const std::vector<TextureBinding>& getTextureBindings() const = 0;
 
 protected:
-    BindingGroup() = default;
+    BindGroup() = default;
 };
 
 } // namespace jipu

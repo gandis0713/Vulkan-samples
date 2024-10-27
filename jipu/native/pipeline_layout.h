@@ -5,18 +5,18 @@
 #include <stdint.h>
 #include <vector>
 
-#include "binding_group_layout.h"
+#include "bind_group_layout.h"
 
 namespace jipu
 {
 
-using BindingGroupLayouts = std::vector<BindingGroupLayout*>;
+using BindGroupLayouts = std::vector<BindGroupLayout*>;
 
 class Device;
-class BindingGroupLayout;
+class BindGroupLayout;
 struct PipelineLayoutDescriptor
 {
-    BindingGroupLayouts layouts = {};
+    BindGroupLayouts layouts = {};
 };
 
 class JIPU_EXPORT PipelineLayout

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "binding_group.h"
-#include "binding_group_layout.h"
+#include "bind_group.h"
+#include "bind_group_layout.h"
 #include "buffer.h"
 #include "command_buffer.h"
 #include "command_encoder.h"
@@ -37,8 +37,8 @@ protected:
 
 public:
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<BindingGroup> createBindingGroup(const BindingGroupDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<BindGroup> createBindGroup(const BindGroupDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<BindGroupLayout> createBindGroupLayout(const BindGroupLayoutDescriptor& descriptor) = 0;
     virtual std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
     virtual std::unique_ptr<QuerySet> createQuerySet(const QuerySetDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;

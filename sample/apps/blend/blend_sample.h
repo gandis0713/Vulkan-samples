@@ -42,8 +42,8 @@ private:
     void createSampler();
     std::unique_ptr<Texture> createTexture(const char* name);
     std::unique_ptr<TextureView> createTextureView(Texture* texture);
-    void createBindingGroupLayout();
-    std::unique_ptr<BindingGroup> createBindingGroup(TextureView* textureView);
+    void createBindGroupLayout();
+    std::unique_ptr<BindGroup> createBindGroup(TextureView* textureView);
     void createRenderPipelineLayout();
     std::unique_ptr<RenderPipeline> createRenderPipeline(const BlendState& blendState);
 
@@ -58,9 +58,9 @@ private:
     std::unique_ptr<TextureView> m_textureView2 = nullptr;
     std::unique_ptr<Sampler> m_sampler = nullptr;
 
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup1 = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup2 = nullptr;
+    std::unique_ptr<BindGroupLayout> m_bindGroupLayout = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup1 = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup2 = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline1 = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline2 = nullptr;

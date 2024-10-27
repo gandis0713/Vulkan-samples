@@ -61,8 +61,8 @@ private:
     std::unique_ptr<Texture> m_fontTexture = nullptr;
     std::unique_ptr<TextureView> m_fontTextureView = nullptr;
     std::unique_ptr<Sampler> m_fontSampler = nullptr;
-    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
-    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
+    std::vector<std::unique_ptr<BindGroupLayout>> m_bindGroupLayouts{};
+    std::vector<std::unique_ptr<BindGroup>> m_bindGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
 };

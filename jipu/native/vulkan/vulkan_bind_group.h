@@ -2,25 +2,25 @@
 
 #include "export.h"
 
-#include "binding_group.h"
+#include "bind_group.h"
 #include "jipu/common/cast.h"
 #include "vulkan_api.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanDevice;
-class VULKAN_EXPORT VulkanBindingGroup : public BindingGroup
+class VULKAN_EXPORT VulkanBindGroup : public BindGroup
 {
 public:
-    VulkanBindingGroup() = delete;
-    VulkanBindingGroup(VulkanDevice& device, const BindingGroupDescriptor& descriptor);
-    ~VulkanBindingGroup() override;
+    VulkanBindGroup() = delete;
+    VulkanBindGroup(VulkanDevice& device, const BindGroupDescriptor& descriptor);
+    ~VulkanBindGroup() override;
 
 public:
-    BindingGroupLayout* getLayout() const override;
+    BindGroupLayout* getLayout() const override;
     const std::vector<BufferBinding>& getBufferBindings() const override;
     const std::vector<SamplerBinding>& getSmaplerBindings() const override;
     const std::vector<TextureBinding>& getTextureBindings() const override;
@@ -33,11 +33,11 @@ private:
 
 private:
     VulkanDevice& m_device;
-    const BindingGroupDescriptor m_descriptor;
+    const BindGroupDescriptor m_descriptor;
 
 public:
-    using Ref = std::reference_wrapper<VulkanBindingGroup>;
+    using Ref = std::reference_wrapper<VulkanBindGroup>;
 };
-DOWN_CAST(VulkanBindingGroup, BindingGroup);
+DOWN_CAST(VulkanBindGroup, BindGroup);
 
 } // namespace jipu

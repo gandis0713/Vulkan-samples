@@ -1,6 +1,6 @@
 #include "vulkan_command_recorder.h"
 
-#include "vulkan_binding_group.h"
+#include "vulkan_bind_group.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
 #include "vulkan_command_buffer.h"
@@ -101,10 +101,10 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
             endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command.get()));
             break;
         case CommandType::kSetComputeBindGroup:
-            setComputeBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+            setComputeBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
             break;
         case CommandType::kSetRenderBindGroup:
-            setRenderBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+            setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
             break;
         case CommandType::kClearBuffer:
             // TODO: clear buffer
@@ -175,19 +175,19 @@ void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* comman
                           m_computePipeline->getVkPipeline());
 }
 
-void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandRecorder::setComputeBindGroup(SetBindGroupCommand* command)
 {
     if (!m_computePipeline)
         throw std::runtime_error("The pipeline is null");
 
-    m_commandResourceSyncronizer.setComputeBindingGroup(command);
+    m_commandResourceSyncronizer.setComputeBindGroup(command);
 
-    auto vulkanBindingGroup = downcast(command->bindingGroup);
+    auto vulkanBindGroup = downcast(command->bindGroup);
     auto vulkanPipelineLayout = downcast(m_computePipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
-    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+    VkDescriptorSet descriptorSet = vulkanBindGroup->getVkDescriptorSet();
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -258,19 +258,19 @@ void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
     m_commandBuffer->getDevice()->vkAPI.CmdBindPipeline(m_commandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipeline->getVkPipeline());
 }
 
-void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
 {
     if (!m_renderPipeline)
         throw std::runtime_error("The pipeline is null");
 
-    m_commandResourceSyncronizer.setRenderBindingGroup(command);
+    m_commandResourceSyncronizer.setRenderBindGroup(command);
 
-    auto vulkanBindingGroup = downcast(command->bindingGroup);
+    auto vulkanBindGroup = downcast(command->bindGroup);
     auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
-    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+    VkDescriptorSet descriptorSet = vulkanBindGroup->getVkDescriptorSet();
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,

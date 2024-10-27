@@ -1,4 +1,4 @@
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_device.h"
 
 #include <fmt/format.h>
@@ -7,9 +7,9 @@
 namespace jipu
 {
 
-VulkanBindingGroupLayoutDescriptor generateVulkanBindingGroupLayoutDescriptor(const BindingGroupLayoutDescriptor& descriptor)
+VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor)
 {
-    VulkanBindingGroupLayoutDescriptor vkdescriptor{};
+    VulkanBindGroupLayoutDescriptor vkdescriptor{};
 
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();
@@ -52,12 +52,12 @@ VulkanBindingGroupLayoutDescriptor generateVulkanBindingGroupLayoutDescriptor(co
     return vkdescriptor;
 }
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice& device, const BindingGroupLayoutDescriptor& descriptor)
-    : VulkanBindingGroupLayout(device, generateVulkanBindingGroupLayoutDescriptor(descriptor))
+VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const BindGroupLayoutDescriptor& descriptor)
+    : VulkanBindGroupLayout(device, generateVulkanBindGroupLayoutDescriptor(descriptor))
 {
 }
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice& device, const VulkanBindingGroupLayoutDescriptor& descriptor)
+VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const VulkanBindGroupLayoutDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -78,13 +78,13 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice& device, const V
     }
 }
 
-VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
+VulkanBindGroupLayout::~VulkanBindGroupLayout()
 {
     auto& vulkanDevice = downcast(m_device);
     vulkanDevice.vkAPI.DestroyDescriptorSetLayout(vulkanDevice.getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
-std::vector<BufferBindingLayout> VulkanBindingGroupLayout::getBufferBindingLayouts() const
+std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const
 {
     std::vector<BufferBindingLayout> layouts{};
     for (const auto& buffer : m_descriptor.buffers)
@@ -99,7 +99,7 @@ std::vector<BufferBindingLayout> VulkanBindingGroupLayout::getBufferBindingLayou
     return layouts;
 }
 
-std::vector<SamplerBindingLayout> VulkanBindingGroupLayout::getSamplerBindingLayouts() const
+std::vector<SamplerBindingLayout> VulkanBindGroupLayout::getSamplerBindingLayouts() const
 {
     std::vector<SamplerBindingLayout> layouts{};
     for (const auto& sampler : m_descriptor.samplers)
@@ -111,7 +111,7 @@ std::vector<SamplerBindingLayout> VulkanBindingGroupLayout::getSamplerBindingLay
     return layouts;
 }
 
-std::vector<TextureBindingLayout> VulkanBindingGroupLayout::getTextureBindingLayouts() const
+std::vector<TextureBindingLayout> VulkanBindGroupLayout::getTextureBindingLayouts() const
 {
     std::vector<TextureBindingLayout> layouts{};
     for (const auto& texture : m_descriptor.textures)
@@ -123,12 +123,12 @@ std::vector<TextureBindingLayout> VulkanBindingGroupLayout::getTextureBindingLay
     return layouts;
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferDescriptorSetLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getBufferDescriptorSetLayouts() const
 {
     return m_descriptor.buffers;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferDescriptorSetLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getBufferDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.buffers.empty())
         throw std::runtime_error("Failed to find buffer binding layout due to empty.");
@@ -139,12 +139,12 @@ VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferDescriptorSetLay
     return m_descriptor.buffers[index];
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerDescriptorSetLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getSamplerDescriptorSetLayouts() const
 {
     return m_descriptor.samplers;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerDescriptorSetLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getSamplerDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.samplers.empty())
         throw std::runtime_error("Failed to find sampler binding layout due to empty.");
@@ -155,12 +155,12 @@ VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerDescriptorSetLa
     return m_descriptor.samplers[index];
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureDescriptorSetLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getTextureDescriptorSetLayouts() const
 {
     return m_descriptor.textures;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureDescriptorSetLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getTextureDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.textures.empty())
         throw std::runtime_error("Failed to find texture binding layout due to empty.");
@@ -171,7 +171,7 @@ VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureDescriptorSetLa
     return m_descriptor.textures[index];
 }
 
-VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const
+VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
 {
     return m_descriptorSetLayout;
 }

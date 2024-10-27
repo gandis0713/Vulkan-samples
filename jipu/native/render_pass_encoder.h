@@ -13,7 +13,7 @@ namespace jipu
 class Pipeline;
 class Buffer;
 class CommandBuffer;
-class BindingGroup;
+class BindGroup;
 
 enum class LoadOp : uint8_t
 {
@@ -95,7 +95,7 @@ protected:
 
 public:
     virtual void setPipeline(RenderPipeline* pipeline) = 0;
-    virtual void setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
+    virtual void setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
 
     virtual void setVertexBuffer(uint32_t slot, Buffer& buffer) = 0;
     virtual void setIndexBuffer(Buffer& buffer, IndexFormat format) = 0;

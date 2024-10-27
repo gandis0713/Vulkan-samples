@@ -28,8 +28,8 @@ VulkanNBufferingSample::~VulkanNBufferingSample()
     m_renderPipeline.reset();
     m_pipelineLayout.reset();
 
-    m_bindingGroupLayouts.clear();
-    m_bindingGroups.clear();
+    m_bindGroupLayouts.clear();
+    m_bindGroups.clear();
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
@@ -70,8 +70,8 @@ void VulkanNBufferingSample::init()
     createDepthStencilTexture();
     createDepthStencilTextureView();
 
-    createBindingGroupLayout();
-    createBindingGroup();
+    createBindGroupLayout();
+    createBindGroup();
 
     createPipelineLayout();
     createRenderPipeline();
@@ -154,8 +154,8 @@ void VulkanNBufferingSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
-    renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
+    renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
+    renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
     renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
     renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
@@ -370,9 +370,9 @@ void VulkanNBufferingSample::createImageSampler()
     m_imageSampler = m_device->createSampler(descriptor);
 }
 
-void VulkanNBufferingSample::createBindingGroupLayout()
+void VulkanNBufferingSample::createBindGroupLayout()
 {
-    m_bindingGroupLayouts.resize(2);
+    m_bindGroupLayouts.resize(2);
     {
         // Uniform Buffer
         BufferBindingLayout bufferBindingLayout{};
@@ -381,9 +381,9 @@ void VulkanNBufferingSample::createBindingGroupLayout()
         bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
         std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
 
-        m_bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_bindGroupLayouts[0] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
     {
         // Sampler
@@ -400,17 +400,17 @@ void VulkanNBufferingSample::createBindingGroupLayout()
 
         std::vector<TextureBindingLayout> textureBindingLayouts{ textureBindingLayout };
 
-        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = {},
-                                                                   .samplers = samplerBindingLayouts,
-                                                                   .textures = textureBindingLayouts };
+        BindGroupLayoutDescriptor bindGroupLayoutDescriptor{ .buffers = {},
+                                                             .samplers = samplerBindingLayouts,
+                                                             .textures = textureBindingLayouts };
 
-        m_bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        m_bindGroupLayouts[1] = m_device->createBindGroupLayout(bindGroupLayoutDescriptor);
     }
 }
 
-void VulkanNBufferingSample::createBindingGroup()
+void VulkanNBufferingSample::createBindGroup()
 {
-    m_bindingGroups.resize(2);
+    m_bindGroups.resize(2);
     {
         BufferBinding bufferBinding{
             .index = 0,
@@ -419,12 +419,12 @@ void VulkanNBufferingSample::createBindingGroup()
             .buffer = m_uniformBuffer.get(),
         };
 
-        BindingGroupDescriptor descriptor{
-            .layout = m_bindingGroupLayouts[0].get(),
+        BindGroupDescriptor descriptor{
+            .layout = m_bindGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
-        m_bindingGroups[0] = m_device->createBindingGroup(descriptor);
+        m_bindGroups[0] = m_device->createBindGroup(descriptor);
     }
 
     {
@@ -438,19 +438,19 @@ void VulkanNBufferingSample::createBindingGroup()
             .textureView = m_imageTextureView.get(),
         };
 
-        BindingGroupDescriptor descriptor{
-            .layout = m_bindingGroupLayouts[1].get(),
+        BindGroupDescriptor descriptor{
+            .layout = m_bindGroupLayouts[1].get(),
             .samplers = { samplerBinding },
             .textures = { textureBinding },
         };
 
-        m_bindingGroups[1] = m_device->createBindingGroup(descriptor);
+        m_bindGroups[1] = m_device->createBindGroup(descriptor);
     }
 }
 
 void VulkanNBufferingSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindGroupLayouts[0].get(), m_bindGroupLayouts[1].get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 

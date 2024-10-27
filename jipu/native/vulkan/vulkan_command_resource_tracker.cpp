@@ -1,7 +1,7 @@
 #include "vulkan_command_resource_tracker.h"
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
 #include "vulkan_framebuffer.h"
@@ -21,12 +21,12 @@ void VulkanCommandResourceTracker::setComputePipeline(SetComputePipelineCommand*
     // do nothing.
 }
 
-void VulkanCommandResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* command)
 {
     // dst
     if (false) // TODO
     {
-        auto bufferBindings = command->bindingGroup->getBufferBindings();
+        auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
             m_ongoingPassResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
@@ -35,7 +35,7 @@ void VulkanCommandResourceTracker::setComputeBindingGroup(SetBindGroupCommand* c
             };
         }
 
-        auto textureBindings = command->bindingGroup->getTextureBindings();
+        auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
             m_ongoingPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
@@ -48,7 +48,7 @@ void VulkanCommandResourceTracker::setComputeBindingGroup(SetBindGroupCommand* c
 
     // src
     {
-        auto bufferBindings = command->bindingGroup->getBufferBindings();
+        auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
             m_ongoingPassResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
@@ -57,7 +57,7 @@ void VulkanCommandResourceTracker::setComputeBindingGroup(SetBindGroupCommand* c
             };
         }
 
-        auto textureBindings = command->bindingGroup->getTextureBindings();
+        auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
             m_ongoingPassResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
@@ -200,15 +200,15 @@ void VulkanCommandResourceTracker::endRenderPass(EndRenderPassCommand* command)
     m_ongoingPassResourceInfo = {};
 }
 
-void VulkanCommandResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* command)
 {
     // dst
     {
-        auto bindingGroup = command->bindingGroup;
-        auto bindingGroupLayout = command->bindingGroup->getLayout();
+        auto bindGroup = command->bindGroup;
+        auto bindGroupLayout = command->bindGroup->getLayout();
 
-        auto bufferBindings = bindingGroup->getBufferBindings();
-        auto bufferBindingLayouts = bindingGroupLayout->getBufferBindingLayouts();
+        auto bufferBindings = bindGroup->getBufferBindings();
+        auto bufferBindingLayouts = bindGroupLayout->getBufferBindingLayouts();
         for (auto i = 0; i < bufferBindings.size(); ++i)
         {
             auto& bufferBinding = bufferBindings[i];
@@ -247,8 +247,8 @@ void VulkanCommandResourceTracker::setRenderBindingGroup(SetBindGroupCommand* co
             }
         }
 
-        auto textureBindings = bindingGroup->getTextureBindings();
-        auto textureBindingLayouts = bindingGroupLayout->getTextureBindingLayouts();
+        auto textureBindings = bindGroup->getTextureBindings();
+        auto textureBindingLayouts = bindGroupLayout->getTextureBindingLayouts();
         for (auto i = 0; i < textureBindings.size(); ++i)
         {
             auto& textureBinding = textureBindings[i];

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binding_group_layout.h"
+#include "bind_group_layout.h"
 #include "jipu/common/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
@@ -8,7 +8,7 @@
 namespace jipu
 {
 
-struct VulkanBindingGroupLayoutDescriptor
+struct VulkanBindGroupLayoutDescriptor
 {
     const void* next = nullptr;
     VkDescriptorSetLayoutCreateFlags flags = 0u;
@@ -18,13 +18,13 @@ struct VulkanBindingGroupLayoutDescriptor
 };
 
 class VulkanDevice;
-class VULKAN_EXPORT VulkanBindingGroupLayout : public BindingGroupLayout
+class VULKAN_EXPORT VulkanBindGroupLayout : public BindGroupLayout
 {
 public:
-    VulkanBindingGroupLayout() = delete;
-    VulkanBindingGroupLayout(VulkanDevice& device, const BindingGroupLayoutDescriptor& descriptor);
-    VulkanBindingGroupLayout(VulkanDevice& device, const VulkanBindingGroupLayoutDescriptor& descriptor);
-    ~VulkanBindingGroupLayout() override;
+    VulkanBindGroupLayout() = delete;
+    VulkanBindGroupLayout(VulkanDevice& device, const BindGroupLayoutDescriptor& descriptor);
+    VulkanBindGroupLayout(VulkanDevice& device, const VulkanBindGroupLayoutDescriptor& descriptor);
+    ~VulkanBindGroupLayout() override;
 
     std::vector<BufferBindingLayout> getBufferBindingLayouts() const override;
     std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const override;
@@ -46,12 +46,12 @@ private:
 
 private:
     VulkanDevice& m_device;
-    const VulkanBindingGroupLayoutDescriptor m_descriptor{};
+    const VulkanBindGroupLayoutDescriptor m_descriptor{};
 };
-DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
+DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
 
 // Generate Helper
-VulkanBindingGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindingGroupLayoutDescriptor(const BindingGroupLayoutDescriptor& descriptor);
+VulkanBindGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor);
 
 // Convert Helper
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);

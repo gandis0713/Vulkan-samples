@@ -4,7 +4,7 @@
 #include "jipu/common/cast.h"
 
 #include "vulkan_api.h"
-#include "vulkan_binding_group_layout.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_pool.h"
@@ -40,9 +40,9 @@ public:
 
 public:
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
-    std::unique_ptr<BindingGroup> createBindingGroup(const BindingGroupDescriptor& descriptor) override;                   // TODO: get from cache or create.
-    std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) override; // TODO: get from cache or create.
-    std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) override;             // TODO: get from cache or create.
+    std::unique_ptr<BindGroup> createBindGroup(const BindGroupDescriptor& descriptor) override;                   // TODO: get from cache or create.
+    std::unique_ptr<BindGroupLayout> createBindGroupLayout(const BindGroupLayoutDescriptor& descriptor) override; // TODO: get from cache or create.
+    std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) override;    // TODO: get from cache or create.
     std::unique_ptr<QuerySet> createQuerySet(const QuerySetDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDescriptor& descriptor) override; // TODO: get from cache or create.
@@ -55,7 +55,7 @@ public:
 
 public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
-    std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
+    std::unique_ptr<BindGroupLayout> createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
     std::unique_ptr<Swapchain> createSwapchain(const VulkanSwapchainDescriptor& descriptor);
 

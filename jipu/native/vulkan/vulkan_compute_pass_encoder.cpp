@@ -1,5 +1,5 @@
 #include "vulkan_compute_pass_encoder.h"
-#include "vulkan_binding_group.h"
+#include "vulkan_bind_group.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
@@ -37,18 +37,18 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
     commandEncodingContext.commands.push_back(std::make_unique<SetComputePipelineCommand>(std::move(command)));
 }
 
-void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
+void VulkanComputePassEncoder::setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset)
 {
     SetBindGroupCommand command{
         { .type = CommandType::kSetComputeBindGroup },
         .index = index,
-        .bindingGroup = &bindingGroup,
+        .bindGroup = &bindGroup,
         .dynamicOffset = dynamicOffset,
     };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
-    commandEncodingContext.commandResourceTracker.setComputeBindingGroup(&command);
+    commandEncodingContext.commandResourceTracker.setComputeBindGroup(&command);
     commandEncodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 

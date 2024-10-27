@@ -45,8 +45,8 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createBindGroupLayout();
+    void createBindGroup();
     void createRenderPipeline();
     void createQuerySet();
 
@@ -56,8 +56,8 @@ private:
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     std::unique_ptr<Buffer> m_timestampQueryBuffer = nullptr; // use same buffer with occlusion
     std::unique_ptr<Buffer> m_occlusionQueryBuffer = nullptr; // use same buffer with timestamp
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<BindGroupLayout> m_bindGroupLayout = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
     std::unique_ptr<QuerySet> m_timestampQuerySet = nullptr;

@@ -17,8 +17,8 @@ QuerySample::~QuerySample()
     m_occlusionQuerySet.reset();
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
-    m_bindingGroup.reset();
-    m_bindingGroupLayout.reset();
+    m_bindGroup.reset();
+    m_bindGroupLayout.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
@@ -35,8 +35,8 @@ void QuerySample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
-    createBindingGroupLayout();
-    createBindingGroup();
+    createBindGroupLayout();
+    createBindGroup();
     createRenderPipeline();
     createQuerySet();
 }
@@ -117,7 +117,7 @@ void QuerySample::draw()
             renderPassEncoder->beginOcclusionQuery(0);
         }
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
+        renderPassEncoder->setBindGroup(0, *m_bindGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -224,20 +224,20 @@ void QuerySample::createUniformBuffer()
     // m_uniformBuffer->unmap();
 }
 
-void QuerySample::createBindingGroupLayout()
+void QuerySample::createBindGroupLayout()
 {
     BufferBindingLayout bufferLayout{};
     bufferLayout.index = 0;
     bufferLayout.stages = BindingStageFlagBits::kVertexStage;
     bufferLayout.type = BufferBindingType::kUniform;
 
-    BindingGroupLayoutDescriptor descriptor{};
+    BindGroupLayoutDescriptor descriptor{};
     descriptor.buffers = { bufferLayout };
 
-    m_bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+    m_bindGroupLayout = m_device->createBindGroupLayout(descriptor);
 }
 
-void QuerySample::createBindingGroup()
+void QuerySample::createBindGroup()
 {
     BufferBinding bufferBinding{
         .index = 0,
@@ -246,12 +246,12 @@ void QuerySample::createBindingGroup()
         .buffer = m_uniformBuffer.get(),
     };
 
-    BindingGroupDescriptor descriptor{
-        .layout = m_bindingGroupLayout.get(),
+    BindGroupDescriptor descriptor{
+        .layout = m_bindGroupLayout.get(),
         .buffers = { bufferBinding },
     };
 
-    m_bindingGroup = m_device->createBindingGroup(descriptor);
+    m_bindGroup = m_device->createBindGroup(descriptor);
 }
 
 void QuerySample::createRenderPipeline()
@@ -259,7 +259,7 @@ void QuerySample::createRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_bindingGroupLayout.get() };
+        descriptor.layouts = { m_bindGroupLayout.get() };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
