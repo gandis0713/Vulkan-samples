@@ -101,15 +101,27 @@ void WGPUTriangleSample::createInstance()
 void WGPUTriangleSample::createSurface()
 {
     WGPUChainedStruct chain{};
+#if defined(__ANDROID__) || defined(ANDROID)
+    chain.sType = WGPUSType_SurfaceDescriptorFromAndroidNativeWindow;
+
+    WGPUSurfaceDescriptorFromAndroidNativeWindow surfaceDescriptor{};
+    surfaceDescriptor.chain = chain;
+    surfaceDescriptor.window = getWindowHandle();
+#elif defined(__linux__)
+    // TODO
+#elif defined(__APPLE__)
     chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
 
-    WGPUSurfaceDescriptorFromMetalLayer metalLayerDesc = {};
-    metalLayerDesc.chain = chain;
-    metalLayerDesc.layer = getWindowHandle();
+    WGPUSurfaceDescriptorFromMetalLayer surfaceDescriptor{};
+    surfaceDescriptor.chain = chain;
+    surfaceDescriptor.layer = getWindowHandle();
+#elif defined(WIN32)
+    // TODO
+#endif
 
     WGPUSurfaceDescriptor surfaceDesc = {};
-    surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&metalLayerDesc);
-    surfaceDesc.label = "Metal Surface";
+    surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&surfaceDescriptor);
+    surfaceDesc.label = "Surface";
 
     m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDesc);
 
@@ -128,6 +140,8 @@ void WGPUTriangleSample::createAdapter()
     };
 
     WGPURequestAdapterOptions descriptor{
+        .compatibleSurface = m_surface,
+        .powerPreference = WGPUPowerPreference_HighPerformance,
 #if defined(__ANDROID__) || defined(ANDROID)
         .backendType = WGPUBackendType_Vulkan,
 #elif defined(__linux__)
@@ -137,9 +151,7 @@ void WGPUTriangleSample::createAdapter()
 #elif defined(WIN32)
         .backendType = WGPUBackendType_D3D12,
 #endif
-        .compatibleSurface = m_surface,
         .forceFallbackAdapter = false,
-        .powerPreference = WGPUPowerPreference_HighPerformance
     };
 
     wgpuInstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
@@ -168,14 +180,41 @@ void WGPUTriangleSample::createSurfaceConfigure()
 {
     wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
 
-    m_surfaceConfigure = {
+    WGPUTextureFormat format = WGPUTextureFormat_Undefined;
+    for (auto i = 0; i < m_surfaceCapabilities.formatCount; ++i)
+    {
+        // TODO
+        format = m_surfaceCapabilities.formats[0];
+    }
+
+    WGPUCompositeAlphaMode alphaMode = WGPUCompositeAlphaMode_Auto;
+    for (auto i = 0; i < m_surfaceCapabilities.alphaModeCount; ++i)
+    {
+        // TODO
+        alphaMode = m_surfaceCapabilities.alphaModes[0];
+    }
+
+    WGPUPresentMode presentMode = WGPUPresentMode_Fifo;
+    for (auto i = 0; i < m_surfaceCapabilities.presentModeCount; ++i)
+    {
+        // TODO
+        presentMode = m_surfaceCapabilities.presentModes[0];
+    }
+
+    WGPUTextureUsage usage = WGPUTextureUsage_None;
+    if ((m_surfaceCapabilities.usages & WGPUTextureUsage_RenderAttachment) != 0)
+    {
+        usage = WGPUTextureUsage_RenderAttachment;
+    }
+
+    m_surfaceConfigure = WGPUSurfaceConfiguration{
         .device = m_device,
-        .usage = WGPUTextureUsage_RenderAttachment,
-        .format = m_surfaceCapabilities.formats[0],
-        .presentMode = WGPUPresentMode_Fifo,
-        .alphaMode = m_surfaceCapabilities.alphaModes[0],
+        .format = format,
+        .usage = usage,
+        .alphaMode = alphaMode,
         .width = m_width,
         .height = m_height,
+        .presentMode = presentMode,
     };
 
     wgpuSurfaceConfigure(m_surface, &m_surfaceConfigure);
