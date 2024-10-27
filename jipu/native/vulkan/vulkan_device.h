@@ -76,14 +76,14 @@ public:
 public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
-
     VkDescriptorPool getVkDescriptorPool();
+    const std::vector<VkQueueFamilyProperties>& getActivatedQueueFamilies() const;
 
 public:
     VulkanAPI vkAPI{};
 
 private:
-    void createDevice(const std::unordered_map<uint32_t, VkQueueFamilyProperties>& queueFamilies);
+    void createDevice();
     const std::vector<const char*> getRequiredDeviceExtensions();
 
 private:
@@ -101,6 +101,8 @@ private:
     VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::unique_ptr<VulkanInflightContext> m_inflightContext = nullptr;
+
+    std::vector<VkQueueFamilyProperties> m_queueFamilies{};
 };
 
 DOWN_CAST(VulkanDevice, Device);

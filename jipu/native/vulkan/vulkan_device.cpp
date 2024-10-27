@@ -23,22 +23,9 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)
 {
+    createDevice();
+
     const VulkanPhysicalDeviceInfo& info = physicalDevice.getVulkanPhysicalDeviceInfo();
-
-    // GRAPHICS and COMPUTE imply TRANSFER
-    constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
-
-    std::unordered_map<uint32_t, VkQueueFamilyProperties> queueFamilies{};
-    for (uint32_t i = 0; i < info.queueFamilyProperties.size(); ++i)
-    {
-        if ((info.queueFamilyProperties[i].queueFlags & queueFlags) == queueFlags)
-        {
-            queueFamilies.insert({ i, info.queueFamilyProperties[i] });
-        }
-    }
-
-    createDevice(queueFamilies);
-
     const VulkanDeviceKnobs& deviceKnobs = static_cast<const VulkanDeviceKnobs&>(info);
     if (!vkAPI.loadDeviceProcs(m_device, deviceKnobs))
     {
@@ -223,7 +210,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
 {
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
-        const uint32_t maxSets = 30; // TODO: set correct max value.
+        const uint32_t maxSets = 32; // TODO: set correct max value.
         const uint64_t descriptorPoolCount = 8;
         const uint64_t maxDescriptorSetSize = descriptorPoolCount;
         std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
@@ -285,13 +272,33 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
     return m_descriptorPool;
 }
 
-void VulkanDevice::createDevice(const std::unordered_map<uint32_t, VkQueueFamilyProperties>& queueFamilies)
+const std::vector<VkQueueFamilyProperties>& VulkanDevice::getActivatedQueueFamilies() const
 {
+    return m_queueFamilies;
+}
+
+void VulkanDevice::createDevice()
+{
+    const VulkanPhysicalDeviceInfo& info = m_physicalDevice.getVulkanPhysicalDeviceInfo();
+
+    // Currently, only check GRAPHICS and COMPUTE. Because they imply TRANSFER. consider queue that has only TRANSFER.
+    constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+
+    for (uint32_t i = 0; i < info.queueFamilyProperties.size(); ++i)
+    {
+        if ((info.queueFamilyProperties[i].queueFlags & queueFlags) == queueFlags)
+        {
+            m_queueFamilies.push_back(info.queueFamilyProperties[i]);
+        }
+    }
+
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
 
     float queuePriority = 1.0f;
-    for (const auto& [index, queueFamily] : queueFamilies)
+    for (auto index = 0; index < m_queueFamilies.size(); ++index)
     {
+        const auto& queueFamily = m_queueFamilies[index];
+
         VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
         deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         deviceQueueCreateInfo.queueFamilyIndex = index;

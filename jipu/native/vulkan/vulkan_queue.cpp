@@ -15,21 +15,17 @@ namespace jipu
 VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false)
     : m_device(device)
 {
-    VulkanPhysicalDevice& physicalDevice = device.getPhysicalDevice();
-
-    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice.getVulkanPhysicalDeviceInfo();
-
-    const uint64_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
-    if (queueFamilyPropertiesSize <= 0)
+    const auto& queueFamilies = device.getActivatedQueueFamilies();
+    if (queueFamilies.size() <= 0)
     {
-        throw std::runtime_error("There is no queue family properties.");
+        throw std::runtime_error("There is no activated queue familys.");
     }
 
-    for (uint32_t index = 0; index < queueFamilyPropertiesSize; ++index)
+    for (auto index = 0; index < queueFamilies.size(); ++index)
     {
         VkQueue queue{ VK_NULL_HANDLE };
         device.vkAPI.GetDeviceQueue(device.getVkDevice(), index, 0, &queue);
-        m_queues.push_back({ queue, ToQueueFlags(deviceInfo.queueFamilyProperties[index].queueFlags) });
+        m_queues.push_back({ queue, ToQueueFlags(queueFamilies[index].queueFlags) });
     }
 
     // create fence.
