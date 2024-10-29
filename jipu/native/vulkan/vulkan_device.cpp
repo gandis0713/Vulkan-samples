@@ -303,8 +303,8 @@ void VulkanDevice::createDevice()
     {
         const auto& queueFamily = m_queueFamilies[index];
 
-        std::vector<float> vec(queueFamily.queueCount, queuePriority);
-        queuePriorities[index] = std::move(vec);
+        std::vector<float> curQueuePriorities(queueFamily.queueCount, queuePriority);
+        queuePriorities[index] = std::move(curQueuePriorities);
 
         auto& deviceQueueCreateInfo = deviceQueueCreateInfos[index];
         deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
