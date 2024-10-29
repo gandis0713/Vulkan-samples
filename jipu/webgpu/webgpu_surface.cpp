@@ -33,13 +33,13 @@ WebGPUSurface::WebGPUSurface(WebGPUInstance* instance, WGPUSurfaceDescriptor con
         }
         break;
         case WGPUSType_SurfaceDescriptorFromAndroidNativeWindow: {
-            m_type = Type::kMetalLayer;
+            m_type = Type::kAndroidWindow;
             WGPUSurfaceDescriptorFromAndroidNativeWindow const* androidWindow = reinterpret_cast<WGPUSurfaceDescriptorFromAndroidNativeWindow const*>(current);
             m_androidNativeWindow = reinterpret_cast<void*>(androidWindow->window);
         }
         break;
         case WGPUSType_SurfaceDescriptorFromWindowsHWND: {
-            m_type = Type::kMetalLayer;
+            m_type = Type::kWindowsHWND;
             WGPUSurfaceDescriptorFromWindowsHWND const* windowHWND = reinterpret_cast<WGPUSurfaceDescriptorFromWindowsHWND const*>(current);
             m_hInstance = reinterpret_cast<void*>(windowHWND->hinstance);
             m_HWND = reinterpret_cast<void*>(windowHWND->hwnd);
