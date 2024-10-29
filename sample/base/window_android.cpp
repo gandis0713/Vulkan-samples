@@ -50,11 +50,14 @@ int Window::exec()
     // Main loop
     do
     {
-        if (ALooper_pollOnce(m_initialized, nullptr, &events, (void**)&source) >= 0)
+        auto result = ALooper_pollOnce(1000, nullptr, &events, (void**)&source);
+        if (result == ALOOPER_POLL_ERROR)
         {
-            if (source != NULL)
-                source->process(app, source);
+            throw std::runtime_error("Failed to poll once for android.");
         }
+
+        if (source != nullptr)
+            source->process(app, source);
 
         if (m_initialized)
         {

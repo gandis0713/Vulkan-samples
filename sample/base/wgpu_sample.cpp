@@ -20,6 +20,7 @@ WGPUSample::~WGPUSample()
 
 void WGPUSample::init()
 {
+    Window::init();
 }
 
 void WGPUSample::update()
