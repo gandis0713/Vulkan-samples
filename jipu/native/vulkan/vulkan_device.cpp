@@ -292,19 +292,25 @@ void VulkanDevice::createDevice()
         }
     }
 
-    std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
+    std::vector<std::vector<float>> queuePriorities{};
+    std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos{};
 
-    float queuePriority = 1.0f;
+    queuePriorities.resize(m_queueFamilies.size());
+    deviceQueueCreateInfos.resize(m_queueFamilies.size());
+
+    const float queuePriority = 1.0f;
     for (auto index = 0; index < m_queueFamilies.size(); ++index)
     {
         const auto& queueFamily = m_queueFamilies[index];
 
-        VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
+        std::vector<float> vec(queueFamily.queueCount, queuePriority);
+        queuePriorities[index] = std::move(vec);
+
+        auto& deviceQueueCreateInfo = deviceQueueCreateInfos[index];
         deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         deviceQueueCreateInfo.queueFamilyIndex = index;
         deviceQueueCreateInfo.queueCount = queueFamily.queueCount;
-        deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
-        deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
+        deviceQueueCreateInfo.pQueuePriorities = queuePriorities[index].data();
     }
 
     auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
