@@ -178,7 +178,9 @@ void WGPUTriangleSample::createDevice()
 
 void WGPUTriangleSample::createSurfaceConfigure()
 {
-    wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+    auto status = wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+    if (status != WGPUStatus_Success)
+        throw std::runtime_error("Failed to get surface capabilities.");
 
     WGPUTextureFormat format = WGPUTextureFormat_Undefined;
     for (auto i = 0; i < m_surfaceCapabilities.formatCount; ++i)
