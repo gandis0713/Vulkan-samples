@@ -1,5 +1,5 @@
 
-#include "wgpu_triangle.h"
+#include "wgpu_triangle2.h"
 
 #include <spdlog/spdlog.h>
 
@@ -19,11 +19,11 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::WGPUSampleDescriptor descriptor{
-        { 1000, 2000, "WGPU Triangle", app },
+        { 1000, 2000, "WGPU Triangle 2", app },
         ""
     };
 
-    jipu::WGPUTriangleSample sample(descriptor);
+    jipu::WGPUTriangleSample2 sample(descriptor);
 
     sample.exec();
 }
@@ -35,11 +35,11 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::WGPUSampleDescriptor descriptor{
-        { 800, 600, "WGPU Triangle", nullptr },
+        { 800, 600, "WGPU Triangle 2", nullptr },
         argv[0]
     };
 
-    jipu::WGPUTriangleSample sample(descriptor);
+    jipu::WGPUTriangleSample2 sample(descriptor);
 
     return sample.exec();
 }

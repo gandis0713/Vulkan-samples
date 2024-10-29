@@ -1,16 +1,16 @@
-#include "wgpu_triangle.h"
+#include "wgpu_triangle2.h"
 #include "file.h"
 #include <spdlog/spdlog.h>
 
 namespace jipu
 {
 
-WGPUTriangleSample::WGPUTriangleSample(const WGPUSampleDescriptor& descriptor)
+WGPUTriangleSample2::WGPUTriangleSample2(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
 }
 
-WGPUTriangleSample::~WGPUTriangleSample()
+WGPUTriangleSample2::~WGPUTriangleSample2()
 {
     // TODO: check ways release and destory.
 
@@ -29,7 +29,7 @@ WGPUTriangleSample::~WGPUTriangleSample()
     wgpuInstanceRelease(m_instance);
 }
 
-void WGPUTriangleSample::init()
+void WGPUTriangleSample2::init()
 {
     WGPUSample::init();
 
@@ -44,12 +44,12 @@ void WGPUTriangleSample::init()
     createPipeline();
 }
 
-void WGPUTriangleSample::update()
+void WGPUTriangleSample2::update()
 {
     WGPUSample::update();
 }
 
-void WGPUTriangleSample::draw()
+void WGPUTriangleSample2::draw()
 {
     WGPUSurfaceTexture surfaceTexture{};
     wgpuSurfaceGetCurrentTexture(m_surface, &surfaceTexture);
@@ -89,7 +89,7 @@ void WGPUTriangleSample::draw()
     wgpuTextureRelease(surfaceTexture.texture);
 }
 
-void WGPUTriangleSample::createInstance()
+void WGPUTriangleSample2::createInstance()
 {
     WGPUInstanceDescriptor descriptor{};
     descriptor.nextInChain = NULL;
@@ -98,7 +98,7 @@ void WGPUTriangleSample::createInstance()
     assert(m_instance);
 }
 
-void WGPUTriangleSample::createSurface()
+void WGPUTriangleSample2::createSurface()
 {
     WGPUChainedStruct chain{};
     chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
@@ -117,7 +117,7 @@ void WGPUTriangleSample::createSurface()
     assert(m_surface);
 }
 
-void WGPUTriangleSample::createAdapter()
+void WGPUTriangleSample2::createAdapter()
 {
     auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, char const* message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestAdapterStatus_Success)
@@ -139,7 +139,7 @@ void WGPUTriangleSample::createAdapter()
     assert(m_adapter);
 }
 
-void WGPUTriangleSample::createDevice()
+void WGPUTriangleSample2::createDevice()
 {
     auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, char const* message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestDeviceStatus_Success)
@@ -156,7 +156,7 @@ void WGPUTriangleSample::createDevice()
     assert(m_device);
 }
 
-void WGPUTriangleSample::createSurfaceConfigure()
+void WGPUTriangleSample2::createSurfaceConfigure()
 {
     wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
 
@@ -173,14 +173,14 @@ void WGPUTriangleSample::createSurfaceConfigure()
     wgpuSurfaceConfigure(m_surface, &m_surfaceConfigure);
 }
 
-void WGPUTriangleSample::createQueue()
+void WGPUTriangleSample2::createQueue()
 {
     m_queue = wgpuDeviceGetQueue(m_device);
 
     assert(m_queue);
 }
 
-void WGPUTriangleSample::createShaderModule()
+void WGPUTriangleSample2::createShaderModule()
 {
     // spriv
     {
@@ -246,7 +246,7 @@ void WGPUTriangleSample::createShaderModule()
     // }
 }
 
-void WGPUTriangleSample::createPipelineLayout()
+void WGPUTriangleSample2::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     m_pipelineLayout = wgpuDeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
@@ -254,7 +254,7 @@ void WGPUTriangleSample::createPipelineLayout()
     assert(m_pipelineLayout);
 }
 
-void WGPUTriangleSample::createPipeline()
+void WGPUTriangleSample2::createPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
