@@ -102,7 +102,7 @@ void WGPUTriangleSample2::createSurface()
 {
     WGPUChainedStruct chain{};
 #if defined(__ANDROID__) || defined(ANDROID)
-    chain.sType = WGPUSType_SurfaceDescriptorFromAndroidNativeWindow;
+    chain.sType = WGPUSType_SurfaceSourceAndroidNativeWindow;
 
     WGPUSurfaceDescriptorFromAndroidNativeWindow surfaceDescriptor{};
     surfaceDescriptor.chain = chain;
@@ -110,7 +110,7 @@ void WGPUTriangleSample2::createSurface()
 #elif defined(__linux__)
     // TODO
 #elif defined(__APPLE__)
-    chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
+    chain.sType = WGPUSType_SurfaceSourceMetalLayer;
 
     WGPUSurfaceDescriptorFromMetalLayer surfaceDescriptor{};
     surfaceDescriptor.chain = chain;
@@ -119,9 +119,10 @@ void WGPUTriangleSample2::createSurface()
     // TODO
 #endif
 
+    std::string label = "Surface";
     WGPUSurfaceDescriptor surfaceDesc = {};
     surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&surfaceDescriptor);
-    surfaceDesc.label = "Surface";
+    surfaceDesc.label = WGPUStringView{ .data = label.data(), .length = label.length() };
 
     m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDesc);
 
@@ -130,7 +131,7 @@ void WGPUTriangleSample2::createSurface()
 
 void WGPUTriangleSample2::createAdapter()
 {
-    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, char const* message, WGPU_NULLABLE void* userdata) {
+    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestAdapterStatus_Success)
         {
             throw std::runtime_error("Failed to request adapter.");
@@ -161,10 +162,10 @@ void WGPUTriangleSample2::createAdapter()
 
 void WGPUTriangleSample2::createDevice()
 {
-    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, char const* message, WGPU_NULLABLE void* userdata) {
+    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata) {
         if (status != WGPURequestDeviceStatus_Success)
         {
-            throw std::runtime_error(fmt::format("Failed to request device. {}", message));
+            throw std::runtime_error("Failed to request device.");
         }
 
         *static_cast<WGPUDevice*>(userdata) = device;
@@ -200,7 +201,7 @@ void WGPUTriangleSample2::createSurfaceConfigure()
     for (auto i = 0; i < m_surfaceCapabilities.presentModeCount; ++i)
     {
         // TODO
-        presentMode = m_surfaceCapabilities.presentModes[0];
+        // presentMode = m_surfaceCapabilities.presentModes[0];
     }
 
     WGPUTextureUsage usage = WGPUTextureUsage_None;
@@ -237,7 +238,7 @@ void WGPUTriangleSample2::createShaderModule()
         std::vector<char> fragShaderSource = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
 
         WGPUShaderModuleSPIRVDescriptor vertexShaderModuleSPIRVDescriptor{};
-        vertexShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
+        vertexShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
         vertexShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(vertexShaderSource.data());
         vertexShaderModuleSPIRVDescriptor.codeSize = vertexShaderSource.size();
 
@@ -247,7 +248,7 @@ void WGPUTriangleSample2::createShaderModule()
         m_vertSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleSPIRVDescriptor fragShaderModuleSPIRVDescriptor{};
-        fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
+        fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
         fragShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(fragShaderSource.data());
         fragShaderModuleSPIRVDescriptor.codeSize = fragShaderSource.size();
 
@@ -311,8 +312,9 @@ void WGPUTriangleSample2::createPipeline()
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
+    std::string entryPoint = "main";
     WGPUVertexState vertexState{};
-    vertexState.entryPoint = "main";
+    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
     vertexState.module = m_vertSPIRVShaderModule;
 
     WGPUColorTargetState colorTargetState{};
@@ -320,7 +322,7 @@ void WGPUTriangleSample2::createPipeline()
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
-    fragState.entryPoint = "main";
+    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
     fragState.module = m_fragSPIRVShaderModule;
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;

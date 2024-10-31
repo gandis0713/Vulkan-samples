@@ -51,7 +51,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             }
         }
 
-        vertexStage.entryPoint = descriptor->vertex.entryPoint;
+        vertexStage.entryPoint = std::string(descriptor->vertex.entryPoint.data, descriptor->vertex.entryPoint.length);
         vertexStage.shaderModule = reinterpret_cast<WebGPUShaderModule*>(descriptor->vertex.module)->getShaderModule();
     }
 
@@ -91,7 +91,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             }
         }
 
-        fragmentStage.entryPoint = descriptor->fragment->entryPoint;
+        fragmentStage.entryPoint = std::string(descriptor->fragment->entryPoint.data, descriptor->fragment->entryPoint.length);
         fragmentStage.shaderModule = reinterpret_cast<WebGPUShaderModule*>(descriptor->fragment->module)->getShaderModule();
     }
 

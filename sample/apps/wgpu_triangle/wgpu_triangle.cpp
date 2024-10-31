@@ -102,7 +102,7 @@ void WGPUTriangleSample::createSurface()
 {
     WGPUChainedStruct chain{};
 #if defined(__ANDROID__) || defined(ANDROID)
-    chain.sType = WGPUSType_SurfaceDescriptorFromAndroidNativeWindow;
+    chain.sType = WGPUSType_SurfaceSourceAndroidNativeWindow;
 
     WGPUSurfaceDescriptorFromAndroidNativeWindow surfaceDescriptor{};
     surfaceDescriptor.chain = chain;
@@ -110,7 +110,7 @@ void WGPUTriangleSample::createSurface()
 #elif defined(__linux__)
     // TODO
 #elif defined(__APPLE__)
-    chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
+    chain.sType = WGPUSType_SurfaceSourceMetalLayer;
 
     WGPUSurfaceDescriptorFromMetalLayer surfaceDescriptor{};
     surfaceDescriptor.chain = chain;
@@ -119,9 +119,10 @@ void WGPUTriangleSample::createSurface()
     // TODO
 #endif
 
+    std::string label = "Surface";
     WGPUSurfaceDescriptor surfaceDesc = {};
     surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&surfaceDescriptor);
-    surfaceDesc.label = "Surface";
+    surfaceDesc.label = WGPUStringView{ .data = label.data(), .length = label.length() };
 
     m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDesc);
 
@@ -130,7 +131,7 @@ void WGPUTriangleSample::createSurface()
 
 void WGPUTriangleSample::createAdapter()
 {
-    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, char const* message, WGPU_NULLABLE void* userdata) {
+    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestAdapterStatus_Success)
         {
             throw std::runtime_error("Failed to request adapter.");
@@ -161,7 +162,7 @@ void WGPUTriangleSample::createAdapter()
 
 void WGPUTriangleSample::createDevice()
 {
-    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, char const* message, WGPU_NULLABLE void* userdata) {
+    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata) {
         if (status != WGPURequestDeviceStatus_Success)
         {
             throw std::runtime_error("Failed to request device.");
@@ -237,7 +238,7 @@ void WGPUTriangleSample::createShaderModule()
         std::vector<char> fragShaderSource = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
 
         WGPUShaderModuleSPIRVDescriptor vertexShaderModuleSPIRVDescriptor{};
-        vertexShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
+        vertexShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
         vertexShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(vertexShaderSource.data());
         vertexShaderModuleSPIRVDescriptor.codeSize = vertexShaderSource.size();
 
@@ -247,7 +248,7 @@ void WGPUTriangleSample::createShaderModule()
         m_vertSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleSPIRVDescriptor fragShaderModuleSPIRVDescriptor{};
-        fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
+        fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
         fragShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(fragShaderSource.data());
         fragShaderModuleSPIRVDescriptor.codeSize = fragShaderSource.size();
 
@@ -258,7 +259,7 @@ void WGPUTriangleSample::createShaderModule()
     }
 
     {
-        const char* vertexShaderCode = R"(
+        std::string vertexShaderCode = R"(
         @vertex
         fn main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
             let x = f32(i32(in_vertex_index) - 1);
@@ -267,7 +268,7 @@ void WGPUTriangleSample::createShaderModule()
         }
     )";
 
-        const char* fragmentShaderCode = R"(
+        std::string fragmentShaderCode = R"(
         @fragment
         fn main() -> @location(0) vec4<f32> {
             return vec4<f32>(1.0, 0.0, 0.0, 1.0);
@@ -275,8 +276,8 @@ void WGPUTriangleSample::createShaderModule()
     )";
 
         WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
-        vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-        vertexShaderModuleWGSLDescriptor.code = vertexShaderCode;
+        vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.length() };
 
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
@@ -284,8 +285,8 @@ void WGPUTriangleSample::createShaderModule()
         m_vertWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
-        fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-        fragShaderModuleWGSLDescriptor.code = fragmentShaderCode;
+        fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.length() };
 
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
@@ -309,8 +310,9 @@ void WGPUTriangleSample::createPipeline()
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
+    std::string entryPoint = "main";
     WGPUVertexState vertexState{};
-    vertexState.entryPoint = "main";
+    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
     if (m_useSPIRV)
         vertexState.module = m_vertSPIRVShaderModule;
     else
@@ -321,7 +323,7 @@ void WGPUTriangleSample::createPipeline()
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
-    fragState.entryPoint = "main";
+    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
     if (m_useSPIRV)
         fragState.module = m_fragSPIRVShaderModule;
     else

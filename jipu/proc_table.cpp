@@ -278,16 +278,16 @@ std::unordered_map<const char*, WGPUProc> sProcMap{
 
 } // namespace
 
-WGPUProc procGetProcAddress(WGPUDevice, char const* procName)
+WGPUProc procGetProcAddress(WGPUStringView procName)
 {
-    if (procName == nullptr)
+    if (procName.data == nullptr)
     {
         return nullptr;
     }
 
-    if (sProcMap.contains(procName))
+    if (sProcMap.contains(procName.data))
     {
-        return sProcMap[procName];
+        return sProcMap[procName.data];
     }
 
     return nullptr;
