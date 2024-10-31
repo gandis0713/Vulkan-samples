@@ -44,10 +44,12 @@ private:
 
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
-    [[maybe_unused]] WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
-    [[maybe_unused]] WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
-    [[maybe_unused]] WGPUShaderModule m_vertWGSLShaderModule = nullptr;
-    [[maybe_unused]] WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+    WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
+    WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
+    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
+    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+
+    bool m_useSPIRV = false;
 };
 
 } // namespace jipu

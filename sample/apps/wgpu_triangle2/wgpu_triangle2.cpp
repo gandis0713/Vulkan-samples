@@ -13,13 +13,12 @@ WGPUTriangleSample2::WGPUTriangleSample2(const WGPUSampleDescriptor& descriptor)
 WGPUTriangleSample2::~WGPUTriangleSample2()
 {
     // TODO: check ways release and destory.
-
     wgpuRenderPipelineRelease(m_renderPipeline);
     wgpuPipelineLayoutRelease(m_pipelineLayout);
     wgpuShaderModuleRelease(m_vertSPIRVShaderModule);
     wgpuShaderModuleRelease(m_fragSPIRVShaderModule);
-    // wgpuShaderModuleRelease(m_vertWGSLShaderModule);
-    // wgpuShaderModuleRelease(m_fragWGSLShaderModule);
+    wgpuShaderModuleRelease(m_vertWGSLShaderModule);
+    wgpuShaderModuleRelease(m_fragWGSLShaderModule);
 
     wgpuQueueRelease(m_queue);
     wgpuDeviceDestroy(m_device);
@@ -258,42 +257,41 @@ void WGPUTriangleSample2::createShaderModule()
         m_fragSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
     }
 
-    // wgsl
-    // {
-    //     const char* vertexShaderCode = R"(
-    //     @vertex
-    //     fn main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
-    //         let x = f32(i32(in_vertex_index) - 1);
-    //         let y = f32(i32(in_vertex_index & 1u) * 2 - 1);
-    //         return vec4<f32>(x, y, 0.0, 1.0);
-    //     }
-    // )";
+    {
+        std::string vertexShaderCode = R"(
+        @vertex
+        fn main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
+            let x = f32(i32(in_vertex_index) - 1);
+            let y = f32(i32(in_vertex_index & 1u) * 2 - 1);
+            return vec4<f32>(x, y, 0.0, 1.0);
+        }
+    )";
 
-    //     const char* fragmentShaderCode = R"(
-    //     @fragment
-    //     fn main() -> @location(0) vec4<f32> {
-    //         return vec4<f32>(1.0, 0.0, 0.0, 1.0);
-    //     }
-    // )";
+        std::string fragmentShaderCode = R"(
+        @fragment
+        fn main() -> @location(0) vec4<f32> {
+            return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+        }
+    )";
 
-    //     WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
-    //     vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-    //     vertexShaderModuleWGSLDescriptor.code = vertexShaderCode;
+        WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
+        vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.length() };
 
-    //     WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
-    //     vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
+        WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
+        vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-    //     m_vertWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
-    //     WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
-    //     fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-    //     fragShaderModuleWGSLDescriptor.code = fragmentShaderCode;
+        WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
+        fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.length() };
 
-    //     WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
-    //     fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
+        WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
+        fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-    //     m_fragWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
-    // }
+        m_fragWGSLShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
+    }
 }
 
 void WGPUTriangleSample2::createPipelineLayout()
@@ -315,7 +313,10 @@ void WGPUTriangleSample2::createPipeline()
     std::string entryPoint = "main";
     WGPUVertexState vertexState{};
     vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
-    vertexState.module = m_vertSPIRVShaderModule;
+    if (m_useSPIRV)
+        vertexState.module = m_vertSPIRVShaderModule;
+    else
+        vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceCapabilities.formats[0];
@@ -323,7 +324,11 @@ void WGPUTriangleSample2::createPipeline()
 
     WGPUFragmentState fragState{};
     fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
-    fragState.module = m_fragSPIRVShaderModule;
+    if (m_useSPIRV)
+        fragState.module = m_fragSPIRVShaderModule;
+    else
+        fragState.module = m_fragWGSLShaderModule;
+
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
 

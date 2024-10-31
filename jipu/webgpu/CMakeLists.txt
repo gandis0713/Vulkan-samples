@@ -6,6 +6,7 @@ find_path(WEBGPU_HEADERS_INCLUDE_DIRS
   HINTS ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
   REQUIRED
 )
+find_package(Dawn CONFIG REQUIRED)
 
 set(WEBGPU_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_adapter.cpp
@@ -67,6 +68,7 @@ target_include_directories(jipu_webgpu
 target_link_libraries(jipu_webgpu
   PUBLIC
   jipu::native
+  dawn::webgpu_dawn
 )
 
 # compile options
