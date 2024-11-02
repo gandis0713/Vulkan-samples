@@ -122,7 +122,7 @@ void WGPUTriangleSample::createSurface()
     std::string label = "Surface";
     WGPUSurfaceDescriptor surfaceDesc = {};
     surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&surfaceDescriptor);
-    surfaceDesc.label = WGPUStringView{ .data = label.data(), .length = label.length() };
+    surfaceDesc.label = WGPUStringView{ .data = label.data(), .length = label.size() };
 
     m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDesc);
 
@@ -277,7 +277,7 @@ void WGPUTriangleSample::createShaderModule()
 
         WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
         vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.length() };
+        vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.size() };
 
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
@@ -286,7 +286,7 @@ void WGPUTriangleSample::createShaderModule()
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
         fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.length() };
+        fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.size() };
 
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
@@ -312,7 +312,7 @@ void WGPUTriangleSample::createPipeline()
 
     std::string entryPoint = "main";
     WGPUVertexState vertexState{};
-    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
+    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
     if (m_useSPIRV)
         vertexState.module = m_vertSPIRVShaderModule;
     else
@@ -323,7 +323,7 @@ void WGPUTriangleSample::createPipeline()
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
-    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.length() };
+    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
     if (m_useSPIRV)
         fragState.module = m_fragSPIRVShaderModule;
     else

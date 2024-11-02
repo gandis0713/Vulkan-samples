@@ -53,12 +53,12 @@ void WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURe
     if (device)
     {
         std::string message = "Succeed to create device";
-        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(device), WGPUStringView{ .data = message.data(), .length = message.length() }, userdata);
+        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(device), WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
     }
     else
     {
         std::string message = "Failed to create device";
-        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.length() }, userdata);
+        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
     }
 }
 

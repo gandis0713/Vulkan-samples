@@ -32,12 +32,12 @@ void WebGPUInstance::requestAdapter(WGPURequestAdapterOptions const* options, WG
     if (adapter)
     {
         std::string message = "Succeed to create adapter";
-        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Success, reinterpret_cast<WGPUAdapter>(adapter), WGPUStringView{ .data = message.data(), .length = message.length() }, userdata);
+        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Success, reinterpret_cast<WGPUAdapter>(adapter), WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
     }
     else
     {
         std::string message = "Failed to create adapter";
-        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.length() }, userdata);
+        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
     }
 }
 
