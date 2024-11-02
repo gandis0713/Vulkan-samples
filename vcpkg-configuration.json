@@ -8,8 +8,7 @@
         {
             "repository": "https://github.com/gandis0713/vcpkg-registry",
             "kind": "git",
-            "baseline": "aad89acc544982779bddc402a2038057e21d956d",
-            "reference": "port/dawn",
+            "baseline": "b2e44e9fb52d0f29579d598c74e167459a2a5a98",
             "packages": [
                 "hwcpipe",
                 "webgpu-headers",

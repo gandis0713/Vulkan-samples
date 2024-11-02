@@ -1,8 +1,8 @@
 #pragma once
 
 #include "export.h"
-
 #include "texture.h"
+#include <vector>
 
 namespace jipu
 {
