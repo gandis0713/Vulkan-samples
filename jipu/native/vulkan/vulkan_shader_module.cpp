@@ -2,6 +2,7 @@
 #include "vulkan_api.h"
 #include "vulkan_device.h"
 
+#include <fmt/format.h>
 #include <stdexcept>
 
 namespace jipu
@@ -16,9 +17,10 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice& device, const ShaderModuleD
     shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(descriptor.code);
 
     auto& vulkanDevice = downcast(m_device);
-    if (vulkanDevice.vkAPI.CreateShaderModule(vulkanDevice.getVkDevice(), &shaderModuleCreateInfo, nullptr, &m_shaderModule) != VK_SUCCESS)
+    auto result = vulkanDevice.vkAPI.CreateShaderModule(vulkanDevice.getVkDevice(), &shaderModuleCreateInfo, nullptr, &m_shaderModule);
+    if (result != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create shader module");
+        throw std::runtime_error(fmt::format("Failed to create shader module. [Result: {}]", static_cast<int32_t>(result)));
     }
 }
 
