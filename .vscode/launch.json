@@ -105,7 +105,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -122,7 +122,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -139,7 +139,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -156,7 +156,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -173,7 +173,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -190,7 +190,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -207,7 +207,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -224,7 +224,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -241,7 +241,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -258,7 +258,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -302,7 +302,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -319,7 +319,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -336,7 +336,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
