@@ -6,7 +6,7 @@ plugins {
 }
 
 // Paths
-def sampleName = "wgpu_triangle2"
+def sampleName = "wgpu_triangle"
 def rootDir = Paths.get(project.projectDir.getParent()).getParent().getParent().getParent()
 def appDir = "${rootDir}/sample/apps/${sampleName}"
 def shaderDir = "${appDir}/shaders"

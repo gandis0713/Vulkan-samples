@@ -10,7 +10,7 @@ class MainActivity : GameActivity() {
 
     companion object {
         init {
-            System.loadLibrary("wgpu_triangle2")
+            System.loadLibrary("wgpu_triangle")
         }
     }
 }

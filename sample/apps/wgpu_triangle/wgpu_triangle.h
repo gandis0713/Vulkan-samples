@@ -9,12 +9,12 @@
 namespace jipu
 {
 
-class WGPUTriangleSample2 : public WGPUSample
+class WGPUTriangleSample : public WGPUSample
 {
 public:
-    WGPUTriangleSample2() = delete;
-    WGPUTriangleSample2(const WGPUSampleDescriptor& descriptor);
-    ~WGPUTriangleSample2() override;
+    WGPUTriangleSample() = delete;
+    WGPUTriangleSample(const WGPUSampleDescriptor& descriptor);
+    ~WGPUTriangleSample() override;
 
     void init() override;
     void update() override;

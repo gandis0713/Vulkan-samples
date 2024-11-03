@@ -1,4 +1,4 @@
-#include "wgpu_triangle2.h"
+#include "wgpu_triangle.h"
 
 #include "file.h"
 #include <spdlog/spdlog.h>
@@ -6,33 +6,30 @@
 namespace jipu
 {
 
-WGPUTriangleSample2::WGPUTriangleSample2(const WGPUSampleDescriptor& descriptor)
+WGPUTriangleSample::WGPUTriangleSample(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
     , m_wgpuContext{}
 {
 }
 
-WGPUTriangleSample2::~WGPUTriangleSample2()
+WGPUTriangleSample::~WGPUTriangleSample()
 {
     finalizeContext();
 }
 
-void WGPUTriangleSample2::init()
+void WGPUTriangleSample::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kDawn);
-    changeAPI(APIType::kDawn);
-
-    initializeContext();
+    changeAPI(APIType::kJipu);
 }
 
-void WGPUTriangleSample2::update()
+void WGPUTriangleSample::update()
 {
     WGPUSample::update();
 }
 
-void WGPUTriangleSample2::draw()
+void WGPUTriangleSample::draw()
 {
     WGPUSurfaceTexture surfaceTexture{};
     wgpu().SurfaceGetCurrentTexture(getContext().surface, &surfaceTexture);
@@ -72,7 +69,7 @@ void WGPUTriangleSample2::draw()
     wgpu().TextureRelease(surfaceTexture.texture);
 }
 
-void WGPUTriangleSample2::initializeContext()
+void WGPUTriangleSample::initializeContext()
 {
     createInstance();
     createSurface();
@@ -85,25 +82,78 @@ void WGPUTriangleSample2::initializeContext()
     createPipeline();
 }
 
-void WGPUTriangleSample2::finalizeContext()
+void WGPUTriangleSample::finalizeContext()
 {
     // TODO: check ways release and destory.
-    wgpu().RenderPipelineRelease(getContext().renderPipeline);
-    wgpu().PipelineLayoutRelease(getContext().pipelineLayout);
-    wgpu().ShaderModuleRelease(getContext().vertSPIRVShaderModule);
-    wgpu().ShaderModuleRelease(getContext().fragSPIRVShaderModule);
-    wgpu().ShaderModuleRelease(getContext().vertWGSLShaderModule);
-    wgpu().ShaderModuleRelease(getContext().fragWGSLShaderModule);
+    if (getContext().renderPipeline)
+    {
+        wgpu().RenderPipelineRelease(getContext().renderPipeline);
+        getContext().renderPipeline = nullptr;
+    }
 
-    wgpu().QueueRelease(getContext().queue);
-    wgpu().DeviceDestroy(getContext().device);
-    wgpu().DeviceRelease(getContext().device);
-    wgpu().AdapterRelease(getContext().adapter);
-    wgpu().SurfaceRelease(getContext().surface);
-    wgpu().InstanceRelease(getContext().instance);
+    if (getContext().pipelineLayout)
+    {
+        wgpu().PipelineLayoutRelease(getContext().pipelineLayout);
+        getContext().pipelineLayout = nullptr;
+    }
+
+    if (getContext().vertSPIRVShaderModule)
+    {
+        wgpu().ShaderModuleRelease(getContext().vertSPIRVShaderModule);
+        getContext().vertSPIRVShaderModule = nullptr;
+    }
+
+    if (getContext().fragSPIRVShaderModule)
+    {
+        wgpu().ShaderModuleRelease(getContext().fragSPIRVShaderModule);
+        getContext().fragSPIRVShaderModule = nullptr;
+    }
+
+    if (getContext().vertWGSLShaderModule)
+    {
+        wgpu().ShaderModuleRelease(getContext().vertWGSLShaderModule);
+        getContext().vertWGSLShaderModule = nullptr;
+    }
+
+    if (getContext().fragWGSLShaderModule)
+    {
+        wgpu().ShaderModuleRelease(getContext().fragWGSLShaderModule);
+        getContext().fragWGSLShaderModule = nullptr;
+    }
+
+    if (getContext().queue)
+    {
+        wgpu().QueueRelease(getContext().queue);
+        getContext().queue = nullptr;
+    }
+
+    if (getContext().device)
+    {
+        wgpu().DeviceDestroy(getContext().device);
+        wgpu().DeviceRelease(getContext().device);
+        getContext().device = nullptr;
+    }
+
+    if (getContext().adapter)
+    {
+        wgpu().AdapterRelease(getContext().adapter);
+        getContext().adapter = nullptr;
+    }
+
+    if (getContext().surface)
+    {
+        wgpu().SurfaceRelease(getContext().surface);
+        getContext().surface = nullptr;
+    }
+
+    if (getContext().instance)
+    {
+        wgpu().InstanceRelease(getContext().instance);
+        getContext().instance = nullptr;
+    }
 }
 
-void WGPUTriangleSample2::createInstance()
+void WGPUTriangleSample::createInstance()
 {
     WGPUInstanceDescriptor descriptor{};
     descriptor.nextInChain = NULL;
@@ -112,7 +162,7 @@ void WGPUTriangleSample2::createInstance()
     assert(getContext().instance);
 }
 
-void WGPUTriangleSample2::createSurface()
+void WGPUTriangleSample::createSurface()
 {
     WGPUChainedStruct chain{};
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -142,7 +192,7 @@ void WGPUTriangleSample2::createSurface()
     assert(getContext().surface);
 }
 
-void WGPUTriangleSample2::createAdapter()
+void WGPUTriangleSample::createAdapter()
 {
     auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata) {
         if (status != WGPURequestAdapterStatus_Success)
@@ -173,7 +223,7 @@ void WGPUTriangleSample2::createAdapter()
     assert(getContext().adapter);
 }
 
-void WGPUTriangleSample2::createDevice()
+void WGPUTriangleSample::createDevice()
 {
     auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata) {
         if (status != WGPURequestDeviceStatus_Success)
@@ -191,7 +241,7 @@ void WGPUTriangleSample2::createDevice()
     assert(getContext().device);
 }
 
-void WGPUTriangleSample2::createSurfaceConfigure()
+void WGPUTriangleSample::createSurfaceConfigure()
 {
     auto status = wgpu().SurfaceGetCapabilities(getContext().surface, getContext().adapter, &getContext().surfaceCapabilities);
     if (status != WGPUStatus_Success)
@@ -239,14 +289,14 @@ void WGPUTriangleSample2::createSurfaceConfigure()
     wgpu().SurfaceConfigure(getContext().surface, &getContext().surfaceConfigure);
 }
 
-void WGPUTriangleSample2::createQueue()
+void WGPUTriangleSample::createQueue()
 {
     getContext().queue = wgpu().DeviceGetQueue(getContext().device);
 
     assert(getContext().queue);
 }
 
-void WGPUTriangleSample2::createShaderModule()
+void WGPUTriangleSample::createShaderModule()
 {
     // spriv
     {
@@ -319,7 +369,7 @@ void WGPUTriangleSample2::createShaderModule()
     }
 }
 
-void WGPUTriangleSample2::createPipelineLayout()
+void WGPUTriangleSample::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     getContext().pipelineLayout = wgpu().DeviceCreatePipelineLayout(getContext().device, &pipelineLayoutDescriptor);
@@ -327,7 +377,7 @@ void WGPUTriangleSample2::createPipelineLayout()
     assert(getContext().pipelineLayout);
 }
 
-void WGPUTriangleSample2::createPipeline()
+void WGPUTriangleSample::createPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
@@ -376,7 +426,7 @@ void WGPUTriangleSample2::createPipeline()
     assert(getContext().renderPipeline);
 }
 
-WGPUTriangleSample2::WGPUContext& WGPUTriangleSample2::getContext()
+WGPUTriangleSample::WGPUContext& WGPUTriangleSample::getContext()
 {
     return m_wgpuContext;
 }
