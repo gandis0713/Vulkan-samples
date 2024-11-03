@@ -54,13 +54,6 @@ function(configure_sample target)
         )
     endif()
 
-    if(USE_DAWN_WEBGPU)
-        target_compile_definitions(${target}
-            PRIVATE
-            "USE_DAWN_HEADER"
-        )
-    endif()
-
     if(MSVC)
         target_compile_definitions(${target}
             PRIVATE

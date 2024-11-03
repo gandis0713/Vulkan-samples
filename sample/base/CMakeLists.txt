@@ -50,6 +50,8 @@ list(APPEND SRC_FILES
     image.h
     hpc_watcher.cpp
     hpc_watcher.h
+    webgpu_api.cpp
+    webgpu_api.h
 )
 
 if(ANDROID)
@@ -85,13 +87,22 @@ target_include_directories(jipu_sample_base
 target_link_libraries(jipu_sample_base
     PUBLIC
     glm::glm
-    jipu::webgpu
+    jipu::common
+    jipu::native
+    jipu::jipu
     PRIVATE
     tinyobjloader::tinyobjloader
     KTX::ktx
     hpc::hpc
     imgui::imgui
 )
+
+if(USE_DAWN_WEBGPU)
+    target_compile_definitions(jipu_sample_base
+        PUBLIC
+        "USE_DAWN_HEADER"
+    )
+endif()
 
 if(NOT ANDROID)
     target_link_libraries(jipu_sample_base

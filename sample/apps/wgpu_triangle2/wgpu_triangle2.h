@@ -31,24 +31,31 @@ public:
     void createPipeline();
 
 private:
-    WGPUInstance m_instance = nullptr;
+    struct WGPUContext
+    {
+        WGPUInstance instance = nullptr;
 
-    WGPUSurface m_surface = nullptr;
-    WGPUSurfaceCapabilities m_surfaceCapabilities{};
-    WGPUSurfaceConfiguration m_surfaceConfigure{};
+        WGPUSurface surface = nullptr;
+        WGPUSurfaceCapabilities surfaceCapabilities{};
+        WGPUSurfaceConfiguration surfaceConfigure{};
 
-    WGPUAdapter m_adapter = nullptr;
-    WGPUDevice m_device = nullptr;
+        WGPUAdapter adapter = nullptr;
+        WGPUDevice device = nullptr;
 
-    WGPUQueue m_queue = nullptr;
+        WGPUQueue queue = nullptr;
 
-    WGPUPipelineLayout m_pipelineLayout = nullptr;
-    WGPURenderPipeline m_renderPipeline = nullptr;
-    WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
-    WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
-    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
-    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+        WGPUPipelineLayout pipelineLayout = nullptr;
+        WGPURenderPipeline renderPipeline = nullptr;
+        WGPUShaderModule vertSPIRVShaderModule = nullptr;
+        WGPUShaderModule fragSPIRVShaderModule = nullptr;
+        WGPUShaderModule vertWGSLShaderModule = nullptr;
+        WGPUShaderModule fragWGSLShaderModule = nullptr;
+    };
 
+    WGPUContext& getContext();
+
+private:
+    std::unordered_map<WGPUSample::LibType, WGPUContext> m_wgpuContexts{};
     bool m_useSPIRV = false;
 };
 

@@ -122,14 +122,14 @@ if(BUILD_SHARED_LIBS)
   set(LIB_TYPE SHARED)
 endif()
 
-add_library(native
+add_library(jipu_native
   ${LIB_TYPE} # SHARED or STATIC
   ${NATIVE_SRC_FILES}
 )
-add_library(jipu::native ALIAS native)
+add_library(jipu::native ALIAS jipu_native)
 
 # include directories
-target_include_directories(native
+target_include_directories(jipu_native
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -137,15 +137,16 @@ target_include_directories(native
 )
 
 # link libraries
-target_link_libraries(native
-  PRIVATE
+target_link_libraries(jipu_native
+  PUBLIC
   jipu::common
+  PRIVATE
   Vulkan::Headers
   GPUOpen::VulkanMemoryAllocator
 )
 
 if(APPLE)
-  target_link_libraries(native
+  target_link_libraries(jipu_native
     PRIVATE
     "-framework Cocoa"
   )
@@ -155,7 +156,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-  target_compile_options(native
+  target_compile_options(jipu_native
     PRIVATE
     -Wall
     -Werror
@@ -172,21 +173,21 @@ elseif(APPLE)
   )
 endif()
 
-target_compile_definitions(native
+target_compile_definitions(jipu_native
   PRIVATE
   "JIPU_IMPLEMENTATION"
   "VULKAN_IMPLEMENTATION"
 )
 
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(native
+  target_compile_definitions(jipu_native
     PRIVATE
     "JIPU_SHARED_LIBRARY"
   )
 endif()
 
 if(MSVC)
-  target_compile_definitions(native
+  target_compile_definitions(jipu_native
     PRIVATE
     "NOMINMAX" # to undefine max, min macro
   )
@@ -195,7 +196,7 @@ endif()
 if(EXPORT_JIPU_NATIVE)
   message(STATUS "jipu::native will be installed")
 
-  target_include_directories(native
+  target_include_directories(jipu_native
     PUBLIC
     $<INSTALL_INTERFACE:include>
   )
@@ -205,14 +206,14 @@ if(EXPORT_JIPU_NATIVE)
     FILES_MATCHING PATTERN "*.h"
   )
 
-  # install(TARGETS native
+  # install(TARGETS jipu_native
   # EXPORT native_targets
   # RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
   # LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   # ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   # )
 
-  # install(EXPORT native_targets
+  # install(EXPORT jipu_native_targets
   # FILE native-config.cmake
   # NAMESPACE jipu::
   # DESTINATION ${CMAKE_INSTALL_PREFIX}/share/jipu
