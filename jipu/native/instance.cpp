@@ -12,6 +12,18 @@
 namespace jipu
 {
 
+static std::shared_ptr<spdlog::logger> getLogger()
+{
+#if defined(__ANDROID__) || defined(ANDROID)
+    std::string tag = "spdlog-android";
+    static auto logger = spdlog::android_logger_mt("jipu");
+#else
+    static auto logger = spdlog::stdout_color_mt("jipu");
+#endif
+
+    return logger;
+}
+
 std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
 {
     switch (descriptor.type)
@@ -28,13 +40,7 @@ std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
 
 Instance::Instance()
 {
-#if defined(__ANDROID__) || defined(ANDROID)
-    std::string tag = "spdlog-android";
-    auto logger = spdlog::android_logger_mt("jipu");
-#else
-    auto logger = spdlog::stdout_color_mt("jipu");
-#endif
-    spdlog::set_default_logger(logger);
+    spdlog::set_default_logger(getLogger());
     spdlog::set_level(spdlog::level::trace);
 }
 
