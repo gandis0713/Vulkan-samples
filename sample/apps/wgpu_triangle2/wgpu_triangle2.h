@@ -20,6 +20,9 @@ public:
     void update() override;
     void draw() override;
 
+    void initializeContext() override;
+    void finalizeContext() override;
+
     void createInstance();
     void createSurface();
     void createAdapter();
@@ -50,12 +53,11 @@ private:
         WGPUShaderModule fragSPIRVShaderModule = nullptr;
         WGPUShaderModule vertWGSLShaderModule = nullptr;
         WGPUShaderModule fragWGSLShaderModule = nullptr;
-    };
+    } m_wgpuContext;
 
     WGPUContext& getContext();
 
 private:
-    std::unordered_map<WGPUSample::LibType, WGPUContext> m_wgpuContexts{};
     bool m_useSPIRV = false;
 };
 
