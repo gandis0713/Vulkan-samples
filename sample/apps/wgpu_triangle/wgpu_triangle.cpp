@@ -1,6 +1,6 @@
 #include "wgpu_triangle.h"
-#include "file.h"
 
+#include "file.h"
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -299,6 +299,8 @@ void WGPUTriangleSample::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     m_pipelineLayout = wgpuDeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+
+    assert(m_pipelineLayout);
 }
 
 void WGPUTriangleSample::createPipeline()
@@ -347,6 +349,8 @@ void WGPUTriangleSample::createPipeline()
     renderPipelineDescriptor.fragment = &fragState;
 
     m_renderPipeline = wgpuDeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
+
+    assert(m_renderPipeline);
 }
 
 } // namespace jipu

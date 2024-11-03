@@ -1,4 +1,5 @@
 #include "wgpu_triangle2.h"
+
 #include "file.h"
 #include <spdlog/spdlog.h>
 
@@ -298,12 +299,11 @@ void WGPUTriangleSample2::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     m_pipelineLayout = wgpuDeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
-
-    assert(m_pipelineLayout);
 }
 
 void WGPUTriangleSample2::createPipeline()
 {
+
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
     primitiveState.cullMode = WGPUCullMode_None;
@@ -347,8 +347,6 @@ void WGPUTriangleSample2::createPipeline()
     renderPipelineDescriptor.fragment = &fragState;
 
     m_renderPipeline = wgpuDeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
-
-    assert(m_renderPipeline);
 }
 
 } // namespace jipu
