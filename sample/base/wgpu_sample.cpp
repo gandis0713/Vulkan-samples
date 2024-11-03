@@ -13,30 +13,30 @@ WGPUSample::WGPUSample(const WGPUSampleDescriptor& descriptor)
     , m_appDir(descriptor.path.parent_path())
 {
 #if defined(__ANDROID__) || defined(ANDROID)
-    std::unordered_map<LibType, std::string> wgpuLibNames{
-        { LibType::kJipu, "libjipu.so" },
-        { LibType::kDawn, "libwebgpu_dawn.so" },
+    std::unordered_map<APIType, std::string> wgpuLibNames{
+        { APIType::kJipu, "libjipu.so" },
+        { APIType::kDawn, "libwebgpu_dawn.so" },
     };
 #elif defined(__linux__)
-    std::unordered_map<LibType, std::string> wgpuLibNames{
-        { LibType::kJipu, "libjipu.so" },
-        { LibType::kDawn, "libwebgpu_dawn.so" },
+    std::unordered_map<APIType, std::string> wgpuLibNames{
+        { APIType::kJipu, "libjipu.so" },
+        { APIType::kDawn, "libwebgpu_dawn.so" },
     };
 #elif defined(__APPLE__)
-    std::unordered_map<LibType, std::string> wgpuLibNames{
-        { LibType::kJipu, "libjipu.dylib" },
-        { LibType::kDawn, "libwebgpu_dawn.dylib" },
+    std::unordered_map<APIType, std::string> wgpuLibNames{
+        { APIType::kJipu, "libjipu.dylib" },
+        { APIType::kDawn, "libwebgpu_dawn.dylib" },
     };
 #elif defined(WIN32)
-    std::unordered_map<LibType, std::string> wgpuLibNames{
-        { LibType::kJipu, "jipu.dll" },
-        { LibType::kDawn, "webgpu_dawn.dll" },
+    std::unordered_map<APIType, std::string> wgpuLibNames{
+        { APIType::kJipu, "jipu.dll" },
+        { APIType::kDawn, "webgpu_dawn.dll" },
     };
 #endif
 
-    for (auto i = 0; i < static_cast<uint16_t>(LibType::kCount); ++i)
+    for (auto i = 0; i < static_cast<uint16_t>(APIType::kCount); ++i)
     {
-        auto type = static_cast<LibType>(i);
+        auto type = static_cast<APIType>(i);
 
         m_wgpuLibs.insert({ type, DyLib{} });
         if (!m_wgpuLibs[type].open(wgpuLibNames[type].c_str()))
@@ -65,22 +65,26 @@ void WGPUSample::update()
 {
 }
 
-void WGPUSample::setLibType(WGPUSample::LibType type)
+void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
-    m_libType = type;
+    finalizeContext();
+
+    m_apiType = type;
+
+    initializeContext();
 }
 
-WGPUSample::LibType WGPUSample::getLibType()
+WGPUSample::APIType WGPUSample::getAPIType()
 {
-    return m_libType;
+    return m_apiType;
 }
 
 WebGPUAPI& WGPUSample::wgpu()
 {
-    return m_wgpuAPIs[m_libType];
+    return m_wgpuAPIs[m_apiType];
 }
 
-WebGPUAPI& WGPUSample::wgpu(LibType type)
+WebGPUAPI& WGPUSample::wgpu(APIType type)
 {
     return m_wgpuAPIs[type];
 }

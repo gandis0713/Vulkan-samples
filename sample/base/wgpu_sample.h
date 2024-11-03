@@ -28,28 +28,31 @@ public:
     void init() override;
     void update() override;
 
+    virtual void initializeContext() = 0;
+    virtual void finalizeContext() = 0;
+
 protected:
-    enum class LibType
+    enum class APIType
     {
         kJipu = 0,
         kDawn,
         kCount
     };
 
-    void setLibType(LibType type);
-    WGPUSample::LibType getLibType();
+    void changeAPI(APIType type);
+    WGPUSample::APIType getAPIType();
 
     WebGPUAPI& wgpu();
-    WebGPUAPI& wgpu(LibType type);
+    WebGPUAPI& wgpu(APIType type);
 
 protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
 
-    LibType m_libType{ LibType::kJipu };
+    APIType m_apiType{ APIType::kJipu };
 
-    std::unordered_map<LibType, DyLib> m_wgpuLibs{};
-    std::unordered_map<LibType, WebGPUAPI> m_wgpuAPIs{};
+    std::unordered_map<APIType, DyLib> m_wgpuLibs{};
+    std::unordered_map<APIType, WebGPUAPI> m_wgpuAPIs{};
 };
 
 } // namespace jipu
