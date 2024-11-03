@@ -237,7 +237,7 @@ void procInstanceRelease(WGPUInstance instance)
 namespace
 {
 
-std::unordered_map<const char*, WGPUProc> sProcMap{
+std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuCreateInstance", reinterpret_cast<WGPUProc>(procCreateInstance) },
     { "wgpuInstanceRequestAdapter", reinterpret_cast<WGPUProc>(procInstanceRequestAdapter) },
     { "wgpuInstanceCreateSurface", reinterpret_cast<WGPUProc>(procInstanceCreateSurface) },
@@ -249,7 +249,7 @@ std::unordered_map<const char*, WGPUProc> sProcMap{
     { "wgpuDeviceCreateBindGroupLayout", reinterpret_cast<WGPUProc>(procDeviceCreateBindGroupLayout) },
     { "wgpuDeviceCreatePipelineLayout", reinterpret_cast<WGPUProc>(procDeviceCreatePipelineLayout) },
     { "wgpuDeviceCreateRenderPipeline", reinterpret_cast<WGPUProc>(procDeviceCreateRenderPipeline) },
-    { "wpugDeviceCreateShaderModule", reinterpret_cast<WGPUProc>(procDeviceCreateShaderModule) },
+    { "wgpuDeviceCreateShaderModule", reinterpret_cast<WGPUProc>(procDeviceCreateShaderModule) },
     { "wgpuSurfaceGetCurrentTexture", reinterpret_cast<WGPUProc>(procSurfaceGetCurrentTexture) },
     { "wgpuTextureCreateView", reinterpret_cast<WGPUProc>(procTextureCreateView) },
     { "wgpuDeviceCreateCommandEncoder", reinterpret_cast<WGPUProc>(procDeviceCreateCommandEncoder) },
@@ -285,9 +285,10 @@ WGPUProc procGetProcAddress(WGPUStringView procName)
         return nullptr;
     }
 
-    if (sProcMap.contains(procName.data))
+    std::string key(procName.data, procName.length);
+    if (sProcMap.contains(key))
     {
-        return sProcMap[procName.data];
+        return sProcMap[key];
     }
 
     return nullptr;
