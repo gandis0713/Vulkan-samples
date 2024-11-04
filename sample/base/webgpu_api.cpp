@@ -99,7 +99,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(DeviceCreateRenderPipelineAsync);
     // GET_PROC(DeviceCreateSampler);
     GET_PROC(DeviceCreateShaderModule);
-    // GET_PROC(DeviceCreateTexture);
+    GET_PROC(DeviceCreateTexture);
     GET_PROC(DeviceDestroy);
     // GET_PROC(DeviceGetFeatures);
     // GET_PROC(DeviceGetLimits);

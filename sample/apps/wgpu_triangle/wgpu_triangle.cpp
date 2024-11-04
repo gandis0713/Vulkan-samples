@@ -71,12 +71,8 @@ void WGPUTriangleSample::draw()
 
 void WGPUTriangleSample::initializeContext()
 {
-    createInstance();
-    createSurface();
-    createAdapter();
-    createDevice();
-    createSurfaceConfigure();
-    createQueue();
+    WGPUSample::initializeContext();
+
     createShaderModule();
     createPipelineLayout();
     createPipeline();
@@ -121,36 +117,7 @@ void WGPUTriangleSample::finalizeContext()
         m_fragWGSLShaderModule = nullptr;
     }
 
-    if (m_queue)
-    {
-        wgpu.QueueRelease(m_queue);
-        m_queue = nullptr;
-    }
-
-    if (m_device)
-    {
-        wgpu.DeviceDestroy(m_device);
-        wgpu.DeviceRelease(m_device);
-        m_device = nullptr;
-    }
-
-    if (m_adapter)
-    {
-        wgpu.AdapterRelease(m_adapter);
-        m_adapter = nullptr;
-    }
-
-    if (m_surface)
-    {
-        wgpu.SurfaceRelease(m_surface);
-        m_surface = nullptr;
-    }
-
-    if (m_instance)
-    {
-        wgpu.InstanceRelease(m_instance);
-        m_instance = nullptr;
-    }
+    WGPUSample::finalizeContext();
 }
 
 void WGPUTriangleSample::createShaderModule()

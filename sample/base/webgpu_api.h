@@ -89,7 +89,7 @@ struct WebGPUAPI
     // WGPUProcDeviceCreateRenderPipelineAsync DeviceCreateRenderPipelineAsync = nullptr;
     // WGPUProcDeviceCreateSampler DeviceCreateSampler = nullptr;
     WGPUProcDeviceCreateShaderModule DeviceCreateShaderModule = nullptr;
-    // WGPUProcDeviceCreateTexture DeviceCreateTexture = nullptr;
+    WGPUProcDeviceCreateTexture DeviceCreateTexture = nullptr;
     WGPUProcDeviceDestroy DeviceDestroy = nullptr;
     // WGPUProcDeviceGetFeatures DeviceGetFeatures = nullptr;
     // WGPUProcDeviceGetLimits DeviceGetLimits = nullptr;

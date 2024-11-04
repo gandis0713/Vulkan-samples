@@ -1,6 +1,7 @@
 #include "webgpu_texture.h"
 
 #include "jipu/native/texture.h"
+#include "webgpu_device.h"
 #include "webgpu_texture_view.h"
 
 namespace jipu
@@ -13,7 +14,19 @@ WebGPUTexture* WebGPUTexture::create(WebGPUDevice* wgpuDevice, Texture* texture)
 
 WebGPUTexture* WebGPUTexture::create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor)
 {
-    return new WebGPUTexture(device, nullptr, descriptor);
+    TextureDescriptor textureDescriptor{};
+    textureDescriptor.type = WGPUToTextureType(descriptor->dimension);
+    textureDescriptor.width = descriptor->size.width;
+    textureDescriptor.height = descriptor->size.height;
+    textureDescriptor.depth = descriptor->size.depthOrArrayLayers;
+    textureDescriptor.mipLevels = descriptor->mipLevelCount;
+    textureDescriptor.sampleCount = descriptor->sampleCount;
+    textureDescriptor.format = WGPUToTextureFormat(descriptor->format);
+    textureDescriptor.usage = WGPUToTextureUsageFlags(descriptor->usage);
+
+    auto texture = device->getDevice()->createTexture(textureDescriptor);
+
+    return new WebGPUTexture(device, std::move(texture), descriptor);
 }
 
 WebGPUTexture::WebGPUTexture(WebGPUDevice* device, Texture* texture)
@@ -269,8 +282,53 @@ WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format)
     }
 }
 
+WGPUTextureDimension ToWGPUTextureDimension(TextureType type)
+{
+    switch (type)
+    {
+    case TextureType::k1D:
+        return WGPUTextureDimension::WGPUTextureDimension_1D;
+    default:
+    case TextureType::k2D:
+        return WGPUTextureDimension::WGPUTextureDimension_2D;
+    case TextureType::k3D:
+        return WGPUTextureDimension::WGPUTextureDimension_3D;
+    }
+}
+
+WGPUTextureUsage ToWGPUTextureUsage(TextureUsageFlags usage)
+{
+    WGPUTextureUsage wgpuUsage = WGPUTextureUsage_None;
+    if (usage & TextureUsageFlagBits::kCopySrc)
+    {
+        wgpuUsage |= WGPUTextureUsage_CopySrc;
+    }
+    if (usage & TextureUsageFlagBits::kCopyDst)
+    {
+        wgpuUsage |= WGPUTextureUsage_CopyDst;
+    }
+    if (usage & TextureUsageFlagBits::kTextureBinding)
+    {
+        wgpuUsage |= WGPUTextureUsage_TextureBinding;
+    }
+    if (usage & TextureUsageFlagBits::kStorageBinding)
+    {
+        wgpuUsage |= WGPUTextureUsage_StorageBinding;
+    }
+    if (usage & TextureUsageFlagBits::kDepthStencil)
+    {
+        // TODO
+    }
+    if (usage & TextureUsageFlagBits::kColorAttachment)
+    {
+        wgpuUsage |= WGPUTextureUsage_RenderAttachment;
+    }
+
+    return wgpuUsage;
+}
+
 // Convert from JIPU to WebGPU
-TextureFormat ToTextureFormat(WGPUTextureFormat format)
+TextureFormat WGPUToTextureFormat(WGPUTextureFormat format)
 {
     switch (format)
     {
@@ -497,6 +555,48 @@ TextureFormat ToTextureFormat(WGPUTextureFormat format)
     default:
         return TextureFormat::kUndefined;
     }
+}
+
+TextureType WGPUToTextureType(WGPUTextureDimension dimension)
+{
+    switch (dimension)
+    {
+    case WGPUTextureDimension::WGPUTextureDimension_1D:
+        return TextureType::k1D;
+    default:
+    case WGPUTextureDimension::WGPUTextureDimension_2D:
+        return TextureType::k2D;
+    case WGPUTextureDimension::WGPUTextureDimension_3D:
+        return TextureType::k3D;
+    }
+}
+
+TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsage usage)
+{
+    TextureUsageFlags jipuUsage = TextureUsageFlagBits::kUndefined;
+    if (usage & WGPUTextureUsage_CopySrc)
+    {
+        jipuUsage |= TextureUsageFlagBits::kCopySrc;
+    }
+    if (usage & WGPUTextureUsage_CopyDst)
+    {
+        jipuUsage |= TextureUsageFlagBits::kCopyDst;
+    }
+    if (usage & WGPUTextureUsage_TextureBinding)
+    {
+        jipuUsage |= TextureUsageFlagBits::kTextureBinding;
+    }
+    if (usage & WGPUTextureUsage_StorageBinding)
+    {
+        jipuUsage |= TextureUsageFlagBits::kStorageBinding;
+    }
+    if (usage & WGPUTextureUsage_RenderAttachment)
+    {
+        jipuUsage |= TextureUsageFlagBits::kColorAttachment;
+    }
+    // TODO: depth
+
+    return jipuUsage;
 }
 
 } // namespace jipu

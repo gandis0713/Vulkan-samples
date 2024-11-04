@@ -28,8 +28,8 @@ public:
     void init() override;
     void update() override;
 
-    virtual void initializeContext() = 0;
-    virtual void finalizeContext() = 0;
+    virtual void initializeContext();
+    virtual void finalizeContext();
 
     virtual void createInstance();
     virtual void createSurface();

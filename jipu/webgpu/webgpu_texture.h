@@ -45,8 +45,12 @@ private:
 
 // Convert from WebGPU to JIPU
 WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format);
+WGPUTextureDimension ToWGPUTextureDimension(TextureType type);
+WGPUTextureUsage ToWGPUTextureUsage(TextureUsageFlags usage);
 
 // Convert from JIPU to WebGPU
-TextureFormat ToTextureFormat(WGPUTextureFormat format);
+TextureFormat WGPUToTextureFormat(WGPUTextureFormat format);
+TextureType WGPUToTextureType(WGPUTextureDimension dimension);
+TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsage usage);
 
 } // namespace jipu

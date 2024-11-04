@@ -110,6 +110,7 @@ endfunction()
 
 # for jipu
 add_subdirectory(wgpu_triangle)
+add_subdirectory(wgpu_triangle_msaa)
 
 # experimental for native
 add_subdirectory(triangle)

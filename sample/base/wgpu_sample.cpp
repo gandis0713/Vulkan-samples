@@ -65,6 +65,50 @@ void WGPUSample::update()
 {
 }
 
+void WGPUSample::initializeContext()
+{
+    createInstance();
+    createSurface();
+    createAdapter();
+    createDevice();
+    createSurfaceConfigure();
+    createQueue();
+}
+
+void WGPUSample::finalizeContext()
+{
+    if (m_queue)
+    {
+        wgpu.QueueRelease(m_queue);
+        m_queue = nullptr;
+    }
+
+    if (m_device)
+    {
+        wgpu.DeviceDestroy(m_device);
+        wgpu.DeviceRelease(m_device);
+        m_device = nullptr;
+    }
+
+    if (m_adapter)
+    {
+        wgpu.AdapterRelease(m_adapter);
+        m_adapter = nullptr;
+    }
+
+    if (m_surface)
+    {
+        wgpu.SurfaceRelease(m_surface);
+        m_surface = nullptr;
+    }
+
+    if (m_instance)
+    {
+        wgpu.InstanceRelease(m_instance);
+        m_instance = nullptr;
+    }
+}
+
 void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
     finalizeContext();
@@ -174,31 +218,29 @@ void WGPUSample::createSurfaceConfigure()
     if (status != WGPUStatus_Success)
         throw std::runtime_error("Failed to get surface capabilities.");
 
-    auto& surfaceCapabilities = m_surfaceCapabilities;
-
     WGPUTextureFormat format = WGPUTextureFormat_Undefined;
-    for (auto i = 0; i < surfaceCapabilities.formatCount; ++i)
+    for (auto i = 0; i < m_surfaceCapabilities.formatCount; ++i)
     {
         // TODO
-        format = surfaceCapabilities.formats[0];
+        format = m_surfaceCapabilities.formats[0];
     }
 
     WGPUCompositeAlphaMode alphaMode = WGPUCompositeAlphaMode_Auto;
-    for (auto i = 0; i < surfaceCapabilities.alphaModeCount; ++i)
+    for (auto i = 0; i < m_surfaceCapabilities.alphaModeCount; ++i)
     {
         // TODO
-        alphaMode = surfaceCapabilities.alphaModes[0];
+        alphaMode = m_surfaceCapabilities.alphaModes[0];
     }
 
     WGPUPresentMode presentMode = WGPUPresentMode_Fifo;
-    for (auto i = 0; i < surfaceCapabilities.presentModeCount; ++i)
+    for (auto i = 0; i < m_surfaceCapabilities.presentModeCount; ++i)
     {
         // TODO
-        // presentMode = surfaceCapabilities.presentModes[0];
+        // presentMode = m_surfaceCapabilities.presentModes[0];
     }
 
     WGPUTextureUsage usage = WGPUTextureUsage_None;
-    if ((surfaceCapabilities.usages & WGPUTextureUsage_RenderAttachment) != 0)
+    if ((m_surfaceCapabilities.usages & WGPUTextureUsage_RenderAttachment) != 0)
     {
         usage = WGPUTextureUsage_RenderAttachment;
     }

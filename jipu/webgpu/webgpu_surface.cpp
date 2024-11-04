@@ -131,7 +131,7 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
         SwapchainDescriptor descriptor{};
         descriptor.width = config->width;
         descriptor.height = config->height;
-        descriptor.textureFormat = ToTextureFormat(config->format);
+        descriptor.textureFormat = WGPUToTextureFormat(config->format);
         descriptor.presentMode = ToPresentMode(config->presentMode);
         descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
         descriptor.surface = m_surface.get();

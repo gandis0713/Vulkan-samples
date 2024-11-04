@@ -72,7 +72,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             {
                 auto const wgpuTarget = descriptor->fragment->targets[i];
                 FragmentStage::Target target{};
-                target.format = ToTextureFormat(wgpuTarget.format);
+                target.format = WGPUToTextureFormat(wgpuTarget.format);
 
                 if (wgpuTarget.blend)
                 {
@@ -100,7 +100,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
         if (descriptor->depthStencil)
         {
             DepthStencilStage depthStencilStage{};
-            depthStencilStage.format = ToTextureFormat(descriptor->depthStencil->format);
+            depthStencilStage.format = WGPUToTextureFormat(descriptor->depthStencil->format);
 
             pipelineDescriptor.depthStencil = depthStencilStage;
         }
