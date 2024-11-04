@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 # find package
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-
-# find_library(VulkanSDK NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib")
 find_package(spdlog CONFIG REQUIRED)
 
 set(NATIVE_SRC_FILES
