@@ -11,8 +11,8 @@ WebGPUTextureView* WebGPUTextureView::create(WebGPUTexture* wgpuTexture, WGPUTex
     WGPUTextureViewDescriptor wgpuDescriptor = descriptor ? *descriptor : GenerateWGPUTextureViewDescriptor(wgpuTexture);
 
     TextureViewDescriptor viewDescriptor{};
-    viewDescriptor.dimension = ToTextureViewDimension(wgpuDescriptor.dimension);
-    viewDescriptor.aspect = ToTextureAspectFlags(wgpuTexture, wgpuDescriptor.aspect);
+    viewDescriptor.dimension = WGPUToTextureViewDimension(wgpuDescriptor.dimension);
+    viewDescriptor.aspect = WGPUToTextureAspectFlags(wgpuTexture, wgpuDescriptor.aspect);
 
     auto textureView = wgpuTexture->getTexture()->createTextureView(viewDescriptor);
 
@@ -47,7 +47,7 @@ WGPUTextureViewDescriptor GenerateWGPUTextureViewDescriptor(WebGPUTexture* wgpuT
     return descriptor;
 }
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUTextureViewDimension ToWGPUTextureViewDimension(TextureViewDimension dimension)
 {
     switch (dimension)
@@ -91,8 +91,8 @@ WGPUTextureAspect ToWGPUTextureAspect(TextureAspectFlags aspect)
     return wgpuAspect;
 }
 
-// Convert from JIPU to WebGPU
-TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension)
+// Convert from WebGPU to JIPU
+TextureViewDimension WGPUToTextureViewDimension(WGPUTextureViewDimension dimension)
 {
     switch (dimension)
     {
@@ -115,7 +115,7 @@ TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension)
     }
 }
 
-TextureAspectFlags ToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect)
+TextureAspectFlags WGPUToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect)
 {
     TextureAspectFlags flags = TextureAspectFlagBits::kUndefined;
 

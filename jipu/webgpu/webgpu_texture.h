@@ -43,12 +43,12 @@ private:
     [[maybe_unused]] std::unique_ptr<Texture> m_ownTexture = nullptr; // For own texture
 };
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format);
 WGPUTextureDimension ToWGPUTextureDimension(TextureType type);
 WGPUTextureUsage ToWGPUTextureUsage(TextureUsageFlags usage);
 
-// Convert from JIPU to WebGPU
+// Convert from WebGPU to JIPU
 TextureFormat WGPUToTextureFormat(WGPUTextureFormat format);
 TextureType WGPUToTextureType(WGPUTextureDimension dimension);
 TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsage usage);

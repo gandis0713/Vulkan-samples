@@ -15,8 +15,8 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
         {
             layoutDescriptor.buffers.push_back(BufferBindingLayout{
                 .index = entry.binding,
-                .stages = ToBindingStageFlags(entry.visibility),
-                .type = ToBufferBindingType(entry.buffer.type),
+                .stages = WGPUToBindingStageFlags(entry.visibility),
+                .type = WGPUToBufferBindingType(entry.buffer.type),
                 .dynamicOffset = static_cast<bool>(entry.buffer.hasDynamicOffset),
             });
         }
@@ -26,7 +26,7 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
             // TODO: set sampler type
             layoutDescriptor.samplers.push_back(SamplerBindingLayout{
                 .index = entry.binding,
-                .stages = ToBindingStageFlags(entry.visibility),
+                .stages = WGPUToBindingStageFlags(entry.visibility),
             });
         }
 
@@ -35,7 +35,7 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
             // TODO: set texture sample type and dimension and multisampled
             layoutDescriptor.textures.push_back(TextureBindingLayout{
                 .index = entry.binding,
-                .stages = ToBindingStageFlags(entry.visibility),
+                .stages = WGPUToBindingStageFlags(entry.visibility),
             });
         }
     }
@@ -56,40 +56,6 @@ WebGPUBindGroupLayout::WebGPUBindGroupLayout(WebGPUDevice* wgpuDevice, std::uniq
 BindGroupLayout* WebGPUBindGroupLayout::getBindGroupLayout() const
 {
     return m_layout.get();
-}
-
-// Convert from WebGPU to JIPU
-BindingStageFlags ToBindingStageFlags(WGPUShaderStage stages)
-{
-    BindingStageFlags flags = BindingStageFlagBits::kUndefined;
-    if (stages & WGPUShaderStage_Vertex)
-    {
-        flags |= BindingStageFlagBits::kVertexStage;
-    }
-    if (stages & WGPUShaderStage_Fragment)
-    {
-        flags |= BindingStageFlagBits::kFragmentStage;
-    }
-    if (stages & WGPUShaderStage_Compute)
-    {
-        flags |= BindingStageFlagBits::kComputeStage;
-    }
-    return flags;
-}
-
-BufferBindingType ToBufferBindingType(WGPUBufferBindingType type)
-{
-    switch (type)
-    {
-    case WGPUBufferBindingType_Uniform:
-        return BufferBindingType::kUniform;
-    case WGPUBufferBindingType_Storage:
-        return BufferBindingType::kStorage;
-    case WGPUBufferBindingType_ReadOnlyStorage:
-        return BufferBindingType::kReadOnlyStorage;
-    default:
-        return BufferBindingType::kUndefined;
-    }
 }
 
 // Convert from JIPU to WebGPU
@@ -123,6 +89,40 @@ WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type)
         return WGPUBufferBindingType_ReadOnlyStorage;
     default:
         return WGPUBufferBindingType_Undefined;
+    }
+}
+
+// Convert from WebGPU to JIPU
+BindingStageFlags WGPUToBindingStageFlags(WGPUShaderStage stages)
+{
+    BindingStageFlags flags = BindingStageFlagBits::kUndefined;
+    if (stages & WGPUShaderStage_Vertex)
+    {
+        flags |= BindingStageFlagBits::kVertexStage;
+    }
+    if (stages & WGPUShaderStage_Fragment)
+    {
+        flags |= BindingStageFlagBits::kFragmentStage;
+    }
+    if (stages & WGPUShaderStage_Compute)
+    {
+        flags |= BindingStageFlagBits::kComputeStage;
+    }
+    return flags;
+}
+
+BufferBindingType WGPUToBufferBindingType(WGPUBufferBindingType type)
+{
+    switch (type)
+    {
+    case WGPUBufferBindingType_Uniform:
+        return BufferBindingType::kUniform;
+    case WGPUBufferBindingType_Storage:
+        return BufferBindingType::kStorage;
+    case WGPUBufferBindingType_ReadOnlyStorage:
+        return BufferBindingType::kReadOnlyStorage;
+    default:
+        return BufferBindingType::kUndefined;
     }
 }
 

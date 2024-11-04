@@ -132,7 +132,7 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
         descriptor.width = config->width;
         descriptor.height = config->height;
         descriptor.textureFormat = WGPUToTextureFormat(config->format);
-        descriptor.presentMode = ToPresentMode(config->presentMode);
+        descriptor.presentMode = WGPUToPresentMode(config->presentMode);
         descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
         descriptor.surface = m_surface.get();
         descriptor.queue = webgpuQueue->getQueue();
@@ -170,7 +170,7 @@ void WebGPUSurface::present()
     m_swapchain->present();
 }
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUCompositeAlphaMode ToWGPUCompositeAlphaMode(CompositeAlphaFlag flag)
 {
     switch (flag)
@@ -189,7 +189,6 @@ WGPUCompositeAlphaMode ToWGPUCompositeAlphaMode(CompositeAlphaFlag flag)
     }
 }
 
-// Convert from JIPU to WebGPU
 WGPUPresentMode ToWGPUPresentMode(PresentMode mode)
 {
     switch (mode)
@@ -207,7 +206,8 @@ WGPUPresentMode ToWGPUPresentMode(PresentMode mode)
     }
 }
 
-CompositeAlphaFlag ToCompositeAlphaMode(WGPUCompositeAlphaMode flag)
+// Convert from WebGPU to JIPU
+CompositeAlphaFlag WPGUToCompositeAlphaMode(WGPUCompositeAlphaMode flag)
 {
     switch (flag)
     {
@@ -226,7 +226,7 @@ CompositeAlphaFlag ToCompositeAlphaMode(WGPUCompositeAlphaMode flag)
     }
 }
 
-PresentMode ToPresentMode(WGPUPresentMode mode)
+PresentMode WGPUToPresentMode(WGPUPresentMode mode)
 {
     switch (mode)
     {

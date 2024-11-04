@@ -37,7 +37,7 @@ private:
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
 };
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUVertexFormat ToWGPUVertexFormat(VertexFormat format);
 WGPUVertexStepMode ToWGPUVertexStepMode(VertexMode mode);
 WGPUPrimitiveTopology ToWGPUPrimitiveTopology(PrimitiveTopology topology);
@@ -46,13 +46,13 @@ WGPUFrontFace ToWGPUFrontFace(FrontFace face);
 WGPUBlendFactor ToWGPUBlendFactor(BlendFactor factor);
 WGPUBlendOperation ToWGPUBlendOperation(BlendOperation operation);
 
-// Convert from JIPU to WebGPU
-VertexFormat ToVertexFormat(WGPUVertexFormat format);
-VertexMode ToVertexMode(WGPUVertexStepMode mode);
-PrimitiveTopology ToPrimitiveTopology(WGPUPrimitiveTopology topology);
-CullMode ToCullMode(WGPUCullMode mode);
-FrontFace ToFrontFace(WGPUFrontFace face);
-BlendFactor ToBlendFactor(WGPUBlendFactor factor);
-BlendOperation ToBlendOperation(WGPUBlendOperation operation);
+// Convert from WebGPU to JIPU
+VertexFormat WGPUToVertexFormat(WGPUVertexFormat format);
+VertexMode WPGUToVertexMode(WGPUVertexStepMode mode);
+PrimitiveTopology WGPUToPrimitiveTopology(WGPUPrimitiveTopology topology);
+CullMode WGPUToCullMode(WGPUCullMode mode);
+FrontFace WGPUToFrontFace(WGPUFrontFace face);
+BlendFactor WGPUToBlendFactor(WGPUBlendFactor factor);
+BlendOperation WGPUToBlendOperation(WGPUBlendOperation operation);
 
 } // namespace jipu

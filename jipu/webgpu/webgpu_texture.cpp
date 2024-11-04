@@ -52,7 +52,7 @@ Texture* WebGPUTexture::getTexture() const
     return m_externalTexture ? m_externalTexture : m_ownTexture.get();
 }
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format)
 {
     switch (format)
@@ -327,7 +327,7 @@ WGPUTextureUsage ToWGPUTextureUsage(TextureUsageFlags usage)
     return wgpuUsage;
 }
 
-// Convert from JIPU to WebGPU
+// Convert from WebGPU to JIPU
 TextureFormat WGPUToTextureFormat(WGPUTextureFormat format)
 {
     switch (format)

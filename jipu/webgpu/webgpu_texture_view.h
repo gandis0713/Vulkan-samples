@@ -42,12 +42,12 @@ private:
 // Generators
 WGPUTextureViewDescriptor GenerateWGPUTextureViewDescriptor(WebGPUTexture* wgpuTexture);
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUTextureViewDimension ToWGPUTextureViewDimension(TextureViewDimension dimension);
 WGPUTextureAspect ToWGPUTextureAspect(TextureAspectFlags aspect);
 
-// Convert from JIPU to WebGPU
-TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension);
-TextureAspectFlags ToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect);
+// Convert from WebGPU to JIPU
+TextureViewDimension WGPUToTextureViewDimension(WGPUTextureViewDimension dimension);
+TextureAspectFlags WGPUToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect);
 
 } // namespace jipu

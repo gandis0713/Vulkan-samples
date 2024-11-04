@@ -37,12 +37,12 @@ private:
     std::unique_ptr<BindGroupLayout> m_layout = nullptr;
 };
 
-// Convert from WebGPU to JIPU
-BindingStageFlags ToBindingStageFlags(WGPUShaderStage stages);
-BufferBindingType ToBufferBindingType(WGPUBufferBindingType type);
-
 // Conert from JIPU to WebGPU
 WGPUShaderStage ToWGPUShaderStage(BindingStageFlags stages);
 WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type);
+
+// Convert from WebGPU to JIPU
+BindingStageFlags WGPUToBindingStageFlags(WGPUShaderStage stages);
+BufferBindingType WGPUToBufferBindingType(WGPUBufferBindingType type);
 
 } // namespace jipu

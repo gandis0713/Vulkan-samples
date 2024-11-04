@@ -19,7 +19,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
 
     // input assembly
     {
-        pipelineDescriptor.inputAssembly.topology = ToPrimitiveTopology(descriptor->primitive.topology);
+        pipelineDescriptor.inputAssembly.topology = WGPUToPrimitiveTopology(descriptor->primitive.topology);
     }
 
     // vertex stage
@@ -32,14 +32,14 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
                 const auto buffer = descriptor->vertex.buffers[i];
 
                 VertexInputLayout layout{};
-                layout.mode = ToVertexMode(buffer.stepMode);
+                layout.mode = WPGUToVertexMode(buffer.stepMode);
                 layout.stride = buffer.arrayStride;
 
                 for (auto j = 0; j < buffer.attributeCount; ++j)
                 {
                     auto const& attribute = buffer.attributes[j];
                     VertexAttribute vertexAttribute{};
-                    vertexAttribute.format = ToVertexFormat(attribute.format);
+                    vertexAttribute.format = WGPUToVertexFormat(attribute.format);
                     vertexAttribute.offset = attribute.offset;
                     vertexAttribute.location = attribute.shaderLocation;
                     vertexAttribute.slot = j; // TODO: need to be checked.
@@ -58,8 +58,8 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
     // rasterization stage
     {
         RasterizationStage& rasterization = pipelineDescriptor.rasterization;
-        rasterization.cullMode = ToCullMode(descriptor->primitive.cullMode);
-        rasterization.frontFace = ToFrontFace(descriptor->primitive.frontFace);
+        rasterization.cullMode = WGPUToCullMode(descriptor->primitive.cullMode);
+        rasterization.frontFace = WGPUToFrontFace(descriptor->primitive.frontFace);
         rasterization.sampleCount = descriptor->multisample.count;
     }
 
@@ -77,12 +77,12 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
                 if (wgpuTarget.blend)
                 {
                     BlendState blendState{};
-                    blendState.color.srcFactor = ToBlendFactor(wgpuTarget.blend->color.srcFactor);
-                    blendState.color.dstFactor = ToBlendFactor(wgpuTarget.blend->color.dstFactor);
-                    blendState.color.operation = ToBlendOperation(wgpuTarget.blend->color.operation);
-                    blendState.alpha.srcFactor = ToBlendFactor(wgpuTarget.blend->alpha.srcFactor);
-                    blendState.alpha.dstFactor = ToBlendFactor(wgpuTarget.blend->alpha.dstFactor);
-                    blendState.alpha.operation = ToBlendOperation(wgpuTarget.blend->alpha.operation);
+                    blendState.color.srcFactor = WGPUToBlendFactor(wgpuTarget.blend->color.srcFactor);
+                    blendState.color.dstFactor = WGPUToBlendFactor(wgpuTarget.blend->color.dstFactor);
+                    blendState.color.operation = WGPUToBlendOperation(wgpuTarget.blend->color.operation);
+                    blendState.alpha.srcFactor = WGPUToBlendFactor(wgpuTarget.blend->alpha.srcFactor);
+                    blendState.alpha.dstFactor = WGPUToBlendFactor(wgpuTarget.blend->alpha.dstFactor);
+                    blendState.alpha.operation = WGPUToBlendOperation(wgpuTarget.blend->alpha.operation);
 
                     target.blend = blendState;
                 }
@@ -124,7 +124,7 @@ RenderPipeline* WebGPURenderPipeline::getRenderPipeline() const
     return m_pipeline.get();
 }
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUVertexFormat ToWGPUVertexFormat(VertexFormat format)
 {
     switch (format)
@@ -320,8 +320,8 @@ WGPUBlendOperation ToWGPUBlendOperation(BlendOperation operation)
     }
 }
 
-// Convert from JIPU to WebGPU
-VertexFormat ToVertexFormat(WGPUVertexFormat format)
+// Convert from WebGPU to JIPU
+VertexFormat WGPUToVertexFormat(WGPUVertexFormat format)
 {
     switch (format)
     {
@@ -392,7 +392,7 @@ VertexFormat ToVertexFormat(WGPUVertexFormat format)
     }
 }
 
-VertexMode ToVertexMode(WGPUVertexStepMode mode)
+VertexMode WPGUToVertexMode(WGPUVertexStepMode mode)
 {
     switch (mode)
     {
@@ -407,7 +407,7 @@ VertexMode ToVertexMode(WGPUVertexStepMode mode)
     }
 }
 
-PrimitiveTopology ToPrimitiveTopology(WGPUPrimitiveTopology topology)
+PrimitiveTopology WGPUToPrimitiveTopology(WGPUPrimitiveTopology topology)
 {
     switch (topology)
     {
@@ -426,7 +426,7 @@ PrimitiveTopology ToPrimitiveTopology(WGPUPrimitiveTopology topology)
     }
 }
 
-CullMode ToCullMode(WGPUCullMode mode)
+CullMode WGPUToCullMode(WGPUCullMode mode)
 {
     switch (mode)
     {
@@ -441,7 +441,7 @@ CullMode ToCullMode(WGPUCullMode mode)
     }
 }
 
-FrontFace ToFrontFace(WGPUFrontFace face)
+FrontFace WGPUToFrontFace(WGPUFrontFace face)
 {
     switch (face)
     {
@@ -454,7 +454,7 @@ FrontFace ToFrontFace(WGPUFrontFace face)
     }
 }
 
-BlendFactor ToBlendFactor(WGPUBlendFactor factor)
+BlendFactor WGPUToBlendFactor(WGPUBlendFactor factor)
 {
     switch (factor)
     {
@@ -497,7 +497,7 @@ BlendFactor ToBlendFactor(WGPUBlendFactor factor)
     }
 }
 
-BlendOperation ToBlendOperation(WGPUBlendOperation operation)
+BlendOperation WGPUToBlendOperation(WGPUBlendOperation operation)
 {
     switch (operation)
     {

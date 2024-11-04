@@ -25,10 +25,10 @@ WebGPURenderPassEncoder* WebGPURenderPassEncoder::create(WebGPUCommandEncoder* w
             auto wgpuColorAttachment = descriptor->colorAttachments[i];
 
             ColorAttachment colorAttachment;
-            colorAttachment.clearValue = ToColor(wgpuColorAttachment.clearValue);
+            colorAttachment.clearValue = WGPUToColor(wgpuColorAttachment.clearValue);
             colorAttachment.renderView = reinterpret_cast<WebGPUTextureView*>(wgpuColorAttachment.view)->getTextureView();
-            colorAttachment.loadOp = ToLoadOp(wgpuColorAttachment.loadOp);
-            colorAttachment.storeOp = ToStoreOp(wgpuColorAttachment.storeOp);
+            colorAttachment.loadOp = WGPUToLoadOp(wgpuColorAttachment.loadOp);
+            colorAttachment.storeOp = WGPUToStoreOp(wgpuColorAttachment.storeOp);
 
             auto resolveTarget = reinterpret_cast<WebGPUTextureView*>(wgpuColorAttachment.resolveTarget);
             if (resolveTarget)
@@ -50,10 +50,10 @@ WebGPURenderPassEncoder* WebGPURenderPassEncoder::create(WebGPUCommandEncoder* w
             depthStencilAttachment.clearValue.depth = wgpuDepthStencilAttachment->depthClearValue;
             depthStencilAttachment.clearValue.stencil = wgpuDepthStencilAttachment->stencilClearValue;
             depthStencilAttachment.textureView = reinterpret_cast<WebGPUTextureView*>(wgpuDepthStencilAttachment->view)->getTextureView();
-            depthStencilAttachment.depthLoadOp = ToLoadOp(wgpuDepthStencilAttachment->depthLoadOp);
-            depthStencilAttachment.depthStoreOp = ToStoreOp(wgpuDepthStencilAttachment->depthStoreOp);
-            depthStencilAttachment.stencilLoadOp = ToLoadOp(wgpuDepthStencilAttachment->stencilLoadOp);
-            depthStencilAttachment.stencilStoreOp = ToStoreOp(wgpuDepthStencilAttachment->stencilStoreOp);
+            depthStencilAttachment.depthLoadOp = WGPUToLoadOp(wgpuDepthStencilAttachment->depthLoadOp);
+            depthStencilAttachment.depthStoreOp = WGPUToStoreOp(wgpuDepthStencilAttachment->depthStoreOp);
+            depthStencilAttachment.stencilLoadOp = WGPUToLoadOp(wgpuDepthStencilAttachment->stencilLoadOp);
+            depthStencilAttachment.stencilStoreOp = WGPUToStoreOp(wgpuDepthStencilAttachment->stencilStoreOp);
 
             renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
         }
@@ -110,7 +110,7 @@ RenderPassEncoder* WebGPURenderPassEncoder::getRenderPassEncoder() const
     return m_renderPassEncoder.get();
 }
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUColor ToWGPUColor(Color color)
 {
     WGPUColor wgpuColor{};
@@ -150,8 +150,8 @@ WGPUStoreOp ToWGPUStoreOp(StoreOp storeOp)
     }
 }
 
-// Convert from JIPU to WebGPU
-Color ToColor(WGPUColor color)
+// Convert from WebGPU to JIPU
+Color WGPUToColor(WGPUColor color)
 {
     Color jipuColor{};
     jipuColor.r = color.r;
@@ -162,7 +162,7 @@ Color ToColor(WGPUColor color)
     return jipuColor;
 }
 
-LoadOp ToLoadOp(WGPULoadOp loadOp)
+LoadOp WGPUToLoadOp(WGPULoadOp loadOp)
 {
     switch (loadOp)
     {
@@ -177,7 +177,7 @@ LoadOp ToLoadOp(WGPULoadOp loadOp)
     }
 }
 
-StoreOp ToStoreOp(WGPUStoreOp storeOp)
+StoreOp WGPUToStoreOp(WGPUStoreOp storeOp)
 {
     switch (storeOp)
     {

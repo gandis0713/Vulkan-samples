@@ -67,12 +67,12 @@ private:
     void* m_HWND = nullptr;
 };
 
-// Convert from WebGPU to JIPU
+// Convert from JIPU to WebGPU
 WGPUCompositeAlphaMode ToWGPUCompositeAlphaMode(CompositeAlphaFlag flag);
 WGPUPresentMode ToWGPUPresentMode(PresentMode mode);
 
-// Convert from JIPU to WebGPU
-CompositeAlphaFlag ToCompositeAlphaMode(WGPUCompositeAlphaMode flag);
-PresentMode ToPresentMode(WGPUPresentMode mode);
+// Convert from WebGPU to JIPU
+CompositeAlphaFlag WPGUToCompositeAlphaMode(WGPUCompositeAlphaMode flag);
+PresentMode WGPUToPresentMode(WGPUPresentMode mode);
 
 } // namespace jipu
