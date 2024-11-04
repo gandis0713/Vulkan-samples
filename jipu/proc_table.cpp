@@ -234,6 +234,12 @@ void procInstanceRelease(WGPUInstance instance)
     return webgpuInstance->release();
 }
 
+WGPUTexture procDeviceCreateTexture(WGPUDevice device, WGPUTextureDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUTexture>(webgpuDevice->createTexture(descriptor));
+}
+
 namespace
 {
 
@@ -274,6 +280,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuAdapterRelease", reinterpret_cast<WGPUProc>(procAdapterRelease) },
     { "wgpuSurfaceRelease", reinterpret_cast<WGPUProc>(procSurfaceRelease) },
     { "wgpuInstanceRelease", reinterpret_cast<WGPUProc>(procInstanceRelease) },
+    { "wgpuDeviceCreateTexture", reinterpret_cast<WGPUProc>(procDeviceCreateTexture) },
 };
 
 } // namespace
