@@ -186,21 +186,8 @@ void WGPUTriangleSample::createShaderModule()
     }
 
     {
-        std::string vertexShaderCode = R"(
-        @vertex
-        fn main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
-            let x = f32(i32(in_vertex_index) - 1);
-            let y = f32(i32(in_vertex_index & 1u) * 2 - 1);
-            return vec4<f32>(x, y, 0.0, 1.0);
-        }
-    )";
-
-        std::string fragmentShaderCode = R"(
-        @fragment
-        fn main() -> @location(0) vec4<f32> {
-            return vec4<f32>(1.0, 0.0, 0.0, 1.0);
-        }
-    )";
+        std::vector<char> vertexShaderCode = utils::readFile(m_appDir / "triangle.vert.wgsl", m_handle);
+        std::vector<char> fragmentShaderCode = utils::readFile(m_appDir / "triangle.frag.wgsl", m_handle);
 
         WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
         vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
