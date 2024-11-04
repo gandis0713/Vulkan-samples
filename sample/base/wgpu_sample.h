@@ -31,6 +31,13 @@ public:
     virtual void initializeContext() = 0;
     virtual void finalizeContext() = 0;
 
+    virtual void createInstance();
+    virtual void createSurface();
+    virtual void createAdapter();
+    virtual void createDevice();
+    virtual void createSurfaceConfigure();
+    virtual void createQueue();
+
 protected:
     enum class APIType
     {
@@ -53,6 +60,15 @@ protected:
 
     std::unordered_map<APIType, DyLib> m_wgpuLibs{};
     std::unordered_map<APIType, WebGPUAPI> m_wgpuAPIs{};
+
+protected:
+    WGPUInstance m_instance = nullptr;
+    WGPUSurface m_surface = nullptr;
+    WGPUSurfaceCapabilities m_surfaceCapabilities{};
+    WGPUSurfaceConfiguration m_surfaceConfigure{};
+    WGPUAdapter m_adapter = nullptr;
+    WGPUDevice m_device = nullptr;
+    WGPUQueue m_queue = nullptr;
 };
 
 } // namespace jipu

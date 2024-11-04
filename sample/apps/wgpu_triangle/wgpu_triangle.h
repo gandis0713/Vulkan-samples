@@ -23,39 +23,17 @@ public:
     void initializeContext() override;
     void finalizeContext() override;
 
-    void createInstance();
-    void createSurface();
-    void createAdapter();
-    void createDevice();
-    void createSurfaceConfigure();
-    void createQueue();
     void createShaderModule();
     void createPipelineLayout();
     void createPipeline();
 
 private:
-    struct WGPUContext
-    {
-        WGPUInstance instance = nullptr;
-
-        WGPUSurface surface = nullptr;
-        WGPUSurfaceCapabilities surfaceCapabilities{};
-        WGPUSurfaceConfiguration surfaceConfigure{};
-
-        WGPUAdapter adapter = nullptr;
-        WGPUDevice device = nullptr;
-
-        WGPUQueue queue = nullptr;
-
-        WGPUPipelineLayout pipelineLayout = nullptr;
-        WGPURenderPipeline renderPipeline = nullptr;
-        WGPUShaderModule vertSPIRVShaderModule = nullptr;
-        WGPUShaderModule fragSPIRVShaderModule = nullptr;
-        WGPUShaderModule vertWGSLShaderModule = nullptr;
-        WGPUShaderModule fragWGSLShaderModule = nullptr;
-    } m_wgpuContext;
-
-    WGPUContext& getContext();
+    WGPUPipelineLayout m_pipelineLayout = nullptr;
+    WGPURenderPipeline m_renderPipeline = nullptr;
+    WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
+    WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
+    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
+    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
 
 private:
     bool m_useSPIRV = false;
