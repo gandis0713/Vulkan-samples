@@ -70,6 +70,7 @@ void WGPUSample::changeAPI(WGPUSample::APIType type)
     finalizeContext();
 
     m_apiType = type;
+    wgpu = m_wgpuAPIs[m_apiType];
 
     initializeContext();
 }
@@ -79,22 +80,12 @@ WGPUSample::APIType WGPUSample::getAPIType()
     return m_apiType;
 }
 
-WebGPUAPI& WGPUSample::wgpu()
-{
-    return m_wgpuAPIs[m_apiType];
-}
-
-WebGPUAPI& WGPUSample::wgpu(APIType type)
-{
-    return m_wgpuAPIs[type];
-}
-
 void WGPUSample::createInstance()
 {
     WGPUInstanceDescriptor descriptor{};
     descriptor.nextInChain = NULL;
 
-    m_instance = wgpu().CreateInstance({}); // TODO: use descriptor
+    m_instance = wgpu.CreateInstance({}); // TODO: use descriptor
     assert(m_instance);
 }
 
@@ -124,7 +115,7 @@ void WGPUSample::createSurface()
     surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&surfaceDescriptor);
     surfaceDesc.label = WGPUStringView{ .data = label.data(), .length = label.size() };
 
-    m_surface = wgpu().InstanceCreateSurface(m_instance, &surfaceDesc);
+    m_surface = wgpu.InstanceCreateSurface(m_instance, &surfaceDesc);
     assert(m_surface);
 }
 
@@ -154,7 +145,7 @@ void WGPUSample::createAdapter()
         .forceFallbackAdapter = false,
     };
 
-    wgpu().InstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
+    wgpu.InstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
 
     assert(m_adapter);
 }
@@ -172,14 +163,14 @@ void WGPUSample::createDevice()
 
     WGPUDeviceDescriptor deviceDescriptor{};
 
-    wgpu().AdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
+    wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
 
     assert(m_device);
 }
 
 void WGPUSample::createSurfaceConfigure()
 {
-    auto status = wgpu().SurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+    auto status = wgpu.SurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
     if (status != WGPUStatus_Success)
         throw std::runtime_error("Failed to get surface capabilities.");
 
@@ -222,12 +213,12 @@ void WGPUSample::createSurfaceConfigure()
         .presentMode = presentMode,
     };
 
-    wgpu().SurfaceConfigure(m_surface, &m_surfaceConfigure);
+    wgpu.SurfaceConfigure(m_surface, &m_surfaceConfigure);
 }
 
 void WGPUSample::createQueue()
 {
-    m_queue = wgpu().DeviceGetQueue(m_device);
+    m_queue = wgpu.DeviceGetQueue(m_device);
 
     assert(m_queue);
 }

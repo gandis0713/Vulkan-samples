@@ -21,7 +21,7 @@ void WGPUTriangleSample::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
+    changeAPI(APIType::kDawn);
 }
 
 void WGPUTriangleSample::update()
@@ -32,12 +32,12 @@ void WGPUTriangleSample::update()
 void WGPUTriangleSample::draw()
 {
     WGPUSurfaceTexture surfaceTexture{};
-    wgpu().SurfaceGetCurrentTexture(m_surface, &surfaceTexture);
+    wgpu.SurfaceGetCurrentTexture(m_surface, &surfaceTexture);
 
-    WGPUTextureView surfaceTextureView = wgpu().TextureCreateView(surfaceTexture.texture, NULL);
+    WGPUTextureView surfaceTextureView = wgpu.TextureCreateView(surfaceTexture.texture, NULL);
 
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
-    WGPUCommandEncoder commandEncoder = wgpu().DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
+    WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
     WGPURenderPassColorAttachment colorAttachment{};
     colorAttachment.view = surfaceTextureView;
@@ -50,23 +50,23 @@ void WGPUTriangleSample::draw()
     renderPassDescriptor.colorAttachmentCount = 1;
     renderPassDescriptor.colorAttachments = &colorAttachment;
 
-    WGPURenderPassEncoder renderPassEncoder = wgpu().CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
+    WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
 
-    wgpu().RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
-    wgpu().RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
-    wgpu().RenderPassEncoderEnd(renderPassEncoder);
-    wgpu().RenderPassEncoderRelease(renderPassEncoder);
+    wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
+    wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
+    wgpu.RenderPassEncoderEnd(renderPassEncoder);
+    wgpu.RenderPassEncoderRelease(renderPassEncoder);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
-    WGPUCommandBuffer commandBuffer = wgpu().CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
+    WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
 
-    wgpu().QueueSubmit(m_queue, 1, &commandBuffer);
-    wgpu().SurfacePresent(m_surface);
+    wgpu.QueueSubmit(m_queue, 1, &commandBuffer);
+    wgpu.SurfacePresent(m_surface);
 
-    wgpu().CommandBufferRelease(commandBuffer);
-    wgpu().CommandEncoderRelease(commandEncoder);
-    wgpu().TextureViewRelease(surfaceTextureView);
-    wgpu().TextureRelease(surfaceTexture.texture);
+    wgpu.CommandBufferRelease(commandBuffer);
+    wgpu.CommandEncoderRelease(commandEncoder);
+    wgpu.TextureViewRelease(surfaceTextureView);
+    wgpu.TextureRelease(surfaceTexture.texture);
 }
 
 void WGPUTriangleSample::initializeContext()
@@ -87,68 +87,68 @@ void WGPUTriangleSample::finalizeContext()
     // TODO: check ways release and destory.
     if (m_renderPipeline)
     {
-        wgpu().RenderPipelineRelease(m_renderPipeline);
+        wgpu.RenderPipelineRelease(m_renderPipeline);
         m_renderPipeline = nullptr;
     }
 
     if (m_pipelineLayout)
     {
-        wgpu().PipelineLayoutRelease(m_pipelineLayout);
+        wgpu.PipelineLayoutRelease(m_pipelineLayout);
         m_pipelineLayout = nullptr;
     }
 
     if (m_vertSPIRVShaderModule)
     {
-        wgpu().ShaderModuleRelease(m_vertSPIRVShaderModule);
+        wgpu.ShaderModuleRelease(m_vertSPIRVShaderModule);
         m_vertSPIRVShaderModule = nullptr;
     }
 
     if (m_fragSPIRVShaderModule)
     {
-        wgpu().ShaderModuleRelease(m_fragSPIRVShaderModule);
+        wgpu.ShaderModuleRelease(m_fragSPIRVShaderModule);
         m_fragSPIRVShaderModule = nullptr;
     }
 
     if (m_vertWGSLShaderModule)
     {
-        wgpu().ShaderModuleRelease(m_vertWGSLShaderModule);
+        wgpu.ShaderModuleRelease(m_vertWGSLShaderModule);
         m_vertWGSLShaderModule = nullptr;
     }
 
     if (m_fragWGSLShaderModule)
     {
-        wgpu().ShaderModuleRelease(m_fragWGSLShaderModule);
+        wgpu.ShaderModuleRelease(m_fragWGSLShaderModule);
         m_fragWGSLShaderModule = nullptr;
     }
 
     if (m_queue)
     {
-        wgpu().QueueRelease(m_queue);
+        wgpu.QueueRelease(m_queue);
         m_queue = nullptr;
     }
 
     if (m_device)
     {
-        wgpu().DeviceDestroy(m_device);
-        wgpu().DeviceRelease(m_device);
+        wgpu.DeviceDestroy(m_device);
+        wgpu.DeviceRelease(m_device);
         m_device = nullptr;
     }
 
     if (m_adapter)
     {
-        wgpu().AdapterRelease(m_adapter);
+        wgpu.AdapterRelease(m_adapter);
         m_adapter = nullptr;
     }
 
     if (m_surface)
     {
-        wgpu().SurfaceRelease(m_surface);
+        wgpu.SurfaceRelease(m_surface);
         m_surface = nullptr;
     }
 
     if (m_instance)
     {
-        wgpu().InstanceRelease(m_instance);
+        wgpu.InstanceRelease(m_instance);
         m_instance = nullptr;
     }
 }
@@ -168,7 +168,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleSPIRVDescriptor.chain;
 
-        m_vertSPIRVShaderModule = wgpu().DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertSPIRVShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         assert(m_vertSPIRVShaderModule);
 
@@ -180,7 +180,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleSPIRVDescriptor.chain;
 
-        m_fragSPIRVShaderModule = wgpu().DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
+        m_fragSPIRVShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
 
         assert(m_fragSPIRVShaderModule);
     }
@@ -209,7 +209,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        m_vertWGSLShaderModule = wgpu().DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         assert(m_vertWGSLShaderModule);
 
@@ -220,7 +220,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-        m_fragWGSLShaderModule = wgpu().DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
+        m_fragWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
 
         assert(m_fragWGSLShaderModule);
     }
@@ -229,7 +229,7 @@ void WGPUTriangleSample::createShaderModule()
 void WGPUTriangleSample::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    m_pipelineLayout = wgpu().DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+    m_pipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 
     assert(m_pipelineLayout);
 }
@@ -278,7 +278,7 @@ void WGPUTriangleSample::createPipeline()
     renderPipelineDescriptor.vertex = vertexState;
     renderPipelineDescriptor.fragment = &fragState;
 
-    m_renderPipeline = wgpu().DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
+    m_renderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
 
     assert(m_renderPipeline);
 }

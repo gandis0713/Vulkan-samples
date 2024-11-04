@@ -49,9 +49,6 @@ protected:
     void changeAPI(APIType type);
     WGPUSample::APIType getAPIType();
 
-    WebGPUAPI& wgpu();
-    WebGPUAPI& wgpu(APIType type);
-
 protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
@@ -69,6 +66,8 @@ protected:
     WGPUAdapter m_adapter = nullptr;
     WGPUDevice m_device = nullptr;
     WGPUQueue m_queue = nullptr;
+
+    WebGPUAPI wgpu{};
 };
 
 } // namespace jipu
