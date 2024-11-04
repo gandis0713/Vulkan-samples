@@ -73,7 +73,8 @@ function(configure_sample target)
     if(NOT ANDROID)
         # copy spirv to output
         set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-        file(GLOB_RECURSE shaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.comp")
+        file(GLOB_RECURSE glslShaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.comp")
+        file(GLOB_RECURSE wgslShaders "${SHADER_DIR}/*.wgsl")
 
         if(EXISTS ${GLSLC_EXE})
             function(run_glslc tar shader_name src dst)
@@ -82,17 +83,21 @@ function(configure_sample target)
                 )
             endfunction()
 
-            foreach(shader ${shaders})
+            foreach(shader ${glslShaders})
                 cmake_path(GET shader FILENAME shader_name)
                 run_glslc(${target} ${shader_name} ${SHADER_DIR} ${BINARY_OUT})
                 run_glslc(${target} ${shader_name} ${SHADER_DIR} ${SHADER_DIR})
             endforeach(shader)
         else()
-            foreach(shader ${shaders})
+            foreach(shader ${glslShaders})
                 cmake_path(GET shader FILENAME shader_name)
                 file(COPY ${SHADER_DIR}/${shader_name}.spv DESTINATION ${BINARY_OUT})
             endforeach(shader)
         endif()
+
+        foreach(shader ${wgslShaders})
+            file(COPY ${shader} DESTINATION ${BINARY_OUT})
+        endforeach(shader)
     endif()
 
     # copy resources
