@@ -20,7 +20,7 @@ void WGPUTriangleSampleMSAA::init()
 {
     WGPUSample::init();
 
-    // changeAPI(APIType::kJipu);
+    changeAPI(APIType::kJipu);
     changeAPI(APIType::kDawn);
 }
 
