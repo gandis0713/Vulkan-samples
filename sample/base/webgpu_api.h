@@ -78,7 +78,7 @@ struct WebGPUAPI
     // WGPUProcComputePipelineRelease ComputePipelineRelease = nullptr;
     WGPUProcDeviceCreateBindGroup DeviceCreateBindGroup = nullptr;
     WGPUProcDeviceCreateBindGroupLayout DeviceCreateBindGroupLayout = nullptr;
-    // WGPUProcDeviceCreateBuffer DeviceCreateBuffer = nullptr;
+    WGPUProcDeviceCreateBuffer DeviceCreateBuffer = nullptr;
     WGPUProcDeviceCreateCommandEncoder DeviceCreateCommandEncoder = nullptr;
     // WGPUProcDeviceCreateComputePipeline DeviceCreateComputePipeline = nullptr;
     // WGPUProcDeviceCreateComputePipelineAsync DeviceCreateComputePipelineAsync = nullptr;

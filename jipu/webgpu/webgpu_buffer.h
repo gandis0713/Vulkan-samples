@@ -39,4 +39,10 @@ private:
     std::unique_ptr<Buffer> m_buffer = nullptr;
 };
 
+// Convert from JIPU to WebGPU
+WGPUBufferUsage ToWGPUBufferUsage(BufferUsageFlags usage);
+
+// Convert from WebGPU to JIPU
+BufferUsageFlags ToBufferUsageFlags(WGPUBufferUsage usage);
+
 } // namespace jipu

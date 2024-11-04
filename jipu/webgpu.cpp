@@ -41,6 +41,7 @@ extern void procAdapterRelease(WGPUAdapter adapter);
 extern void procSurfaceRelease(WGPUSurface surface);
 extern void procInstanceRelease(WGPUInstance instance);
 extern WGPUTexture procDeviceCreateTexture(WGPUDevice device, WGPUTextureDescriptor const* descriptor);
+extern WGPUBuffer procDeviceCreateBuffer(WGPUDevice device, WGPUBufferDescriptor const* descriptor);
 
 } // namespace jipu
 
@@ -236,5 +237,10 @@ extern "C"
     WGPU_EXPORT WGPUTexture wgpuDeviceCreateTexture(WGPUDevice device, WGPUTextureDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
     {
         return procDeviceCreateTexture(device, descriptor);
+    }
+
+    WGPU_EXPORT WGPUBuffer wgpuDeviceCreateBuffer(WGPUDevice device, WGPUBufferDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateBuffer(device, descriptor);
     }
 }
