@@ -20,7 +20,7 @@ void WGPURotatingCube::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kJipu);
+    // changeAPI(APIType::kJipu);
     changeAPI(APIType::kDawn);
 }
 
@@ -110,8 +110,11 @@ void WGPURotatingCube::finalizeContext()
 
 void WGPURotatingCube::createShaderModule()
 {
-    std::vector<char> vertexShaderCode = utils::readFile(m_appDir / "rotating_cube.vert.wgsl", m_handle);
-    std::vector<char> fragmentShaderCode = utils::readFile(m_appDir / "rotating_cube.frag.wgsl", m_handle);
+    std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "rotating_cube.vert.wgsl", m_handle);
+    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "rotating_cube.frag.wgsl", m_handle);
+
+    std::string vertexShaderCode(vertexShaderSource.begin(), vertexShaderSource.end());
+    std::string fragmentShaderCode(fragmentShaderSource.begin(), fragmentShaderSource.end());
 
     WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
     vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;

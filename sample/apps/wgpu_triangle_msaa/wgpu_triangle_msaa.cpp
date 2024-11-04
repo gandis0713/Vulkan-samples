@@ -21,7 +21,7 @@ void WGPUTriangleSampleMSAA::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    changeAPI(APIType::kDawn);
+    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTriangleSampleMSAA::update()
@@ -156,8 +156,11 @@ void WGPUTriangleSampleMSAA::createRenderTextureView()
 
 void WGPUTriangleSampleMSAA::createShaderModule()
 {
-    std::vector<char> vertexShaderCode = utils::readFile(m_appDir / "triangle.vert.wgsl", m_handle);
-    std::vector<char> fragmentShaderCode = utils::readFile(m_appDir / "triangle.frag.wgsl", m_handle);
+    std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "triangle.vert.wgsl", m_handle);
+    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "triangle.frag.wgsl", m_handle);
+
+    std::string vertexShaderCode(vertexShaderSource.begin(), vertexShaderSource.end());
+    std::string fragmentShaderCode(fragmentShaderSource.begin(), fragmentShaderSource.end());
 
     WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
     vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
