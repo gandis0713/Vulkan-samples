@@ -93,18 +93,6 @@ void WGPURotatingCube::finalizeContext()
         m_pipelineLayout = nullptr;
     }
 
-    if (m_vertSPIRVShaderModule)
-    {
-        wgpu.ShaderModuleRelease(m_vertSPIRVShaderModule);
-        m_vertSPIRVShaderModule = nullptr;
-    }
-
-    if (m_fragSPIRVShaderModule)
-    {
-        wgpu.ShaderModuleRelease(m_fragSPIRVShaderModule);
-        m_fragSPIRVShaderModule = nullptr;
-    }
-
     if (m_vertWGSLShaderModule)
     {
         wgpu.ShaderModuleRelease(m_vertWGSLShaderModule);
@@ -122,62 +110,30 @@ void WGPURotatingCube::finalizeContext()
 
 void WGPURotatingCube::createShaderModule()
 {
-    // spriv
-    {
-        std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "triangle.vert.spv", m_handle);
-        std::vector<char> fragShaderSource = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
+    std::vector<char> vertexShaderCode = utils::readFile(m_appDir / "rotating_cube.vert.wgsl", m_handle);
+    std::vector<char> fragmentShaderCode = utils::readFile(m_appDir / "rotating_cube.frag.wgsl", m_handle);
 
-        WGPUShaderModuleSPIRVDescriptor vertexShaderModuleSPIRVDescriptor{};
-        vertexShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
-        vertexShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(vertexShaderSource.data());
-        vertexShaderModuleSPIRVDescriptor.codeSize = vertexShaderSource.size();
+    WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
+    vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+    vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.size() };
 
-        WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
-        vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleSPIRVDescriptor.chain;
+    WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
+    vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        m_vertSPIRVShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+    m_vertWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
-        assert(m_vertSPIRVShaderModule);
+    assert(m_vertWGSLShaderModule);
 
-        WGPUShaderModuleSPIRVDescriptor fragShaderModuleSPIRVDescriptor{};
-        fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderSourceSPIRV;
-        fragShaderModuleSPIRVDescriptor.code = reinterpret_cast<const uint32_t*>(fragShaderSource.data());
-        fragShaderModuleSPIRVDescriptor.codeSize = fragShaderSource.size();
+    WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
+    fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+    fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.size() };
 
-        WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
-        fragShaderModuleDescriptor.nextInChain = &fragShaderModuleSPIRVDescriptor.chain;
+    WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
+    fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-        m_fragSPIRVShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
+    m_fragWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
 
-        assert(m_fragSPIRVShaderModule);
-    }
-
-    {
-        std::vector<char> vertexShaderCode = utils::readFile(m_appDir / "triangle.vert.wgsl", m_handle);
-        std::vector<char> fragmentShaderCode = utils::readFile(m_appDir / "triangle.frag.wgsl", m_handle);
-
-        WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
-        vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.size() };
-
-        WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
-        vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
-
-        m_vertWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
-
-        assert(m_vertWGSLShaderModule);
-
-        WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
-        fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.size() };
-
-        WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
-        fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
-
-        m_fragWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
-
-        assert(m_fragWGSLShaderModule);
-    }
+    assert(m_fragWGSLShaderModule);
 }
 
 void WGPURotatingCube::createPipelineLayout()
@@ -199,10 +155,7 @@ void WGPURotatingCube::createPipeline()
     std::string entryPoint = "main";
     WGPUVertexState vertexState{};
     vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-    if (m_useSPIRV)
-        vertexState.module = m_vertSPIRVShaderModule;
-    else
-        vertexState.module = m_vertWGSLShaderModule;
+    vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceCapabilities.formats[0];
@@ -210,10 +163,7 @@ void WGPURotatingCube::createPipeline()
 
     WGPUFragmentState fragState{};
     fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-    if (m_useSPIRV)
-        fragState.module = m_fragSPIRVShaderModule;
-    else
-        fragState.module = m_fragWGSLShaderModule;
+    fragState.module = m_fragWGSLShaderModule;
 
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
