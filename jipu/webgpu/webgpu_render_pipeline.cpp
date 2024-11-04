@@ -42,7 +42,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
                     vertexAttribute.format = WGPUToVertexFormat(attribute.format);
                     vertexAttribute.offset = attribute.offset;
                     vertexAttribute.location = attribute.shaderLocation;
-                    vertexAttribute.slot = j; // TODO: need to be checked.
+                    vertexAttribute.slot = i; // vertex binding index
 
                     layout.attributes.push_back(vertexAttribute);
                 }
