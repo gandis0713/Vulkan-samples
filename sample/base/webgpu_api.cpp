@@ -51,7 +51,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(BufferSetLabel);
     GET_PROC(BufferUnmap);
     // GET_PROC(BufferAddRef);
-    // GET_PROC(BufferRelease);
+    GET_PROC(BufferRelease);
     // GET_PROC(CommandBufferSetLabel);
     // GET_PROC(CommandBufferAddRef);
     GET_PROC(CommandBufferRelease);

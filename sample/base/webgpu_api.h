@@ -41,7 +41,7 @@ struct WebGPUAPI
     // WGPUProcBufferSetLabel BufferSetLabel = nullptr;
     WGPUProcBufferUnmap BufferUnmap = nullptr;
     // WGPUProcBufferAddRef BufferAddRef = nullptr;
-    // WGPUProcBufferRelease BufferRelease = nullptr;
+    WGPUProcBufferRelease BufferRelease = nullptr;
     // WGPUProcCommandBufferSetLabel CommandBufferSetLabel = nullptr;
     // WGPUProcCommandBufferAddRef CommandBufferAddRef = nullptr;
     WGPUProcCommandBufferRelease CommandBufferRelease = nullptr;

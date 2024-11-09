@@ -20,8 +20,8 @@ void WGPURotatingCube::init()
 {
     WGPUSample::init();
 
-    // changeAPI(APIType::kJipu);
-    changeAPI(APIType::kDawn);
+    changeAPI(APIType::kJipu);
+    // changeAPI(APIType::kDawn);
 }
 
 void WGPURotatingCube::update()
@@ -84,6 +84,18 @@ void WGPURotatingCube::initializeContext()
 void WGPURotatingCube::finalizeContext()
 {
     // TODO: check ways release and destory.
+    if (m_cubeVertexBuffer)
+    {
+        wgpu.BufferRelease(m_cubeVertexBuffer);
+        m_cubeVertexBuffer = nullptr;
+    }
+
+    if (m_cubeIndexBuffer)
+    {
+        wgpu.BufferRelease(m_cubeIndexBuffer);
+        m_cubeIndexBuffer = nullptr;
+    }
+
     if (m_renderPipeline)
     {
         wgpu.RenderPipelineRelease(m_renderPipeline);

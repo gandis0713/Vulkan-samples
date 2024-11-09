@@ -279,6 +279,12 @@ void procRenderPassEncoderDrawIndexed(WGPURenderPassEncoder renderPassEncoder, u
     return webgpuRenderPassEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
 }
 
+void procBufferRelease(WGPUBuffer buffer)
+{
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuBuffer->release();
+}
+
 namespace
 {
 
@@ -326,6 +332,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetVertexBuffer) },
     { "wgpuRenderPassEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetIndexBuffer) },
     { "wgpuRenderPassEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderPassEncoderDrawIndexed) },
+    { "wgpuBufferRelease", reinterpret_cast<WGPUProc>(procBufferRelease) },
 };
 
 } // namespace
