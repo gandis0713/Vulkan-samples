@@ -1,10 +1,15 @@
-@vertex
-fn main( @builtin(vertex_index) VertexIndex : u32) ->@builtin(position) vec4f
-{
-    var pos = array<vec2f, 3>(
-        vec2(0.0, 0.5),
-        vec2(-0.5, -0.5),
-        vec2(0.5, -0.5));
+struct VertexOutput {
+  @builtin(position) Position : vec4f,
+  @location(0) fragColor : vec3f,
+}
 
-    return vec4f(pos[VertexIndex], 0.0, 1.0);
+@vertex
+fn main(
+  @location(0) position : vec3f,
+  @location(1) color : vec3f
+) -> VertexOutput {
+  var output : VertexOutput;
+  output.Position = vec4(position, 1.0);
+  output.fragColor = color;
+  return output;
 }
