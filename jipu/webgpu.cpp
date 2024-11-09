@@ -48,6 +48,8 @@ extern void procRenderPassEncoderSetVertexBuffer(WGPURenderPassEncoder renderPas
 extern void procRenderPassEncoderSetIndexBuffer(WGPURenderPassEncoder renderPassEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size);
 extern void procRenderPassEncoderDrawIndexed(WGPURenderPassEncoder renderPassEncoder, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance);
 extern void procBufferRelease(WGPUBuffer buffer);
+extern void procRenderPassEncoderSetViewport(WGPURenderPassEncoder renderPassEncoder, float x, float y, float width, float height, float minDepth, float maxDepth);
+extern void procRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
 } // namespace jipu
 
@@ -278,5 +280,15 @@ extern "C"
     WGPU_EXPORT void wgpuBufferRelease(WGPUBuffer buffer) WGPU_FUNCTION_ATTRIBUTE
     {
         return procBufferRelease(buffer);
+    }
+
+    WGPU_EXPORT void wgpuRenderPassEncoderSetViewport(WGPURenderPassEncoder renderPassEncoder, float x, float y, float width, float height, float minDepth, float maxDepth) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderPassEncoderSetViewport(renderPassEncoder, x, y, width, height, minDepth, maxDepth);
+    }
+
+    WGPU_EXPORT void wgpuRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder, uint32_t x, uint32_t y, uint32_t width, uint32_t height) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderPassEncoderSetScissorRect(renderPassEncoder, x, y, width, height);
     }
 }

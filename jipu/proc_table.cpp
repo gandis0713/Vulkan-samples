@@ -285,6 +285,18 @@ void procBufferRelease(WGPUBuffer buffer)
     return webgpuBuffer->release();
 }
 
+void procRenderPassEncoderSetViewport(WGPURenderPassEncoder renderPassEncoder, float x, float y, float width, float height, float minDepth, float maxDepth)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->setViewport(x, y, width, height, minDepth, maxDepth);
+}
+
+void procRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->setScissorRect(x, y, width, height);
+}
+
 namespace
 {
 
@@ -333,6 +345,8 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetIndexBuffer) },
     { "wgpuRenderPassEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderPassEncoderDrawIndexed) },
     { "wgpuBufferRelease", reinterpret_cast<WGPUProc>(procBufferRelease) },
+    { "wgpuRenderPassEncoderSetViewport", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetViewport) },
+    { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
 };
 
 } // namespace

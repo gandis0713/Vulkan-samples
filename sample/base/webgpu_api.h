@@ -157,10 +157,10 @@ struct WebGPUAPI
     WGPUProcRenderPassEncoderSetIndexBuffer RenderPassEncoderSetIndexBuffer = nullptr;
     // WGPUProcRenderPassEncoderSetLabel RenderPassEncoderSetLabel = nullptr;
     WGPUProcRenderPassEncoderSetPipeline RenderPassEncoderSetPipeline = nullptr;
-    // WGPUProcRenderPassEncoderSetScissorRect RenderPassEncoderSetScissorRect = nullptr;
+    WGPUProcRenderPassEncoderSetScissorRect RenderPassEncoderSetScissorRect = nullptr;
     // WGPUProcRenderPassEncoderSetStencilReference RenderPassEncoderSetStencilReference = nullptr;
     WGPUProcRenderPassEncoderSetVertexBuffer RenderPassEncoderSetVertexBuffer = nullptr;
-    // WGPUProcRenderPassEncoderSetViewport RenderPassEncoderSetViewport = nullptr;
+    WGPUProcRenderPassEncoderSetViewport RenderPassEncoderSetViewport = nullptr;
     // WGPUProcRenderPassEncoderAddRef RenderPassEncoderAddRef = nullptr;
     WGPUProcRenderPassEncoderRelease RenderPassEncoderRelease = nullptr;
     // WGPUProcRenderPipelineGetBindGroupLayout RenderPipelineGetBindGroupLayout = nullptr;

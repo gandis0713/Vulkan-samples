@@ -106,6 +106,16 @@ void WebGPURenderPassEncoder::setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexForm
     m_renderPassEncoder->setIndexBuffer(*buffer->getBuffer(), WGPUToIndexFormat(format)); // TODO: offset, size
 }
 
+void WebGPURenderPassEncoder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
+{
+    m_renderPassEncoder->setViewport(x, y, width, height, minDepth, maxDepth);
+}
+
+void WebGPURenderPassEncoder::setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
+    m_renderPassEncoder->setScissor(x, y, width, height);
+}
+
 void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
     m_renderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);

@@ -167,10 +167,10 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(RenderPassEncoderSetIndexBuffer);
     // GET_PROC(RenderPassEncoderSetLabel);
     GET_PROC(RenderPassEncoderSetPipeline);
-    // GET_PROC(RenderPassEncoderSetScissorRect);
+    GET_PROC(RenderPassEncoderSetScissorRect);
     // GET_PROC(RenderPassEncoderSetStencilReference);
     GET_PROC(RenderPassEncoderSetVertexBuffer);
-    // GET_PROC(RenderPassEncoderSetViewport);
+    GET_PROC(RenderPassEncoderSetViewport);
     // GET_PROC(RenderPassEncoderAddRef);
     GET_PROC(RenderPassEncoderRelease);
     // GET_PROC(RenderPipelineGetBindGroupLayout);
