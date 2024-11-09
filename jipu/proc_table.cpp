@@ -259,6 +259,26 @@ void procBufferUnmap(WGPUBuffer buffer)
     return webgpuBuffer->unmap();
 }
 
+void procRenderPassEncoderSetVertexBuffer(WGPURenderPassEncoder renderPassEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuRenderPassEncoder->setVertexBuffer(slot, webgpuBuffer, offset, size);
+}
+
+void procRenderPassEncoderSetIndexBuffer(WGPURenderPassEncoder renderPassEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuRenderPassEncoder->setIndexBuffer(webgpuBuffer, format, offset, size);
+}
+
+void procRenderPassEncoderDrawIndexed(WGPURenderPassEncoder renderPassEncoder, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
+}
+
 namespace
 {
 
@@ -303,6 +323,9 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuDeviceCreateBuffer", reinterpret_cast<WGPUProc>(procDeviceCreateBuffer) },
     { "wgpuBufferGetMappedRange", reinterpret_cast<WGPUProc>(procBufferGetMappedRange) },
     { "wgpuBufferUnmap", reinterpret_cast<WGPUProc>(procBufferUnmap) },
+    { "wgpuRenderPassEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetVertexBuffer) },
+    { "wgpuRenderPassEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetIndexBuffer) },
+    { "wgpuRenderPassEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderPassEncoderDrawIndexed) },
 };
 
 } // namespace

@@ -1,5 +1,6 @@
 #include "webgpu_render_pass_encoder.h"
 
+#include "webgpu_buffer.h"
 #include "webgpu_command_encoder.h"
 #include "webgpu_render_pipeline.h"
 #include "webgpu_texture_view.h"
@@ -95,9 +96,24 @@ void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
     }
 }
 
+void WebGPURenderPassEncoder::setVertexBuffer(uint32_t slot, WebGPUBuffer* buffer, uint64_t offset, uint64_t size)
+{
+    m_renderPassEncoder->setVertexBuffer(slot, *buffer->getBuffer()); // TODO: offset, size
+}
+
+void WebGPURenderPassEncoder::setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
+{
+    m_renderPassEncoder->setIndexBuffer(*buffer->getBuffer(), WGPUToIndexFormat(format)); // TODO: offset, size
+}
+
 void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
     m_renderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void WebGPURenderPassEncoder::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
+{
+    m_renderPassEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
 }
 
 void WebGPURenderPassEncoder::end()
@@ -150,6 +166,19 @@ WGPUStoreOp ToWGPUStoreOp(StoreOp storeOp)
     }
 }
 
+WGPUIndexFormat ToWGPUIndexFormat(IndexFormat format)
+{
+    switch (format)
+    {
+    case IndexFormat::kUint16:
+        return WGPUIndexFormat_Uint16;
+    case IndexFormat::kUint32:
+        return WGPUIndexFormat_Uint32;
+    default:
+        return WGPUIndexFormat_Undefined;
+    }
+}
+
 // Convert from WebGPU to JIPU
 Color WGPUToColor(WGPUColor color)
 {
@@ -187,6 +216,19 @@ StoreOp WGPUToStoreOp(WGPUStoreOp storeOp)
         return StoreOp::kStore;
     default:
         return StoreOp::kDontCare;
+    }
+}
+
+IndexFormat WGPUToIndexFormat(WGPUIndexFormat format)
+{
+    switch (format)
+    {
+    case WGPUIndexFormat_Uint16:
+        return IndexFormat::kUint16;
+    case WGPUIndexFormat_Uint32:
+        return IndexFormat::kUint32;
+    default:
+        return IndexFormat::kUndefined;
     }
 }
 

@@ -10,6 +10,7 @@
 namespace jipu
 {
 
+class WebGPUBuffer;
 class WebGPUCommandEncoder;
 class WebGPURenderPassEncoder : public RefCounted
 {
@@ -29,7 +30,10 @@ public:
 
 public: // WebGPU API
     void setPipeline(WGPURenderPipeline pipeline);
+    void setVertexBuffer(uint32_t slot, WebGPUBuffer* buffer, uint64_t offset, uint64_t size);
+    void setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size);
     void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);
+    void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance);
     void end();
 
 public:
@@ -47,10 +51,12 @@ private:
 WGPUColor ToWGPUColor(Color color);
 WGPULoadOp ToWGPULoadOp(LoadOp loadOp);
 WGPUStoreOp ToWGPUStoreOp(StoreOp storeOp);
+WGPUIndexFormat ToWGPUIndexFormat(IndexFormat format);
 
 // Convert from WebGPU to JIPU
 Color WGPUToColor(WGPUColor color);
 LoadOp WGPUToLoadOp(WGPULoadOp loadOp);
 StoreOp WGPUToStoreOp(WGPUStoreOp storeOp);
+IndexFormat WGPUToIndexFormat(WGPUIndexFormat format);
 
 } // namespace jipu

@@ -55,6 +55,10 @@ WGPUBufferUsage ToWGPUBufferUsage(BufferUsageFlags usage)
     {
         wgpuUsage |= WGPUBufferUsage_Index;
     }
+    if (usage & BufferUsageFlagBits::kVertex)
+    {
+        wgpuUsage |= WGPUBufferUsage_Vertex;
+    }
     if (usage & BufferUsageFlagBits::kMapRead)
     {
         wgpuUsage |= WGPUBufferUsage_MapRead;
@@ -91,6 +95,10 @@ BufferUsageFlags ToBufferUsageFlags(WGPUBufferUsage usage)
     if (usage & WGPUBufferUsage_Index)
     {
         jipuUsage |= BufferUsageFlagBits::kIndex;
+    }
+    if (usage & WGPUBufferUsage_Vertex)
+    {
+        jipuUsage |= BufferUsageFlagBits::kVertex;
     }
     if (usage & WGPUBufferUsage_MapRead)
     {
