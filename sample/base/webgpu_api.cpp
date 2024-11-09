@@ -129,7 +129,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(QueueOnSubmittedWorkDone);
     // GET_PROC(QueueSetLabel);
     GET_PROC(QueueSubmit);
-    // GET_PROC(QueueWriteBuffer);
+    GET_PROC(QueueWriteBuffer);
     // GET_PROC(QueueWriteTexture);
     // GET_PROC(QueueAddRef);
     GET_PROC(QueueRelease);

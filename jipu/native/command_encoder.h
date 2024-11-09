@@ -19,13 +19,13 @@ class RenderPassEncoder;
 struct BlitBuffer
 {
     Buffer* buffer = nullptr;
-    uint32_t offset = 0;
+    uint64_t offset = 0;
 };
 
 struct BlitTextureBuffer
 {
     Buffer* buffer = nullptr;
-    uint32_t offset = 0;
+    uint64_t offset = 0;
     uint32_t bytesPerRow = 0;
     uint32_t rowsPerTexture = 0;
 };

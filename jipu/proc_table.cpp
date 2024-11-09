@@ -297,6 +297,13 @@ void procRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder
     return webgpuRenderPassEncoder->setScissorRect(x, y, width, height);
 }
 
+void procQueueWriteBuffer(WGPUQueue queue, WGPUBuffer buffer, uint64_t bufferOffset, void const* data, size_t size)
+{
+    WebGPUQueue* webgpuQueue = reinterpret_cast<WebGPUQueue*>(queue);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuQueue->writeBuffer(webgpuBuffer, bufferOffset, data, size);
+}
+
 namespace
 {
 
@@ -347,6 +354,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuBufferRelease", reinterpret_cast<WGPUProc>(procBufferRelease) },
     { "wgpuRenderPassEncoderSetViewport", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetViewport) },
     { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
+    { "wgpuQueueWriteBuffer", reinterpret_cast<WGPUProc>(procQueueWriteBuffer) },
 };
 
 } // namespace

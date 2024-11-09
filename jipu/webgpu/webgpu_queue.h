@@ -8,6 +8,7 @@ namespace jipu
 {
 
 class WebGPUDevice;
+class WebGPUBuffer;
 class WebGPUQueue : public RefCounted
 {
 public:
@@ -25,6 +26,7 @@ public:
 
 public: // WebGPU API
     void submit(size_t commandCount, WGPUCommandBuffer const* commands);
+    void writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void const* data, size_t size);
 
 public:
     Queue* getQueue() const;

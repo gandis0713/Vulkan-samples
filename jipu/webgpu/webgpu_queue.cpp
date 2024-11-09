@@ -1,8 +1,10 @@
 #include "webgpu_queue.h"
 
+#include "webgpu_buffer.h"
 #include "webgpu_command_buffer.h"
 #include "webgpu_device.h"
 
+#include "jipu/native/buffer.h"
 #include "jipu/native/queue.h"
 
 namespace jipu
@@ -34,6 +36,36 @@ void WebGPUQueue::submit(size_t commandCount, WGPUCommandBuffer const* commands)
     }
 
     m_queue->submit(commandBuffers);
+}
+
+void WebGPUQueue::writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void const* data, size_t size)
+{
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = size;
+    bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+    auto device = m_wgpuDevice->getDevice();
+    auto srcBuffer = device->createBuffer(bufferDescriptor);
+    void* ptr = srcBuffer->map();
+    memcpy(ptr, data, bufferDescriptor.size);
+    srcBuffer->unmap();
+
+    BlitBuffer srcCopyBuffer{
+        .buffer = srcBuffer.get(),
+        .offset = bufferOffset,
+    };
+
+    BlitBuffer dstCopyBuffer{
+        .buffer = buffer->getBuffer(),
+        .offset = bufferOffset,
+    };
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = device->createCommandEncoder(commandEncoderDescriptor);
+
+    commandEncoder->copyBufferToBuffer(srcCopyBuffer, dstCopyBuffer, size);
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    m_queue->submit({ commandBuffer.get() });
 }
 
 Queue* WebGPUQueue::getQueue() const
