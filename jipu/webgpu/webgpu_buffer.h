@@ -28,6 +28,9 @@ public:
     WebGPUBuffer& operator=(const WebGPUBuffer&) = delete;
 
 public: // WebGPU API
+    void* getMappedRange(size_t offset, size_t size);
+    void unmap();
+
 public:
     Buffer* getBuffer() const;
 

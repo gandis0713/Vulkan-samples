@@ -23,6 +23,16 @@ WebGPUBuffer::WebGPUBuffer(WebGPUDevice* device, std::unique_ptr<Buffer> buffer,
 {
 }
 
+void* WebGPUBuffer::getMappedRange(size_t offset, size_t size)
+{
+    return m_buffer->map(); // TODO: offset, size
+}
+
+void WebGPUBuffer::unmap()
+{
+    m_buffer->unmap();
+}
+
 Buffer* WebGPUBuffer::getBuffer() const
 {
     return m_buffer.get();

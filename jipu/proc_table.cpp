@@ -1,6 +1,7 @@
 #include "jipu/webgpu/webgpu_header.h"
 
 #include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_buffer.h"
 #include "webgpu/webgpu_command_buffer.h"
 #include "webgpu/webgpu_command_encoder.h"
 #include "webgpu/webgpu_device.h"
@@ -246,6 +247,18 @@ WGPUBuffer procDeviceCreateBuffer(WGPUDevice device, WGPUBufferDescriptor const*
     return reinterpret_cast<WGPUBuffer>(webgpuDevice->createBuffer(descriptor));
 }
 
+void* procBufferGetMappedRange(WGPUBuffer buffer, size_t offset, size_t size)
+{
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuBuffer->getMappedRange(offset, size);
+}
+
+void procBufferUnmap(WGPUBuffer buffer)
+{
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuBuffer->unmap();
+}
+
 namespace
 {
 
@@ -288,6 +301,8 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuInstanceRelease", reinterpret_cast<WGPUProc>(procInstanceRelease) },
     { "wgpuDeviceCreateTexture", reinterpret_cast<WGPUProc>(procDeviceCreateTexture) },
     { "wgpuDeviceCreateBuffer", reinterpret_cast<WGPUProc>(procDeviceCreateBuffer) },
+    { "wgpuBufferGetMappedRange", reinterpret_cast<WGPUProc>(procBufferGetMappedRange) },
+    { "wgpuBufferUnmap", reinterpret_cast<WGPUProc>(procBufferUnmap) },
 };
 
 } // namespace

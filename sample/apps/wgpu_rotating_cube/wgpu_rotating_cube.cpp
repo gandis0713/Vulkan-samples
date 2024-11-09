@@ -73,6 +73,7 @@ void WGPURotatingCube::initializeContext()
 {
     WGPUSample::initializeContext();
 
+    createCubeBuffer();
     createShaderModule();
     createPipelineLayout();
     createPipeline();
@@ -106,6 +107,90 @@ void WGPURotatingCube::finalizeContext()
     }
 
     WGPUSample::finalizeContext();
+}
+
+void WGPURotatingCube::createCubeBuffer()
+{
+    const uint32_t cubeVertexSize = 4 * 10; // Byte size of one cube vertex.
+    const uint32_t cubePositionOffset = 0;
+    const uint32_t cubeColorOffset = 4 * 4; // Byte offset of cube vertex color attribute.
+    const uint32_t cubeUVOffset = 4 * 8;
+    const uint32_t cubeVertexCount = 36;
+
+    // clang-format off
+    const std::vector<float> cube{
+        // float4 position, float4 color, float2 uv,
+        1, -1, 1, 1,   1, 0, 1, 1,  0, 1,
+        -1, -1, 1, 1,  0, 0, 1, 1,  1, 1,
+        -1, -1, -1, 1, 0, 0, 0, 1,  1, 0,
+        1, -1, -1, 1,  1, 0, 0, 1,  0, 0,
+        1, -1, 1, 1,   1, 0, 1, 1,  0, 1,
+        -1, -1, -1, 1, 0, 0, 0, 1,  1, 0,
+
+        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
+        1, -1, 1, 1,   1, 0, 1, 1,  1, 1,
+        1, -1, -1, 1,  1, 0, 0, 1,  1, 0,
+        1, 1, -1, 1,   1, 1, 0, 1,  0, 0,
+        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
+        1, -1, -1, 1,  1, 0, 0, 1,  1, 0,
+
+        -1, 1, 1, 1,   0, 1, 1, 1,  0, 1,
+        1, 1, 1, 1,    1, 1, 1, 1,  1, 1,
+        1, 1, -1, 1,   1, 1, 0, 1,  1, 0,
+        -1, 1, -1, 1,  0, 1, 0, 1,  0, 0,
+        -1, 1, 1, 1,   0, 1, 1, 1,  0, 1,
+        1, 1, -1, 1,   1, 1, 0, 1,  1, 0,
+
+        -1, -1, 1, 1,  0, 0, 1, 1,  0, 1,
+        -1, 1, 1, 1,   0, 1, 1, 1,  1, 1,
+        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
+        -1, -1, -1, 1, 0, 0, 0, 1,  0, 0,
+        -1, -1, 1, 1,  0, 0, 1, 1,  0, 1,
+        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
+
+        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
+        -1, 1, 1, 1,   0, 1, 1, 1,  1, 1,
+        -1, -1, 1, 1,  0, 0, 1, 1,  1, 0,
+        -1, -1, 1, 1,  0, 0, 1, 1,  1, 0,
+        1, -1, 1, 1,   1, 0, 1, 1,  0, 0,
+        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
+
+        1, -1, -1, 1,  1, 0, 0, 1,  0, 1,
+        -1, -1, -1, 1, 0, 0, 0, 1,  1, 1,
+        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
+        1, 1, -1, 1,   1, 1, 0, 1,  0, 0,
+        1, -1, -1, 1,  1, 0, 0, 1,  0, 1,
+        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
+    };
+    // clang-format on
+    {
+        size_t vertexBufferSize = m_vertices.size() * sizeof(Vertex);
+        WGPUBufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = vertexBufferSize;
+        bufferDescriptor.usage = WGPUBufferUsage_Vertex;
+        bufferDescriptor.mappedAtCreation = true;
+
+        m_cubeVertexBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
+        assert(m_cubeVertexBuffer);
+        void* mappedVertexPtr = wgpu.BufferGetMappedRange(m_cubeVertexBuffer, 0, vertexBufferSize);
+        memcpy(mappedVertexPtr, m_vertices.data(), vertexBufferSize);
+        wgpu.BufferUnmap(m_cubeVertexBuffer);
+    }
+
+    {
+        size_t indexBufferSize = m_indices.size() * sizeof(uint32_t);
+        WGPUBufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = indexBufferSize;
+        bufferDescriptor.usage = WGPUBufferUsage_Index;
+        bufferDescriptor.mappedAtCreation = true;
+
+        m_cubeIndexBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
+        assert(m_cubeIndexBuffer);
+
+        void* mappedIndexPtr = wgpu.BufferGetMappedRange(m_cubeIndexBuffer, 0, indexBufferSize);
+        memcpy(mappedIndexPtr, m_indices.data(), indexBufferSize);
+        wgpu.BufferUnmap(m_cubeIndexBuffer);
+    }
 }
 
 void WGPURotatingCube::createShaderModule()
@@ -155,10 +240,27 @@ void WGPURotatingCube::createPipeline()
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
+    std::vector<WGPUVertexAttribute> attributes(2);
+    attributes[0].format = WGPUVertexFormat_Float32x3;
+    attributes[0].offset = offsetof(Vertex, pos);
+    attributes[0].shaderLocation = 0;
+
+    attributes[1].format = WGPUVertexFormat_Float32x3;
+    attributes[1].offset = offsetof(Vertex, color);
+    attributes[1].shaderLocation = 1;
+
+    std::vector<WGPUVertexBufferLayout> vertexBufferLayout(1);
+    vertexBufferLayout[0].stepMode = WGPUVertexStepMode_Vertex;
+    vertexBufferLayout[0].attributes = attributes.data();
+    vertexBufferLayout[0].attributeCount = static_cast<uint32_t>(attributes.size());
+    vertexBufferLayout[0].arrayStride = sizeof(Vertex);
+
     std::string entryPoint = "main";
     WGPUVertexState vertexState{};
     vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
     vertexState.module = m_vertWGSLShaderModule;
+    vertexState.bufferCount = static_cast<uint32_t>(vertexBufferLayout.size());
+    vertexState.buffers = vertexBufferLayout.data();
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceCapabilities.formats[0];

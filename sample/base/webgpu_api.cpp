@@ -44,12 +44,12 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(BufferDestroy);
     // GET_PROC(BufferGetConstMappedRange);
     // GET_PROC(BufferGetMapState);
-    // GET_PROC(BufferGetMappedRange);
+    GET_PROC(BufferGetMappedRange);
     // GET_PROC(BufferGetSize);
     // GET_PROC(BufferGetUsage);
     // GET_PROC(BufferMapAsync);
     // GET_PROC(BufferSetLabel);
-    // GET_PROC(BufferUnmap);
+    GET_PROC(BufferUnmap);
     // GET_PROC(BufferAddRef);
     // GET_PROC(BufferRelease);
     // GET_PROC(CommandBufferSetLabel);
