@@ -53,8 +53,11 @@ void WGPURotatingCube::draw()
     WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
 
     wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
+    wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
+    wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
     wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, 0);
-    wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint32, 0, 0);
+    // wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint32, 0, 0);
+    // wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
@@ -283,7 +286,6 @@ void WGPURotatingCube::createPipeline()
     WGPUFragmentState fragState{};
     fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
     fragState.module = m_fragWGSLShaderModule;
-
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
 
