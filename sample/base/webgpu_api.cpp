@@ -153,7 +153,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(RenderBundleEncoderRelease);
     // GET_PROC(RenderPassEncoderBeginOcclusionQuery);
     GET_PROC(RenderPassEncoderDraw);
-    // GET_PROC(RenderPassEncoderDrawIndexed);
+    GET_PROC(RenderPassEncoderDrawIndexed);
     // GET_PROC(RenderPassEncoderDrawIndexedIndirect);
     // GET_PROC(RenderPassEncoderDrawIndirect);
     GET_PROC(RenderPassEncoderEnd);

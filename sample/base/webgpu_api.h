@@ -143,7 +143,7 @@ struct WebGPUAPI
     // WGPUProcRenderBundleEncoderRelease RenderBundleEncoderRelease = nullptr;
     // WGPUProcRenderPassEncoderBeginOcclusionQuery RenderPassEncoderBeginOcclusionQuery = nullptr;
     WGPUProcRenderPassEncoderDraw RenderPassEncoderDraw = nullptr;
-    // WGPUProcRenderPassEncoderDrawIndexed RenderPassEncoderDrawIndexed = nullptr;
+    WGPUProcRenderPassEncoderDrawIndexed RenderPassEncoderDrawIndexed = nullptr;
     // WGPUProcRenderPassEncoderDrawIndexedIndirect RenderPassEncoderDrawIndexedIndirect = nullptr;
     // WGPUProcRenderPassEncoderDrawIndirect RenderPassEncoderDrawIndirect = nullptr;
     WGPUProcRenderPassEncoderEnd RenderPassEncoderEnd = nullptr;
