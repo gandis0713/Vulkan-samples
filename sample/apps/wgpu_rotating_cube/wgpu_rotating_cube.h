@@ -33,12 +33,14 @@ private:
         glm::vec3 color;
     };
 
-    // TODO: is Dawn only supports 4 bytes alignment for mapped pointer???
-    //       if so, we need to copy the index data to the buffer in 4 bytes alignment.
-    //       offset should be 0, 4, 8, 12, 16, 20, ...
-    //       size should be 4, 8..
-    // std::vector<uint16_t> m_indices{ 0, 1, 2 };
-    std::vector<uint32_t> m_indices{ 0, 1, 2 };
+    // TODO: Dawn only supports multiple of 4.
+    using IndexType = uint16_t;
+    std::vector<IndexType> m_indices{
+        0,
+        1,
+        2,
+        0 /* padding */
+    };
     std::vector<Vertex>
         m_vertices{
             { { 0.0, -1.0, 0.0 }, { 1.0, 0.0, 0.0 } },

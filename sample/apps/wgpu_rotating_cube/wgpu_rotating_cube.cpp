@@ -55,8 +55,8 @@ void WGPURotatingCube::draw()
     wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
     wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
     wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
-    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, 36);
-    wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint32, 0, 12);
+    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, m_vertices.size() * sizeof(Vertex));
+    wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint16, 0, m_indices.size() * sizeof(IndexType));
     wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
@@ -196,7 +196,7 @@ void WGPURotatingCube::createCubeBuffer()
     }
 
     {
-        size_t indexBufferSize = m_indices.size() * sizeof(uint32_t);
+        size_t indexBufferSize = m_indices.size() * sizeof(IndexType);
         WGPUBufferDescriptor bufferDescriptor{};
         bufferDescriptor.size = indexBufferSize;
         bufferDescriptor.usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst;
