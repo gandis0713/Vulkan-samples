@@ -195,7 +195,7 @@ void WGPUTriangleSample::createPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
-    primitiveState.cullMode = WGPUCullMode_None;
+    primitiveState.cullMode = WGPUCullMode_None; // TODO: backface culling
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 

@@ -20,8 +20,8 @@ void WGPURotatingCube::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
+    // changeAPI(APIType::kJipu);
+    changeAPI(APIType::kDawn);
 }
 
 void WGPURotatingCube::update()
@@ -55,10 +55,9 @@ void WGPURotatingCube::draw()
     wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
     wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
     wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
-    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, 0);
-    // wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint32, 0, 0);
-    // wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
-    wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
+    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, 36);
+    wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint32, 0, 12);
+    wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
 
@@ -184,29 +183,33 @@ void WGPURotatingCube::createCubeBuffer()
         size_t vertexBufferSize = m_vertices.size() * sizeof(Vertex);
         WGPUBufferDescriptor bufferDescriptor{};
         bufferDescriptor.size = vertexBufferSize;
-        bufferDescriptor.usage = WGPUBufferUsage_Vertex;
-        bufferDescriptor.mappedAtCreation = true;
+        bufferDescriptor.usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst;
+        // bufferDescriptor.mappedAtCreation = true;
 
         m_cubeVertexBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
         assert(m_cubeVertexBuffer);
-        void* mappedVertexPtr = wgpu.BufferGetMappedRange(m_cubeVertexBuffer, 0, vertexBufferSize);
-        memcpy(mappedVertexPtr, m_vertices.data(), vertexBufferSize);
-        wgpu.BufferUnmap(m_cubeVertexBuffer);
+        // void* mappedVertexPtr = wgpu.BufferGetMappedRange(m_cubeVertexBuffer, 0, vertexBufferSize);
+        // memcpy(mappedVertexPtr, m_vertices.data(), vertexBufferSize);
+        // wgpu.BufferUnmap(m_cubeVertexBuffer);
+
+        wgpu.QueueWriteBuffer(m_queue, m_cubeVertexBuffer, 0, m_vertices.data(), vertexBufferSize);
     }
 
     {
         size_t indexBufferSize = m_indices.size() * sizeof(uint32_t);
         WGPUBufferDescriptor bufferDescriptor{};
         bufferDescriptor.size = indexBufferSize;
-        bufferDescriptor.usage = WGPUBufferUsage_Index;
-        bufferDescriptor.mappedAtCreation = true;
+        bufferDescriptor.usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst;
+        // bufferDescriptor.mappedAtCreation = true;
 
         m_cubeIndexBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
         assert(m_cubeIndexBuffer);
 
-        void* mappedIndexPtr = wgpu.BufferGetMappedRange(m_cubeIndexBuffer, 0, indexBufferSize);
-        memcpy(mappedIndexPtr, m_indices.data(), indexBufferSize);
-        wgpu.BufferUnmap(m_cubeIndexBuffer);
+        // void* mappedIndexPtr = wgpu.BufferGetMappedRange(m_cubeIndexBuffer, 0, indexBufferSize);
+        // memcpy(mappedIndexPtr, m_indices.data(), indexBufferSize);
+        // wgpu.BufferUnmap(m_cubeIndexBuffer);
+
+        wgpu.QueueWriteBuffer(m_queue, m_cubeIndexBuffer, 0, m_indices.data(), indexBufferSize);
     }
 }
 
@@ -253,18 +256,27 @@ void WGPURotatingCube::createPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
-    primitiveState.cullMode = WGPUCullMode_None;
+    primitiveState.cullMode = WGPUCullMode_None; // TODO: backface culling
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
-    std::vector<WGPUVertexAttribute> attributes(2);
-    attributes[0].format = WGPUVertexFormat_Float32x3;
-    attributes[0].offset = offsetof(Vertex, pos);
-    attributes[0].shaderLocation = 0;
+    std::vector<WGPUVertexAttribute> attributes{};
+    {
+        WGPUVertexAttribute attribute{};
+        attribute.format = WGPUVertexFormat_Float32x3;
+        attribute.offset = offsetof(Vertex, pos);
+        attribute.shaderLocation = 0;
 
-    attributes[1].format = WGPUVertexFormat_Float32x3;
-    attributes[1].offset = offsetof(Vertex, color);
-    attributes[1].shaderLocation = 1;
+        attributes.push_back(attribute);
+    }
+    {
+        WGPUVertexAttribute attribute{};
+        attribute.format = WGPUVertexFormat_Float32x3;
+        attribute.offset = offsetof(Vertex, color);
+        attribute.shaderLocation = 1;
+
+        attributes.push_back(attribute);
+    }
 
     std::vector<WGPUVertexBufferLayout> vertexBufferLayout(1);
     vertexBufferLayout[0].stepMode = WGPUVertexStepMode_Vertex;

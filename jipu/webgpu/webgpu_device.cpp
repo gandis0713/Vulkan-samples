@@ -17,6 +17,7 @@ namespace jipu
 WebGPUDevice* WebGPUDevice::create(WebGPUAdapter* wgpuAdapter, WGPUDeviceDescriptor const* descriptor)
 {
     WGPUDeviceDescriptor wgpuDescriptor = descriptor ? *descriptor : GenerateWGPUDeviceDescriptor(wgpuAdapter);
+    // TODO: handle uncapturedErrorCallback
 
     auto physicalDevice = wgpuAdapter->getPhysicalDevice();
     auto device = physicalDevice->createDevice(DeviceDescriptor{});

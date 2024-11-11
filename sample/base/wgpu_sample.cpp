@@ -205,7 +205,14 @@ void WGPUSample::createDevice()
         *static_cast<WGPUDevice*>(userdata) = device;
     };
 
+    WGPUUncapturedErrorCallbackInfo errorCallbackInfo{};
+    errorCallbackInfo.callback = [](WGPUErrorType type, WGPUStringView message, void* userdata) {
+        std::string msg(message.data, message.length);
+        spdlog::error("Uncaptured error: {}", msg.data());
+    };
+
     WGPUDeviceDescriptor deviceDescriptor{};
+    deviceDescriptor.uncapturedErrorCallbackInfo = errorCallbackInfo;
 
     wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
 
