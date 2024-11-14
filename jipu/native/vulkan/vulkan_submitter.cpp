@@ -2,6 +2,8 @@
 
 #include "vulkan_device.h"
 
+#include <future>
+
 namespace jipu
 {
 
@@ -52,9 +54,6 @@ VulkanSubmitter::~VulkanSubmitter()
 
 void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
     auto submitInfoSize = submits.size();
 
     std::vector<VkSubmitInfo> submitInfos{};
@@ -75,24 +74,32 @@ void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
         submitInfos[i] = submitInfo;
     }
 
-    auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
-    VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
-    }
+    auto submitTask = [&](std::vector<VkSubmitInfo> submitInfos) -> void {
+        auto vulkanDevice = downcast(m_device);
+        const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
-    }
+        auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
+        VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
+        }
 
-    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
-    }
+        result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
+        }
+
+        result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
+        }
+    };
+
+    std::future<void> result = std::async(std::launch::async, submitTask, submitInfos);
+    result.get();
 }
 
 void VulkanSubmitter::present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
