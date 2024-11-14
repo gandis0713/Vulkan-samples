@@ -50,9 +50,6 @@ public:
     ~VulkanSurface() override;
 
 public:
-    void present() override;
-
-public:
     VkSurfaceKHR getVkSurface() const;
 
 private:

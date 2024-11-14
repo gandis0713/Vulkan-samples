@@ -52,9 +52,6 @@ public:
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
 
-public:
-    virtual void present() = 0;
-
 protected:
     Surface() = default;
 };
