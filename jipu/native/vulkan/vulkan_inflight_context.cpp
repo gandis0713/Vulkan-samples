@@ -122,7 +122,7 @@ VulkanInflightContext::~VulkanInflightContext()
     m_inflights.clear();
 }
 
-void VulkanInflightContext::add(VkQueue queue, const VulkanSubmit& submit, VkFence fence)
+void VulkanInflightContext::add(VkQueue queue, VkFence fence, const VulkanSubmit& submit)
 {
     auto& inflight = m_inflights[queue];
     auto& inflightObject = inflight[fence];

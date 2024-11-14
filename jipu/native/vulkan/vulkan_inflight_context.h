@@ -42,7 +42,7 @@ public:
     ~VulkanInflightContext();
 
 public:
-    void add(VkQueue queue, const VulkanSubmit& submit, VkFence fence);
+    void add(VkQueue queue, VkFence fence, const VulkanSubmit& submit);
     bool clear(VkFence fence);
     bool clear(VkQueue queue);
     void clearAll();

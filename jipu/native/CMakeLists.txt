@@ -20,6 +20,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_resource_synchronizer.cpp
@@ -54,6 +55,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource_allocator.h
