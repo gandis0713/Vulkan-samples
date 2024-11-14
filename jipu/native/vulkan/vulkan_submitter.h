@@ -40,10 +40,10 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
+    std::vector<QueueGroup> m_queueGroups{};
 
 private:
     VkFence m_fence = VK_NULL_HANDLE;
-    std::vector<QueueGroup> m_queueGroups{};
 };
 
 // Convert Helper
