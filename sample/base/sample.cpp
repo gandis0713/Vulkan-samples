@@ -34,13 +34,20 @@ Sample::~Sample()
     m_device.reset();
     m_physicalDevices.clear();
     m_adapter.reset();
+    m_instance.reset();
+}
+
+void Sample::createInstance()
+{
+    InstanceDescriptor descriptor;
+    m_instance = Instance::create(descriptor);
 }
 
 void Sample::createAdapter()
 {
     AdapterDescriptor descriptor;
-    descriptor.type = AdapterType::kVulkan;
-    m_adapter = Adapter::create(descriptor);
+    descriptor.type = BackendAPI::kVulkan;
+    m_adapter = m_instance->createAdapter(descriptor);
 }
 
 void Sample::getPhysicalDevices()

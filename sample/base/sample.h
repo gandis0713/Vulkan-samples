@@ -12,6 +12,7 @@
 
 #include <jipu/native/adapter.h>
 #include <jipu/native/device.h>
+#include <jipu/native/instance.h>
 #include <jipu/native/physical_device.h>
 #include <jipu/native/queue.h>
 #include <jipu/native/surface.h>
@@ -36,6 +37,7 @@ public:
     virtual ~Sample();
 
 public:
+    virtual void createInstance();
     virtual void createAdapter();
     virtual void getPhysicalDevices();
     virtual void createSurface();
@@ -59,6 +61,7 @@ protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
 
+    std::unique_ptr<Instance> m_instance = nullptr;
     std::unique_ptr<Adapter> m_adapter = nullptr;
     std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Device> m_device = nullptr;

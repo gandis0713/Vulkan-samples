@@ -20,12 +20,13 @@ struct VulkanAdapterInfo : VulkanAdapterKnobs
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
+class Instance;
 class VULKAN_EXPORT VulkanAdapter : public Adapter
 {
 
 public:
     VulkanAdapter() = delete;
-    VulkanAdapter(const AdapterDescriptor& descriptor) noexcept(false);
+    VulkanAdapter(Instance* instance, const AdapterDescriptor& descriptor) noexcept(false);
     ~VulkanAdapter() override;
 
     VulkanAdapter(const VulkanAdapter&) = delete;
@@ -36,6 +37,9 @@ public:
     std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
 
 public:
+    Instance* getInstance() const override;
+
+public: // vulkan
     std::unique_ptr<Surface> createSurface(const VulkanSurfaceDescriptor& descriptor);
 
 public: // vulkan
@@ -61,11 +65,14 @@ private:
     const std::vector<const char*> getRequiredInstanceLayers();
 
 private:
-    VkInstance m_instance = VK_NULL_HANDLE;
+    Instance* m_instance = nullptr;
+
+private:
+    VkInstance m_vkInstance = VK_NULL_HANDLE;
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DyLib m_vulkanLib{};
-    VulkanAdapterInfo m_instanceInfo{};
+    VulkanAdapterInfo m_vkInstanceInfo{};
 #ifndef NDEBUG
     VkDebugUtilsMessengerEXT m_debugUtilsMessenger = VK_NULL_HANDLE;
 #endif

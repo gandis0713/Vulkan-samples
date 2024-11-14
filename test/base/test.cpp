@@ -6,12 +6,16 @@ namespace jipu
 
 void Test::SetUp()
 {
-    AdapterDescriptor instanceDescriptor;
-    instanceDescriptor.type = AdapterType::kVulkan;
-    m_instance = Adapter::create(instanceDescriptor);
+    InstanceDescriptor instanceDescriptor;
+    m_instance = Instance::create(instanceDescriptor);
     EXPECT_NE(nullptr, m_instance);
 
-    m_physicalDevices = m_instance->getPhysicalDevices();
+    AdapterDescriptor adapterDescriptor;
+    adapterDescriptor.type = BackendAPI::kVulkan;
+    m_adapter = m_instance->createAdapter(adapterDescriptor);
+    EXPECT_NE(nullptr, m_adapter);
+
+    m_physicalDevices = m_adapter->getPhysicalDevices();
     EXPECT_NE(0, m_physicalDevices.size());
 
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();

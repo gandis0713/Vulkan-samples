@@ -34,9 +34,6 @@ public:
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
 
-protected:
-    Swapchain() = default;
-
 public:
     virtual TextureFormat getTextureFormat() const = 0;
     virtual uint32_t getWidth() const = 0;
@@ -45,6 +42,9 @@ public:
     virtual void present() = 0;
     virtual Texture* acquireNextTexture() = 0;
     virtual TextureView* acquireNextTextureView() = 0;
+
+protected:
+    Swapchain() = default;
 };
 
 } // namespace jipu

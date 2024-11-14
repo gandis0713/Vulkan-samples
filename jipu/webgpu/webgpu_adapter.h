@@ -16,13 +16,6 @@ public:
 
 public:
     WebGPUAdapter() = delete;
-    explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
-                           std::unique_ptr<Adapter> adapter,
-                           std::unique_ptr<PhysicalDevice> physicalDevice);
-    explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
-                           std::unique_ptr<Adapter> adapter,
-                           std::unique_ptr<PhysicalDevice> physicalDevice,
-                           WGPURequestAdapterOptions const* options);
 
 public:
     virtual ~WebGPUAdapter() = default;
@@ -44,6 +37,18 @@ private:
 private:
     std::shared_ptr<Adapter> m_adapter = nullptr; // shared with surface.
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+
+private:
+    explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
+                           std::unique_ptr<Adapter> adapter,
+                           std::unique_ptr<PhysicalDevice> physicalDevice,
+                           const WGPURequestAdapterOptions& options);
 };
+
+// Convert from JIPU to WebGPU
+WGPUBackendType ToWGPUBackendAPI(BackendAPI api);
+
+// Convert from WebGPU to JIPU
+BackendAPI ToBackendAPI(WGPUBackendType api);
 
 } // namespace jipu

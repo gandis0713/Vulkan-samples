@@ -77,13 +77,14 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/adapter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/instance.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pipeline.h

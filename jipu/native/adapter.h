@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-enum class AdapterType
+enum class BackendAPI
 {
     kNone,
     kVulkan,
@@ -20,26 +20,27 @@ enum class AdapterType
 
 struct AdapterDescriptor
 {
-    AdapterType type = AdapterType::kNone;
+    BackendAPI type = BackendAPI::kNone;
 };
 
+class Instance;
 class JIPU_EXPORT Adapter
 {
 public:
-    static std::unique_ptr<Adapter> create(const AdapterDescriptor& descriptor);
-
-public:
-    virtual ~Adapter();
+    virtual ~Adapter() = default;
 
     Adapter(const Adapter&) = delete;
     Adapter& operator=(const Adapter&) = delete;
 
-protected:
-    Adapter();
-
 public:
     virtual std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() = 0;
     virtual std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) = 0;
+
+public:
+    virtual Instance* getInstance() const = 0;
+
+protected:
+    Adapter() = default;
 };
 
 } // namespace jipu

@@ -19,7 +19,7 @@ void WindowTest::SetUp()
     EXPECT_NE(nullptr, m_window);
 
     SurfaceDescriptor surfaceDescriptor{ .windowHandle = handle() };
-    m_surface = m_instance->createSurface(surfaceDescriptor);
+    m_surface = m_adapter->createSurface(surfaceDescriptor);
     EXPECT_NE(nullptr, m_surface);
 
     m_queue = m_device->createQueue(QueueDescriptor{});

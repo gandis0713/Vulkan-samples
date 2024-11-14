@@ -24,6 +24,9 @@ class JIPU_EXPORT PipelineLayout
 public:
     virtual ~PipelineLayout() = default;
 
+    PipelineLayout(const PipelineLayout&) = delete;
+    PipelineLayout& operator=(const PipelineLayout&) = delete;
+
 protected:
     PipelineLayout() = default;
 };
