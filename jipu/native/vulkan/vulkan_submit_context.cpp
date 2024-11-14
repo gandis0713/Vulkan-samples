@@ -110,7 +110,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
     {
         auto findSrcBuffer = [](const std::vector<VulkanCommandRecordResult>& submittedResults, Buffer* buffer) -> bool {
             auto it = std::find_if(submittedResults.begin(), submittedResults.end(), [buffer](const VulkanCommandRecordResult& result) {
-                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                 return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [buffer](const PassResourceInfo& info) {
                            return info.src.buffers.contains(buffer);
                        }) != notSyncedInfos.end();
@@ -121,7 +121,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
         auto findSrcTexture = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, Texture* texture) -> bool {
             auto it = std::find_if(submittedResults.begin(), submittedResults.end(), [texture](const VulkanCommandRecordResult& result) {
-                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                 return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [texture](const PassResourceInfo& info) {
                            return info.src.textures.contains(texture);
                        }) != notSyncedInfos.end();
@@ -157,7 +157,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             for (auto resultIter = submittedResults.rbegin(); resultIter != submittedResults.rend(); ++resultIter)
             {
                 const auto& result = *resultIter;
-                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                 for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
                 {
                     const auto& info = *infoIter;
@@ -176,7 +176,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             for (auto resultIter = submittedResults.rbegin(); resultIter != submittedResults.rend(); ++resultIter)
             {
                 const auto& result = *resultIter;
-                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                 for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
                 {
                     const auto& info = *infoIter;
@@ -243,7 +243,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
         };
 
         auto getSubmitType = [](const VulkanCommandRecordResult& result) -> SubmitType {
-            const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+            const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
             if (notSyncedInfos.empty())
             {
                 // assumed copied resources.
@@ -306,7 +306,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
         {
             // generate submit info
             {
-                auto hasSrcDependency = findSrcResource(submittedRecordResults, result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos);
+                auto hasSrcDependency = findSrcResource(submittedRecordResults, result.commandResourceSyncResult.notSyncedPassResourceInfos);
 
                 if (hasSrcDependency) // prepare next submit info
                 {
@@ -326,7 +326,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     std::vector<VkPipelineStageFlags> waitStages{};
                     std::vector<VkSemaphore> waitSemaphores{};
 
-                    auto& notSynedPassResourceInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                    auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
 
                     for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
                     {

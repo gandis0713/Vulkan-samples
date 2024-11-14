@@ -175,9 +175,9 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
     // do nothing.
 }
 
-CommandResourceSynchronizationResult VulkanCommandResourceSynchronizer::result()
+CommandResourceSyncResult VulkanCommandResourceSynchronizer::result()
 {
-    return CommandResourceSynchronizationResult{ .notSynchronizedPassResourceInfos = m_descriptor.passResourceInfos };
+    return CommandResourceSyncResult{ .notSyncedPassResourceInfos = m_descriptor.passResourceInfos };
 }
 
 void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)

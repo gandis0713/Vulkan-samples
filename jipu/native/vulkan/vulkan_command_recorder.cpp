@@ -676,7 +676,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::result()
     VulkanCommandRecordResult result{};
 
     result.commandBuffer = m_commandBuffer;
-    result.commandResourceSynchronizationResult = m_commandResourceSyncronizer.result();
+    result.commandResourceSyncResult = m_commandResourceSyncronizer.result();
 
     return result;
 }

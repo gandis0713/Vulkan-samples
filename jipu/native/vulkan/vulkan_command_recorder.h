@@ -17,7 +17,7 @@ class VulkanComputePipeline;
 struct VulkanCommandRecordResult
 {
     CommandBuffer* commandBuffer = nullptr;
-    CommandResourceSynchronizationResult commandResourceSynchronizationResult{};
+    CommandResourceSyncResult commandResourceSyncResult{};
 };
 
 class VULKAN_EXPORT VulkanCommandRecorder final

@@ -21,9 +21,9 @@ struct VulkanCommandResourceSynchronizerDescriptor
     std::vector<PassResourceInfo> passResourceInfos{};
 };
 
-struct CommandResourceSynchronizationResult
+struct CommandResourceSyncResult
 {
-    std::vector<PassResourceInfo> notSynchronizedPassResourceInfos{};
+    std::vector<PassResourceInfo> notSyncedPassResourceInfos{};
 };
 
 class VulkanCommandResourceSynchronizer final
@@ -68,7 +68,7 @@ public:
 
 public:
     // result that not synchronized resources in this command.
-    CommandResourceSynchronizationResult result();
+    CommandResourceSyncResult result();
 
 private:
     bool findSrcBuffer(Buffer* buffer) const;
