@@ -1,4 +1,4 @@
-#include "vulkan_instance.h"
+#include "vulkan_adapter.h"
 
 #include "jipu/common/assert.h"
 #include "vulkan_physical_device.h"
@@ -69,12 +69,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
     return VK_FALSE;
 }
 
-VulkanInstance::VulkanInstance(const InstanceDescriptor& descriptor) noexcept(false)
+VulkanAdapter::VulkanAdapter(const AdapterDescriptor& descriptor) noexcept(false)
 {
     initialize();
 }
 
-VulkanInstance::~VulkanInstance()
+VulkanAdapter::~VulkanAdapter()
 {
 #ifndef NDEBUG
     if (m_debugUtilsMessenger)
@@ -85,7 +85,7 @@ VulkanInstance::~VulkanInstance()
     vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
-void VulkanInstance::initialize() noexcept(false)
+void VulkanAdapter::initialize() noexcept(false)
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     const char vulkanLibraryName[] = "libvulkan.so";
@@ -114,7 +114,7 @@ void VulkanInstance::initialize() noexcept(false)
     gatherPhysicalDevices();
 }
 
-std::vector<std::unique_ptr<PhysicalDevice>> VulkanInstance::getPhysicalDevices()
+std::vector<std::unique_ptr<PhysicalDevice>> VulkanAdapter::getPhysicalDevices()
 {
     std::vector<std::unique_ptr<PhysicalDevice>> physicalDevices{};
     for (auto physicalDevice : m_physicalDevices)
@@ -129,39 +129,39 @@ std::vector<std::unique_ptr<PhysicalDevice>> VulkanInstance::getPhysicalDevices(
     return physicalDevices;
 }
 
-std::unique_ptr<Surface> VulkanInstance::createSurface(const SurfaceDescriptor& descriptor)
+std::unique_ptr<Surface> VulkanAdapter::createSurface(const SurfaceDescriptor& descriptor)
 {
     return std::make_unique<VulkanSurface>(*this, descriptor);
 }
 
-std::unique_ptr<Surface> VulkanInstance::createSurface(const VulkanSurfaceDescriptor& descriptor)
+std::unique_ptr<Surface> VulkanAdapter::createSurface(const VulkanSurfaceDescriptor& descriptor)
 {
     return std::make_unique<VulkanSurface>(*this, descriptor);
 }
 
-VkInstance VulkanInstance::getVkInstance() const
+VkInstance VulkanAdapter::getVkInstance() const
 {
     return m_instance;
 }
 
-const std::vector<VkPhysicalDevice>& VulkanInstance::getVkPhysicalDevices() const
+const std::vector<VkPhysicalDevice>& VulkanAdapter::getVkPhysicalDevices() const
 {
     return m_physicalDevices;
 }
 
-VkPhysicalDevice VulkanInstance::getVkPhysicalDevice(uint32_t index) const
+VkPhysicalDevice VulkanAdapter::getVkPhysicalDevice(uint32_t index) const
 {
     assert(index < m_physicalDevices.size());
 
     return m_physicalDevices[index];
 }
 
-const VulkanInstanceInfo& VulkanInstance::getInstanceInfo() const
+const VulkanAdapterInfo& VulkanAdapter::getInstanceInfo() const
 {
     return m_instanceInfo;
 }
 
-void VulkanInstance::createInstance() noexcept(false)
+void VulkanAdapter::createInstance() noexcept(false)
 {
     // Application Information.
     VkApplicationInfo applicationInfo{};
@@ -210,7 +210,7 @@ void VulkanInstance::createInstance() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", static_cast<int32_t>(result)));
     }
 
-    const VulkanInstanceKnobs& instanceKnobs = static_cast<const VulkanInstanceKnobs&>(m_instanceInfo);
+    const VulkanAdapterKnobs& instanceKnobs = static_cast<const VulkanAdapterKnobs&>(m_instanceInfo);
     if (!vkAPI.loadInstanceProcs(m_instance, instanceKnobs))
     {
         throw std::runtime_error(fmt::format("Failed to load instance prosc."));
@@ -233,7 +233,7 @@ void VulkanInstance::createInstance() noexcept(false)
 #endif
 }
 
-void VulkanInstance::gatherPhysicalDevices() noexcept(false)
+void VulkanAdapter::gatherPhysicalDevices() noexcept(false)
 {
     uint32_t physicalDeviceCount = 0;
     vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
@@ -252,7 +252,7 @@ void VulkanInstance::gatherPhysicalDevices() noexcept(false)
     }
 }
 
-void VulkanInstance::gatherInstanceInfo()
+void VulkanAdapter::gatherInstanceInfo()
 {
     uint32_t apiVersion = 0u;
     if (vkAPI.EnumerateInstanceVersion != nullptr)
@@ -360,7 +360,7 @@ void VulkanInstance::gatherInstanceInfo()
     }
 }
 
-bool VulkanInstance::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
+bool VulkanAdapter::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
 {
     for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
     {
@@ -384,7 +384,7 @@ bool VulkanInstance::checkInstanceExtensionSupport(const std::vector<const char*
     return true;
 }
 
-const std::vector<const char*> VulkanInstance::getRequiredInstanceExtensions()
+const std::vector<const char*> VulkanAdapter::getRequiredInstanceExtensions()
 {
     std::vector<const char*> requiredInstanceExtensions{};
 
@@ -427,7 +427,7 @@ const std::vector<const char*> VulkanInstance::getRequiredInstanceExtensions()
     return requiredInstanceExtensions;
 }
 
-bool VulkanInstance::checkInstanceLayerSupport(const std::vector<const char*> requiredInstanceLayers)
+bool VulkanAdapter::checkInstanceLayerSupport(const std::vector<const char*> requiredInstanceLayers)
 {
     for (const auto& requiredInstanceLayer : requiredInstanceLayers)
     {
@@ -450,7 +450,7 @@ bool VulkanInstance::checkInstanceLayerSupport(const std::vector<const char*> re
     return true;
 }
 
-const std::vector<const char*> VulkanInstance::getRequiredInstanceLayers()
+const std::vector<const char*> VulkanAdapter::getRequiredInstanceLayers()
 {
     std::vector<const char*> requiredInstanceLayers{};
 

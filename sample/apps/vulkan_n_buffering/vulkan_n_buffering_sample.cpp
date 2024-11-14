@@ -7,8 +7,8 @@
 #include <random>
 #include <stdexcept>
 
+#include "vulkan_adapter.h"
 #include "vulkan_device.h"
-#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 #include "vulkan_swapchain.h"

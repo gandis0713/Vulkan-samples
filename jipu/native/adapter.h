@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-enum class InstanceType
+enum class AdapterType
 {
     kNone,
     kVulkan,
@@ -18,24 +18,24 @@ enum class InstanceType
     kD3D12
 };
 
-struct InstanceDescriptor
+struct AdapterDescriptor
 {
-    InstanceType type = InstanceType::kNone;
+    AdapterType type = AdapterType::kNone;
 };
 
-class JIPU_EXPORT Instance
+class JIPU_EXPORT Adapter
 {
 public:
-    static std::unique_ptr<Instance> create(const InstanceDescriptor& descriptor);
+    static std::unique_ptr<Adapter> create(const AdapterDescriptor& descriptor);
 
 public:
-    virtual ~Instance();
+    virtual ~Adapter();
 
-    Instance(const Instance&) = delete;
-    Instance& operator=(const Instance&) = delete;
+    Adapter(const Adapter&) = delete;
+    Adapter& operator=(const Adapter&) = delete;
 
 protected:
-    Instance();
+    Adapter();
 
 public:
     virtual std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() = 0;

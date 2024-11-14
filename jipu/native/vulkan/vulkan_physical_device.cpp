@@ -1,6 +1,6 @@
 #include "vulkan_physical_device.h"
+#include "vulkan_adapter.h"
 #include "vulkan_device.h"
-#include "vulkan_instance.h"
 #include "vulkan_texture.h"
 
 #include <fmt/format.h>
@@ -10,8 +10,8 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance& instance, const VulkanPhysicalDeviceDescriptor& descriptor)
-    : m_instance(instance)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanAdapter& adapter, const VulkanPhysicalDeviceDescriptor& descriptor)
+    : m_adapter(adapter)
 {
     m_physicalDevice = descriptor.physicalDevice;
 
@@ -29,9 +29,9 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescripto
     return std::make_unique<VulkanDevice>(*this, descriptor);
 }
 
-Instance* VulkanPhysicalDevice::getInstance() const
+Adapter* VulkanPhysicalDevice::getAdapter() const
 {
-    return &m_instance;
+    return &m_adapter;
 }
 
 PhysicalDeviceInfo VulkanPhysicalDevice::getPhysicalDeviceInfo() const
@@ -62,7 +62,7 @@ SurfaceCapabilities VulkanPhysicalDevice::getSurfaceCapabilities(Surface* surfac
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
-    return downcast(m_instance).getVkInstance();
+    return downcast(m_adapter).getVkInstance();
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
@@ -77,7 +77,7 @@ const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInf
 
 void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 {
-    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
@@ -194,7 +194,7 @@ VulkanSurfaceInfo VulkanPhysicalDevice::gatherSurfaceInfo(VulkanSurface* surface
 {
     VulkanSurfaceInfo surfaceInfo{};
 
-    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
     VkResult result = vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface->getVkSurface(), &surfaceInfo.capabilities);
     if (result != VK_SUCCESS)
     {
@@ -263,7 +263,7 @@ int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 
 bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
 {
-    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
 
     VkFormatProperties formatProperties{};
     vkAPI.GetPhysicalDeviceFormatProperties(m_physicalDevice, format, &formatProperties);

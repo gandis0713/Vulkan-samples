@@ -33,26 +33,26 @@ Sample::~Sample()
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
-    m_instance.reset();
+    m_adapter.reset();
 }
 
-void Sample::createInstance()
+void Sample::createAdapter()
 {
-    InstanceDescriptor descriptor;
-    descriptor.type = InstanceType::kVulkan;
-    m_instance = Instance::create(descriptor);
+    AdapterDescriptor descriptor;
+    descriptor.type = AdapterType::kVulkan;
+    m_adapter = Adapter::create(descriptor);
 }
 
 void Sample::getPhysicalDevices()
 {
-    m_physicalDevices = m_instance->getPhysicalDevices();
+    m_physicalDevices = m_adapter->getPhysicalDevices();
 }
 
 void Sample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
-    m_surface = m_instance->createSurface(descriptor);
+    m_surface = m_adapter->createSurface(descriptor);
 }
 
 void Sample::createSwapchain()
@@ -96,7 +96,7 @@ void Sample::createQueue()
 
 void Sample::init()
 {
-    createInstance();
+    createAdapter();
     getPhysicalDevices();
     createSurface();
     createDevice();

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "instance.h"
 #include "jipu/common/cast.h"
 #include "jipu/common/dylib.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/physical_device.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_surface.h"
@@ -13,22 +14,22 @@
 namespace jipu
 {
 
-struct VulkanInstanceInfo : VulkanInstanceKnobs
+struct VulkanAdapterInfo : VulkanAdapterKnobs
 {
     std::vector<VkLayerProperties> layerProperties;
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class VULKAN_EXPORT VulkanInstance : public Instance
+class VULKAN_EXPORT VulkanAdapter : public Adapter
 {
 
 public:
-    VulkanInstance() = delete;
-    VulkanInstance(const InstanceDescriptor& descriptor) noexcept(false);
-    ~VulkanInstance() override;
+    VulkanAdapter() = delete;
+    VulkanAdapter(const AdapterDescriptor& descriptor) noexcept(false);
+    ~VulkanAdapter() override;
 
-    VulkanInstance(const VulkanInstance&) = delete;
-    VulkanInstance& operator=(const VulkanInstance&) = delete;
+    VulkanAdapter(const VulkanAdapter&) = delete;
+    VulkanAdapter& operator=(const VulkanAdapter&) = delete;
 
 public:
     std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
@@ -42,7 +43,7 @@ public: // vulkan
     const std::vector<VkPhysicalDevice>& getVkPhysicalDevices() const;
     VkPhysicalDevice getVkPhysicalDevice(uint32_t index) const;
 
-    const VulkanInstanceInfo& getInstanceInfo() const;
+    const VulkanAdapterInfo& getInstanceInfo() const;
 
 public:
     VulkanAPI vkAPI{};
@@ -64,12 +65,12 @@ private:
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DyLib m_vulkanLib{};
-    VulkanInstanceInfo m_instanceInfo{};
+    VulkanAdapterInfo m_instanceInfo{};
 #ifndef NDEBUG
     VkDebugUtilsMessengerEXT m_debugUtilsMessenger = VK_NULL_HANDLE;
 #endif
 };
 
-DOWN_CAST(VulkanInstance, Instance);
+DOWN_CAST(VulkanAdapter, Adapter);
 
 } // namespace jipu

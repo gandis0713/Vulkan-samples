@@ -1,9 +1,9 @@
 #define VMA_IMPLEMENTATION
 #include "vulkan_resource_allocator.h"
 
+#include "vulkan_adapter.h"
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
-#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_texture.h"
 

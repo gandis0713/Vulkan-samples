@@ -18,7 +18,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.cpp
@@ -53,7 +53,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.h
@@ -77,7 +77,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/instance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/adapter.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pipeline_layout.h
@@ -90,7 +90,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/query_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/texture_view.h

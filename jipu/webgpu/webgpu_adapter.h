@@ -1,7 +1,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/instance.h"
+#include "jipu/native/adapter.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/webgpu/webgpu_header.h"
 
@@ -17,10 +17,10 @@ public:
 public:
     WebGPUAdapter() = delete;
     explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
-                           std::unique_ptr<Instance> instance,
+                           std::unique_ptr<Adapter> adapter,
                            std::unique_ptr<PhysicalDevice> physicalDevice);
     explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
-                           std::unique_ptr<Instance> instance,
+                           std::unique_ptr<Adapter> adapter,
                            std::unique_ptr<PhysicalDevice> physicalDevice,
                            WGPURequestAdapterOptions const* options);
 
@@ -34,7 +34,7 @@ public: // WebGPU API
     void requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
 
 public:
-    std::shared_ptr<Instance> getInstance() const;
+    std::shared_ptr<Adapter> getAdapter() const;
     PhysicalDevice* getPhysicalDevice() const;
 
 private:
@@ -42,7 +42,7 @@ private:
     [[maybe_unused]] const WGPURequestAdapterOptions m_options{};
 
 private:
-    std::shared_ptr<Instance> m_instance = nullptr; // shared with surface.
+    std::shared_ptr<Adapter> m_adapter = nullptr; // shared with surface.
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
 };
 

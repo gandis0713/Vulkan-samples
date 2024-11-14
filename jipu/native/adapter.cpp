@@ -1,6 +1,6 @@
-#include "instance.h"
+#include "adapter.h"
 
-#include "vulkan/vulkan_instance.h"
+#include "vulkan/vulkan_adapter.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
 #include "spdlog/sinks/android_sink.h"
@@ -24,12 +24,12 @@ static std::shared_ptr<spdlog::logger> getLogger()
     return logger;
 }
 
-std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
+std::unique_ptr<Adapter> Adapter::create(const AdapterDescriptor& descriptor)
 {
     switch (descriptor.type)
     {
-    case InstanceType::kVulkan:
-        return std::make_unique<VulkanInstance>(descriptor);
+    case AdapterType::kVulkan:
+        return std::make_unique<VulkanAdapter>(descriptor);
     default:
         spdlog::error("Unsupported instance type requested");
         return nullptr;
@@ -38,13 +38,13 @@ std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
     return nullptr;
 }
 
-Instance::Instance()
+Adapter::Adapter()
 {
     spdlog::set_default_logger(getLogger());
     spdlog::set_level(spdlog::level::trace);
 }
 
-Instance::~Instance()
+Adapter::~Adapter()
 {
     spdlog::set_default_logger(nullptr);
 }

@@ -59,18 +59,18 @@ WGPUStatus WebGPUSurface::getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCap
     // create surface
     if (m_surface == nullptr)
     {
-        m_instance = adapter->getInstance();
+        m_adapter = adapter->getAdapter();
 
         switch (m_type)
         {
         case Type::kMetalLayer:
-            m_surface = m_instance->createSurface(SurfaceDescriptor{ .windowHandle = m_meterLayer });
+            m_surface = m_adapter->createSurface(SurfaceDescriptor{ .windowHandle = m_meterLayer });
             break;
         case Type::kWindowsHWND:
-            m_surface = m_instance->createSurface(SurfaceDescriptor{ .windowHandle = m_HWND });
+            m_surface = m_adapter->createSurface(SurfaceDescriptor{ .windowHandle = m_HWND });
             break;
         case Type::kAndroidWindow:
-            m_surface = m_instance->createSurface(SurfaceDescriptor{ .windowHandle = m_androidNativeWindow });
+            m_surface = m_adapter->createSurface(SurfaceDescriptor{ .windowHandle = m_androidNativeWindow });
             break;
         default:
             break;

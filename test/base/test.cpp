@@ -6,9 +6,9 @@ namespace jipu
 
 void Test::SetUp()
 {
-    InstanceDescriptor instanceDescriptor;
-    instanceDescriptor.type = InstanceType::kVulkan;
-    m_instance = Instance::create(instanceDescriptor);
+    AdapterDescriptor instanceDescriptor;
+    instanceDescriptor.type = AdapterType::kVulkan;
+    m_instance = Adapter::create(instanceDescriptor);
     EXPECT_NE(nullptr, m_instance);
 
     m_physicalDevices = m_instance->getPhysicalDevices();

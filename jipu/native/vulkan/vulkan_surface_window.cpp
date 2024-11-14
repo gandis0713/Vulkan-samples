@@ -1,4 +1,4 @@
-#include "vulkan_instance.h"
+#include "vulkan_adapter.h"
 #include "vulkan_surface.h"
 
 #include <fmt/format.h>
@@ -24,8 +24,8 @@ void VulkanSurface::createSurfaceKHR()
     createInfo.hwnd = m_descriptor.hwnd;
     createInfo.hinstance = m_descriptor.hinstance;
 
-    VulkanInstance& instance = downcast(m_instance);
-    VkResult result = instance.vkAPI.CreateWin32SurfaceKHR(instance.getVkInstance(), &createInfo, nullptr, &m_surface);
+    VulkanAdapter& adapter = downcast(m_adapter);
+    VkResult result = adapter.vkAPI.CreateWin32SurfaceKHR(adapter.getVkInstance(), &createInfo, nullptr, &m_surface);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", static_cast<int32_t>(result)));

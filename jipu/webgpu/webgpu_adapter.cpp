@@ -1,18 +1,18 @@
 #include "webgpu_adapter.h"
 
+#include "webgpu_adapter.h"
 #include "webgpu_device.h"
-#include "webgpu_instance.h"
 
 namespace jipu
 {
 
 WebGPUAdapter* WebGPUAdapter::create(WebGPUInstance* wgpuInstance, WGPU_NULLABLE WGPURequestAdapterOptions const* options)
 {
-    std::unique_ptr<Instance> instance = nullptr;
+    std::unique_ptr<Adapter> adapter = nullptr;
     switch (options->backendType)
     {
     case WGPUBackendType::WGPUBackendType_Vulkan: {
-        instance = Instance::create({ .type = InstanceType::kVulkan });
+        adapter = Adapter::create({ .type = AdapterType::kVulkan });
     }
     break;
     default:
@@ -21,28 +21,28 @@ WebGPUAdapter* WebGPUAdapter::create(WebGPUInstance* wgpuInstance, WGPU_NULLABLE
     }
 
     // TODO: get correct physical device
-    std::unique_ptr<PhysicalDevice> physicalDevice = std::move(instance->getPhysicalDevices()[0]);
+    std::unique_ptr<PhysicalDevice> physicalDevice = std::move(adapter->getPhysicalDevices()[0]);
 
     if (options)
     {
-        return new WebGPUAdapter(wgpuInstance, std::move(instance), std::move(physicalDevice), options);
+        return new WebGPUAdapter(wgpuInstance, std::move(adapter), std::move(physicalDevice), options);
     }
 
-    return new WebGPUAdapter(wgpuInstance, std::move(instance), std::move(physicalDevice));
+    return new WebGPUAdapter(wgpuInstance, std::move(adapter), std::move(physicalDevice));
 }
 
-WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Instance> instance, std::unique_ptr<PhysicalDevice> physicalDevice)
+WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Adapter> adapter, std::unique_ptr<PhysicalDevice> physicalDevice)
     : m_wgpuInstance(wgpuInstance)
     , m_options({})
-    , m_instance(std::move(instance))
+    , m_adapter(std::move(adapter))
     , m_physicalDevice(std::move(physicalDevice))
 {
 }
 
-WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Instance> instance, std::unique_ptr<PhysicalDevice> physicalDevice, WGPURequestAdapterOptions const* options)
+WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Adapter> adapter, std::unique_ptr<PhysicalDevice> physicalDevice, WGPURequestAdapterOptions const* options)
     : m_wgpuInstance(wgpuInstance)
     , m_options(*options)
-    , m_instance(std::move(instance))
+    , m_adapter(std::move(adapter))
     , m_physicalDevice(std::move(physicalDevice))
 {
 }
@@ -62,9 +62,9 @@ void WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURe
     }
 }
 
-std::shared_ptr<Instance> WebGPUAdapter::getInstance() const
+std::shared_ptr<Adapter> WebGPUAdapter::getAdapter() const
 {
-    return m_instance;
+    return m_adapter;
 }
 
 PhysicalDevice* WebGPUAdapter::getPhysicalDevice() const

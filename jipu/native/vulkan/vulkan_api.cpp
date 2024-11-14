@@ -35,7 +35,7 @@ bool VulkanAPI::loadInstanceProcs(DyLib* vulkanLib)
     return true;
 }
 
-bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanInstanceKnobs& instanceKnobs)
+bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanAdapterKnobs& instanceKnobs)
 {
 #define GET_INSTANCE_PROC(name)                                                         \
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \

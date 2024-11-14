@@ -2,9 +2,9 @@
 #include "file.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/shader_module.h"
 #include "jipu/native/surface.h"
