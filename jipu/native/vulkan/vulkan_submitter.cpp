@@ -14,11 +14,21 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
         throw std::runtime_error("There is no activated queue familys.");
     }
 
-    for (auto index = 0; index < queueFamilies.size(); ++index)
+    // collect all queues.
+    for (auto queueFamilyIndex = 0; queueFamilyIndex < queueFamilies.size(); ++queueFamilyIndex)
     {
-        VkQueue queue{ VK_NULL_HANDLE };
-        m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), index, 0, &queue);
-        m_queues.push_back({ queue, ToQueueFlags(queueFamilies[index].queueFlags) });
+        auto& queueFamily = queueFamilies[queueFamilyIndex];
+
+        QueueGroup queueGroup = { .flags = ToQueueFlags(queueFamily.queueFlags), .queues = {} };
+        for (auto queueIndex = 0; queueIndex < queueFamily.queueCount; ++queueIndex)
+        {
+            VkQueue queue{ VK_NULL_HANDLE };
+            m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), queueFamilyIndex, queueIndex, &queue);
+
+            queueGroup.queues.push_back(queue);
+        }
+
+        m_queueGroups.push_back(queueGroup);
     }
 
     // create fence.
@@ -31,10 +41,9 @@ VulkanSubmitter::~VulkanSubmitter()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     // wait idle state before destroy semaphore.
-    for (auto& [queue, _] : m_queues)
-    {
-        vkAPI.QueueWaitIdle(queue);
-    }
+    for (auto& queueGroup : m_queueGroups)
+        for (auto queue : queueGroup.queues)
+            vkAPI.QueueWaitIdle(queue);
 
     vulkanDevice->getFencePool()->release(m_fence);
 
@@ -66,7 +75,7 @@ void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
         submitInfos[i] = submitInfo;
     }
 
-    auto queue = getVkQueue(0u); // TODO: get by queue flags
+    auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
     VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
     if (result != VK_SUCCESS)
     {
@@ -88,11 +97,6 @@ void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
 
 void VulkanSubmitter::present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    auto queue = getVkQueue(0u); // TODO: get by queue flags
-
     // prepare submit and present infos
     {
         // add acquire image semaphore to submit infos.
@@ -130,23 +134,20 @@ void VulkanSubmitter::present(std::vector<VulkanSubmit::Info> submitInfos, Vulka
     info.pImageIndices = presentInfo.imageIndices.data();
     info.pResults = nullptr; // Optional
 
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
     vkAPI.QueuePresentKHR(queue, &info);
-}
-
-VkQueue VulkanSubmitter::getVkQueue(uint32_t index) const
-{
-    assert(m_queues.size() > index);
-
-    return m_queues[index].first;
 }
 
 VkQueue VulkanSubmitter::getVkQueue(VulkanQueueFlags flags) const
 {
-    for (const auto& [queue, queueFlags] : m_queues)
+    for (const auto& queueGroup : m_queueGroups)
     {
-        if (queueFlags & flags)
+        if (queueGroup.flags & flags)
         {
-            return queue;
+            return queueGroup.queues[0];
         }
     }
 

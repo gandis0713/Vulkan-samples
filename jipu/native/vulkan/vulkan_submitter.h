@@ -29,7 +29,13 @@ public:
     void present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
 
 private:
-    VkQueue getVkQueue(uint32_t index = 0) const;
+    struct QueueGroup
+    {
+        VulkanQueueFlags flags;
+        std::vector<VkQueue> queues{};
+    };
+
+private:
     VkQueue getVkQueue(VulkanQueueFlags flags = VulkanQueueFlagBits::kAll) const;
 
 private:
@@ -37,7 +43,7 @@ private:
 
 private:
     VkFence m_fence = VK_NULL_HANDLE;
-    std::vector<std::pair<VkQueue, VulkanQueueFlags>> m_queues{};
+    std::vector<QueueGroup> m_queueGroups{};
 };
 
 // Convert Helper
