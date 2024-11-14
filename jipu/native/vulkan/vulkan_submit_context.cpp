@@ -8,6 +8,7 @@
 #include "vulkan_texture_view.h"
 
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 
 namespace jipu
 {
@@ -19,10 +20,26 @@ void VulkanSubmit::add(VkCommandBuffer commandBuffer)
 
 void VulkanSubmit::addSignalSemaphore(const std::vector<VkSemaphore>& semaphores)
 {
+    if (semaphores.empty())
+    {
+        return;
+    }
+
     info.signalSemaphores.insert(info.signalSemaphores.end(), semaphores.begin(), semaphores.end());
 }
+
 void VulkanSubmit::addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage)
 {
+    if (semaphores.size() != stage.size())
+    {
+        throw std::runtime_error("Failed to add wait semaphore. The size of semaphores and stages are not matched.");
+    }
+
+    if (semaphores.empty() || stage.empty())
+    {
+        return;
+    }
+
     info.waitSemaphores.insert(info.waitSemaphores.end(), semaphores.begin(), semaphores.end());
     info.waitStages.insert(info.waitStages.end(), stage.begin(), stage.end());
 }
@@ -309,11 +326,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     std::vector<VkPipelineStageFlags> waitStages{};
                     std::vector<VkSemaphore> waitSemaphores{};
 
-                    auto& notSynedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                    auto& notSynedPassResourceInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
 
-                    for (const auto& info : notSynedInfos)
+                    for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
                     {
-                        for (const auto& [dstBuffer, dstBufferUsageInfo] : info.dst.buffers)
+                        for (const auto& [dstBuffer, dstBufferUsageInfo] : notSynedPassResourceInfo.dst.buffers)
                         {
                             if (findSrcBuffer(submittedRecordResults, dstBuffer))
                             {
@@ -324,7 +341,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                             }
                         }
 
-                        for (const auto& [dstTexture, dstTextureUsageInfo] : info.dst.textures)
+                        for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedPassResourceInfo.dst.textures)
                         {
                             if (findSrcTexture(submittedRecordResults, dstTexture))
                             {
