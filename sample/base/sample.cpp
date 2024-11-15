@@ -103,6 +103,7 @@ void Sample::createQueue()
 
 void Sample::init()
 {
+    createInstance();
     createAdapter();
     getPhysicalDevices();
     createSurface();
