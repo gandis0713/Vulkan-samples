@@ -29,11 +29,6 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescripto
     return std::make_unique<VulkanDevice>(*this, descriptor);
 }
 
-Adapter* VulkanPhysicalDevice::getAdapter() const
-{
-    return &m_adapter;
-}
-
 PhysicalDeviceInfo VulkanPhysicalDevice::getPhysicalDeviceInfo() const
 {
     PhysicalDeviceInfo info{};
@@ -58,6 +53,11 @@ SurfaceCapabilities VulkanPhysicalDevice::getSurfaceCapabilities(Surface* surfac
     capabilities.compositeAlphaFlags = ToCompositeAlphaFlags(surfaceInfo.capabilities.supportedCompositeAlpha);
 
     return capabilities;
+}
+
+Adapter* VulkanPhysicalDevice::getAdapter() const
+{
+    return &m_adapter;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const

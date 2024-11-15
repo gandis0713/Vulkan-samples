@@ -38,9 +38,11 @@ public:
 
     std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) override;
 
-    Adapter* getAdapter() const override;
     PhysicalDeviceInfo getPhysicalDeviceInfo() const override;
     SurfaceCapabilities getSurfaceCapabilities(Surface* surface) const override;
+
+public:
+    Adapter* getAdapter() const override;
 
 public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;

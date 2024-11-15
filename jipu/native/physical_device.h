@@ -27,9 +27,11 @@ public:
     virtual std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) = 0;
 
 public:
-    virtual Adapter* getAdapter() const = 0;
     virtual PhysicalDeviceInfo getPhysicalDeviceInfo() const = 0;
     virtual SurfaceCapabilities getSurfaceCapabilities(Surface* surface) const = 0;
+
+public:
+    virtual Adapter* getAdapter() const = 0;
 
 protected:
     PhysicalDevice() = default;
