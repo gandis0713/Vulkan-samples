@@ -47,19 +47,22 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     if (isPresentSubmit)
     {
-        auto& presentSubmitInfos = m_pendingSubmitInfos[SubmitType::kPresent];
+        auto& presentSubmitInfos = m_presentSubmitInfos;
         presentSubmitInfos.insert(presentSubmitInfos.end(), submitInfos.begin(), submitInfos.end());
     }
     else
     {
-        m_submitter->submit(submitInfos);
+        auto future = m_submitter->submitAsync(submitInfos);
+        future.get();
     }
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
-    m_submitter->present(m_pendingSubmitInfos[SubmitType::kPresent], presentInfo);
-    m_pendingSubmitInfos[SubmitType::kPresent] = {};
+    auto future = m_submitter->presentAsync(m_presentSubmitInfos, presentInfo);
+    future.get();
+
+    m_presentSubmitInfos = {};
 }
 
 std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)

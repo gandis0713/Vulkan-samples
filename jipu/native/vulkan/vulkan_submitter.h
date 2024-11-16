@@ -3,6 +3,8 @@
 #include "vulkan_submit_context.h"
 #include "vulkan_swapchain.h"
 
+#include <future>
+
 namespace jipu
 {
 
@@ -27,6 +29,8 @@ public:
 public:
     void submit(const std::vector<VulkanSubmit::Info>& submits);
     void present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
+    std::future<void> submitAsync(const std::vector<VulkanSubmit::Info>& submits);
+    std::future<void> presentAsync(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
 
 private:
     struct QueueGroup

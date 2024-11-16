@@ -23,19 +23,21 @@ public:
     VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
+public:
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
 
 public:
     void present(VulkanPresentInfo presentInfo);
 
 private:
+    std::vector<VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
+
+private:
     VulkanDevice& m_device;
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 
 private:
-    std::unordered_map<SubmitType, std::vector<VulkanSubmit::Info>> m_pendingSubmitInfos{};
-
-    std::vector<VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
+    std::vector<VulkanSubmit::Info> m_presentSubmitInfos{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);
