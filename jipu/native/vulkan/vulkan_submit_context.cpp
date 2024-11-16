@@ -247,7 +247,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             if (notSyncedInfos.empty())
             {
                 // assumed copied resources.
-                return SubmitType::kNone;
+                return SubmitType::kTransfer;
             }
             const auto& info = notSyncedInfos[notSyncedInfos.size() - 1]; // only last pass resource info
 
