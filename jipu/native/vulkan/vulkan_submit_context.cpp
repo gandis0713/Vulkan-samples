@@ -308,8 +308,10 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             {
                 auto hasSrcDependency = findSrcResource(submittedRecordResults, result.commandResourceSyncResult.notSyncedPassResourceInfos);
 
-                if (hasSrcDependency) // prepare next submit info
+                if (hasSrcDependency)
                 {
+                    // prepare next submit info.
+                    // because we need to wait for the previous submit by semaphore.
                     context.m_submits.push_back(currentSubmit);
                     currentSubmit = {};
                 }
