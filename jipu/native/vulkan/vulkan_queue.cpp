@@ -36,24 +36,38 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     // submit
     auto submitInfos = submitContext.getSubmitInfos();
 
-    auto isPresentSubmit = [&](const auto& submitInfos) -> bool {
-        for (const auto& submitInfo : submitInfos)
+    std::vector<VulkanSubmit::Info> immediateSubmitInfos{};
+    std::vector<VulkanSubmit::Info> presentSubmitInfos{};
+    for (const auto& submitInfo : submitInfos)
+    {
+        switch (submitInfo.type)
         {
-            if (submitInfo.type == SubmitType::kPresent)
-                return true;
+        case SubmitType::kCompute:
+        case SubmitType::kRender:
+        case SubmitType::kTransfer:
+            immediateSubmitInfos.push_back(submitInfo);
+            break;
+        case SubmitType::kPresent:
+            presentSubmitInfos.push_back(submitInfo);
+            break;
+        case SubmitType::kNone:
+        default:
+            // log error
+            break;
         }
-        return false;
-    }(submitInfos);
-
-    if (isPresentSubmit)
-    {
-        auto& presentSubmitInfos = m_presentSubmitInfos;
-        presentSubmitInfos.insert(presentSubmitInfos.end(), submitInfos.begin(), submitInfos.end());
     }
-    else
+
+    if (!immediateSubmitInfos.empty())
     {
-        auto future = m_submitter->submitAsync(submitInfos);
+        auto future = m_submitter->submitAsync(immediateSubmitInfos);
         future.get();
+    }
+
+    if (!presentSubmitInfos.empty())
+    {
+        m_presentSubmitInfos.insert(m_presentSubmitInfos.end(),
+                                    presentSubmitInfos.begin(),
+                                    presentSubmitInfos.end());
     }
 }
 
