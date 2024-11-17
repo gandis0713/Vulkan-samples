@@ -37,7 +37,7 @@ private:
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 
 private:
-    std::vector<VulkanSubmit::Info> m_presentSubmitInfos{};
+    std::pair<VkFence, std::vector<VulkanSubmit::Info>> m_presentSubmitInfos{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);

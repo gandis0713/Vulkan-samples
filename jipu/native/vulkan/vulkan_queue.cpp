@@ -30,53 +30,65 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     // generate Submit context.
     VulkanSubmitContext submitContext = VulkanSubmitContext::create(&m_device, commandRecordResults);
 
-    // set inflight vulkan objects.
-    m_device.getInflightContext()->add(m_device.getFencePool()->create(), submitContext);
-
     // submit
-    auto submitInfos = submitContext.getSubmitInfos();
+    auto submits = submitContext.getSubmits();
 
-    std::vector<VulkanSubmit::Info> immediateSubmitInfos{};
+    std::vector<VulkanSubmit::Info> notPresentSubmitInfos{};
     std::vector<VulkanSubmit::Info> presentSubmitInfos{};
-    for (const auto& submitInfo : submitInfos)
+    std::vector<VulkanSubmit> notPresnetSubmits{};
+    std::vector<VulkanSubmit> presentSubmits{};
+    for (const auto& submit : submits)
     {
-        switch (submitInfo.type)
+        switch (submit.info.type)
         {
         case SubmitType::kCompute:
         case SubmitType::kRender:
         case SubmitType::kTransfer:
-            immediateSubmitInfos.push_back(submitInfo);
+            notPresentSubmitInfos.push_back(submit.info);
+            notPresnetSubmits.push_back(submit);
             break;
         case SubmitType::kPresent:
-            presentSubmitInfos.push_back(submitInfo);
+            presentSubmitInfos.push_back(submit.info);
+            presentSubmits.push_back(submit);
             break;
         case SubmitType::kNone:
         default:
-            // log error
+            spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
             break;
         }
     }
 
-    if (!immediateSubmitInfos.empty())
+    if (!notPresentSubmitInfos.empty())
     {
-        auto future = m_submitter->submitAsync(immediateSubmitInfos);
+        auto fence = m_device.getFencePool()->create();
+        m_device.getInflightContext()->add(fence, notPresnetSubmits);
+
+        auto future = m_submitter->submitAsync(fence, notPresentSubmitInfos);
         future.get();
     }
 
     if (!presentSubmitInfos.empty())
     {
-        m_presentSubmitInfos.insert(m_presentSubmitInfos.end(),
-                                    presentSubmitInfos.begin(),
-                                    presentSubmitInfos.end());
+        if (m_presentSubmitInfos.first == VK_NULL_HANDLE)
+        {
+            m_presentSubmitInfos.first = m_device.getFencePool()->create();
+        }
+
+        auto fence = m_presentSubmitInfos.first;
+        m_device.getInflightContext()->add(fence, presentSubmits);
+
+        m_presentSubmitInfos.second.insert(m_presentSubmitInfos.second.end(),
+                                           presentSubmitInfos.begin(),
+                                           presentSubmitInfos.end());
     }
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
-    auto future = m_submitter->presentAsync(m_presentSubmitInfos, presentInfo);
+    auto future = m_submitter->presentAsync(m_presentSubmitInfos.first, m_presentSubmitInfos.second, presentInfo);
     future.get();
 
-    m_presentSubmitInfos = {};
+    m_presentSubmitInfos = { VK_NULL_HANDLE, {} };
 }
 
 std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
