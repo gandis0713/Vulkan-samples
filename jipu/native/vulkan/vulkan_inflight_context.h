@@ -34,24 +34,20 @@ class CommandBuffer;
 class VulkanInflightContext final
 {
 public:
-    static VulkanInflightObject generate(std::vector<CommandBuffer*> commandBuffers);
-
-public:
     VulkanInflightContext() = delete;
     explicit VulkanInflightContext(VulkanDevice* device);
     ~VulkanInflightContext();
 
 public:
-    void add(VkQueue queue, VkFence fence, const VulkanSubmit& submit);
+    void add(VkFence fence, const VulkanSubmitContext& submitContext);
     bool clear(VkFence fence);
-    bool clear(VkQueue queue);
     void clearAll();
 
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;
 
 private:
-    std::unordered_map<VkQueue, VulkanInflightObjects> m_inflights{};
+    VulkanInflightObjects m_inflightObjects{};
 };
 
 } // namespace jipu
