@@ -23,10 +23,10 @@ public:
 
 private:
     std::vector<std::thread> m_threads;
-    std::queue<std::function<void()>> tasks;
-    std::mutex taskMutex;
-    std::condition_variable condition;
-    bool stop = false;
+    std::queue<std::function<void()>> m_tasks;
+    std::mutex m_taskMutex;
+    std::condition_variable m_condition;
+    bool m_stop = false;
 };
 
 } // namespace jipu

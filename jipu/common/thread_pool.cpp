@@ -13,16 +13,16 @@ ThreadPool::ThreadPool(size_t numberOfThreads)
                 std::function<void()> task;
 
                 {
-                    std::unique_lock<std::mutex> lock(taskMutex);
-                    condition.wait(lock, [this]() {
-                        return stop || !tasks.empty();
+                    std::unique_lock<std::mutex> lock(m_taskMutex);
+                    m_condition.wait(lock, [this]() {
+                        return m_stop || !m_tasks.empty();
                     });
 
-                    if (stop && tasks.empty())
+                    if (m_stop && m_tasks.empty())
                         return;
 
-                    task = std::move(tasks.front());
-                    tasks.pop();
+                    task = std::move(m_tasks.front());
+                    m_tasks.pop();
                 }
 
                 // 작업 실행
@@ -35,11 +35,11 @@ ThreadPool::ThreadPool(size_t numberOfThreads)
 ThreadPool::~ThreadPool()
 {
     {
-        std::unique_lock<std::mutex> lock(taskMutex);
-        stop = true;
+        std::unique_lock<std::mutex> lock(m_taskMutex);
+        m_stop = true;
     }
 
-    condition.notify_all();
+    m_condition.notify_all();
     for (std::thread& worker : m_threads)
     {
         worker.join();
@@ -51,11 +51,11 @@ std::future<void> ThreadPool::enqueue(std::function<void()> func)
     auto task = std::make_shared<std::packaged_task<void()>>(std::bind(func));
     std::future<void> future = task->get_future();
     {
-        std::unique_lock<std::mutex> lock(taskMutex);
-        tasks.emplace([task]() { (*task)(); });
+        std::unique_lock<std::mutex> lock(m_taskMutex);
+        m_tasks.emplace([task]() { (*task)(); });
     }
 
-    condition.notify_one();
+    m_condition.notify_one();
 
     return future;
 }
