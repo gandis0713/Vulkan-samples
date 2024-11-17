@@ -85,6 +85,7 @@ public:
 private:
     void createDevice();
     const std::vector<const char*> getRequiredDeviceExtensions();
+    void createPools();
 
 private:
     VulkanPhysicalDevice& m_physicalDevice;

@@ -37,9 +37,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_inflightContext = std::make_unique<VulkanInflightContext>(this);
 
-    m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
-    m_fencePool = std::make_unique<VulkanFencePool>(this);
-    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this);
+    createPools();
 }
 
 VulkanDevice::~VulkanDevice()
@@ -356,5 +354,16 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
     }
     return requiredDeviceExtensions;
 };
+
+void VulkanDevice::createPools()
+{
+    m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
+    m_fencePool = std::make_unique<VulkanFencePool>(this);
+
+    // command buffer pool
+    {
+        m_commandBufferPool = VulkanCommandPool::create(this);
+    }
+}
 
 } // namespace jipu
