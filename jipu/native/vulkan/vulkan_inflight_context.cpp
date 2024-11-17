@@ -25,11 +25,11 @@ VulkanInflightContext::~VulkanInflightContext()
     m_inflightObjects.clear();
 }
 
-void VulkanInflightContext::add(VkFence fence, const VulkanSubmitContext& submitContext)
+void VulkanInflightContext::add(VkFence fence, const std::vector<VulkanSubmit>& submits)
 {
     auto& inflightObject = m_inflightObjects[fence];
 
-    for (const auto& submit : submitContext.getSubmits())
+    for (const auto& submit : submits)
     {
         inflightObject.commandBuffers.insert(submit.info.commandBuffers.begin(), submit.info.commandBuffers.end());
         inflightObject.signalSemaphores.insert(submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());

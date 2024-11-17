@@ -39,7 +39,7 @@ public:
     ~VulkanInflightContext();
 
 public:
-    void add(VkFence fence, const VulkanSubmitContext& submitContext);
+    void add(VkFence fence, const std::vector<VulkanSubmit>& submits);
     bool clear(VkFence fence);
     void clearAll();
 
