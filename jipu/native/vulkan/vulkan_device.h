@@ -12,6 +12,7 @@
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_inflight_context.h"
+#include "vulkan_object_manager.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
@@ -72,6 +73,7 @@ public:
     VulkanFramebufferCache* getFramebufferCache();
     VulkanCommandPool* getCommandPool();
     VulkanInflightContext* getInflightContext();
+    VulkanObjectManager* getObjectManager();
 
 public:
     VkDevice getVkDevice() const;
@@ -102,6 +104,8 @@ private:
     VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::unique_ptr<VulkanInflightContext> m_inflightContext = nullptr;
+
+    std::unique_ptr<VulkanObjectManager> m_objectManager = nullptr;
 
     std::vector<VkQueueFamilyProperties> m_queueFamilies{};
 };

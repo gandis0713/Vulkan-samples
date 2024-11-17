@@ -47,7 +47,7 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
 
 VulkanFramebuffer::~VulkanFramebuffer()
 {
-    m_device.vkAPI.DestroyFramebuffer(m_device.getVkDevice(), m_framebuffer, nullptr);
+    m_device.getObjectManager()->safeDestroy(m_framebuffer);
 }
 
 const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttachments() const

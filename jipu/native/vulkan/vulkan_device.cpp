@@ -37,6 +37,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_inflightContext = std::make_unique<VulkanInflightContext>(this);
 
+    m_objectManager = VulkanObjectManager::create(this);
+
     createPools();
 }
 
@@ -49,10 +51,14 @@ VulkanDevice::~VulkanDevice()
     m_commandBufferPool.reset();
     m_semaphorePool.reset();
     m_fencePool.reset();
+
+    m_inflightContext.reset(); // after queue wait idle.
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
     m_resourceAllocator.reset();
+
+    m_objectManager.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
 }
@@ -190,6 +196,11 @@ VulkanCommandPool* VulkanDevice::getCommandPool()
 VulkanInflightContext* VulkanDevice::getInflightContext()
 {
     return m_inflightContext.get();
+}
+
+VulkanObjectManager* VulkanDevice::getObjectManager()
+{
+    return m_objectManager.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
