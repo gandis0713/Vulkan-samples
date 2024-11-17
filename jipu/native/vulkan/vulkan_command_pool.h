@@ -3,6 +3,7 @@
 #include "vulkan_api.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace jipu
 {
@@ -10,14 +11,20 @@ namespace jipu
 class VulkanDevice;
 class VulkanCommandPool final
 {
+
+public:
+    static std::unique_ptr<VulkanCommandPool> create(VulkanDevice* device);
+
 public:
     VulkanCommandPool() = delete;
-    explicit VulkanCommandPool(VulkanDevice* device);
     ~VulkanCommandPool();
 
 public:
     VkCommandBuffer create(/* TODO */);
     void release(VkCommandBuffer commandBuffer);
+
+private:
+    void createVkCommandPool();
 
 private:
     VulkanDevice* m_device = nullptr;
@@ -27,6 +34,12 @@ private:
 
 private:
     std::unordered_map<VkCommandBuffer, bool> m_commandBuffers{};
+
+private:
+    std::unordered_set<VkCommandBuffer> m_releasePendingCommandBuffers{};
+
+private:
+    explicit VulkanCommandPool(VulkanDevice* device);
 };
 
 } // namespace jipu

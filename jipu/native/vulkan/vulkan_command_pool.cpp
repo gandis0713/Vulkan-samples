@@ -7,18 +7,17 @@
 namespace jipu
 {
 
+std::unique_ptr<VulkanCommandPool> VulkanCommandPool::create(VulkanDevice* device)
+{
+    auto vulkanCommandPool = std::unique_ptr<VulkanCommandPool>(new VulkanCommandPool(device));
+    vulkanCommandPool->createVkCommandPool();
+
+    return vulkanCommandPool;
+}
+
 VulkanCommandPool::VulkanCommandPool(VulkanDevice* device)
     : m_device(device)
 {
-    VkCommandPoolCreateInfo commandPoolCreateInfo{};
-    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.queueFamilyIndex = 0; // TODO: queue family index.
-    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-    if (m_device->vkAPI.CreateCommandPool(m_device->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create command pool.");
-    }
 }
 
 VulkanCommandPool::~VulkanCommandPool()
@@ -74,6 +73,19 @@ void VulkanCommandPool::release(VkCommandBuffer commandBuffer)
     }
 
     m_commandBuffers[commandBuffer] = false;
+}
+
+void VulkanCommandPool::createVkCommandPool()
+{
+    VkCommandPoolCreateInfo commandPoolCreateInfo{};
+    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    commandPoolCreateInfo.queueFamilyIndex = 0; // TODO: queue family index.
+    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+    if (m_device->vkAPI.CreateCommandPool(m_device->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create command pool.");
+    }
 }
 
 } // namespace jipu
