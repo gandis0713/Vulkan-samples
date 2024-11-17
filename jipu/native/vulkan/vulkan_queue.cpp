@@ -64,7 +64,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         m_device.getInflightObjects()->add(fence, notPresnetSubmits);
 
         auto future = m_submitter->submitAsync(fence, notPresentSubmitInfos);
-        // future.get();
+        future.get();
     }
 
     if (!presentSubmitInfos.empty())
@@ -86,7 +86,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
     auto future = m_submitter->presentAsync(m_presentSubmitInfos.first, m_presentSubmitInfos.second, presentInfo);
-    // future.get();
+    future.get();
 
     m_presentSubmitInfos = { VK_NULL_HANDLE, {} };
 }
