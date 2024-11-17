@@ -3,6 +3,7 @@
 #include "vulkan_api.h"
 #include "vulkan_submit_context.h"
 
+#include <functional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -27,27 +28,47 @@ struct VulkanInflightObject
     std::unordered_set<VkRenderPass> renderPasses{};
 };
 
-using VulkanInflightObjects = std::unordered_map<VkFence, VulkanInflightObject>;
-
 class VulkanDevice;
 class CommandBuffer;
-class VulkanInflightContext final
+class VulkanInflightObjects final
 {
+
 public:
-    VulkanInflightContext() = delete;
-    explicit VulkanInflightContext(VulkanDevice* device);
-    ~VulkanInflightContext();
+    using Subscribe = std::function<void(VkFence, VulkanInflightObject)>;
+
+public:
+    VulkanInflightObjects() = delete;
+    explicit VulkanInflightObjects(VulkanDevice* device);
+    ~VulkanInflightObjects();
 
 public:
     void add(VkFence fence, const std::vector<VulkanSubmit>& submits);
     bool clear(VkFence fence);
     void clearAll();
 
+    void subscribe(void* ptr, Subscribe sub);
+    void unsubscribe(void* ptr);
+
+public:
+    bool isInflight(VkCommandBuffer commandBuffer) const;
+    bool isInflight(VkBuffer buffer) const;
+    bool isInflight(VkImage image) const;
+    bool isInflight(VkImageView imageView) const;
+    bool isInflight(VkSemaphore semaphore) const;
+    bool isInflight(VkSampler sampler) const;
+    bool isInflight(VkPipeline pipeline) const;
+    bool isInflight(VkPipelineLayout pipelineLayout) const;
+    bool isInflight(VkDescriptorSet descriptorSet) const;
+    bool isInflight(VkDescriptorSetLayout descriptorSetLayout) const;
+    bool isInflight(VkFramebuffer framebuffer) const;
+    bool isInflight(VkRenderPass renderPass) const;
+
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;
 
 private:
-    VulkanInflightObjects m_inflightObjects{};
+    std::unordered_map<VkFence, VulkanInflightObject> m_inflightObjects{};
+    std::unordered_map<void*, Subscribe> m_subs{};
 };
 
 } // namespace jipu

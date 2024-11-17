@@ -17,7 +17,7 @@ std::unique_ptr<VulkanObjectManager> VulkanObjectManager::create(VulkanDevice* d
 VulkanObjectManager::VulkanObjectManager(VulkanDevice* device)
     : m_device(device)
 {
-    m_device->getInflightContext()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
+    m_device->getInflightObjects()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
         for (auto& commandBuffer : object.commandBuffers)
         {
             if (m_commandBuffers.contains(commandBuffer))
@@ -118,7 +118,7 @@ VulkanObjectManager::VulkanObjectManager(VulkanDevice* device)
 
 VulkanObjectManager::~VulkanObjectManager()
 {
-    m_device->getInflightContext()->unsubscribe(this);
+    m_device->getInflightObjects()->unsubscribe(this);
 
     for (auto buffer : m_buffers)
     {
@@ -183,7 +183,7 @@ VulkanObjectManager::~VulkanObjectManager()
 
 void VulkanObjectManager::safeDestroy(VkBuffer buffer)
 {
-    if (m_device->getInflightContext()->isInflight(buffer))
+    if (m_device->getInflightObjects()->isInflight(buffer))
     {
         m_buffers.insert(buffer);
     }
@@ -195,7 +195,7 @@ void VulkanObjectManager::safeDestroy(VkBuffer buffer)
 
 void VulkanObjectManager::safeDestroy(VkImage image)
 {
-    if (m_device->getInflightContext()->isInflight(image))
+    if (m_device->getInflightObjects()->isInflight(image))
     {
         m_images.insert(image);
     }
@@ -208,7 +208,7 @@ void VulkanObjectManager::safeDestroy(VkImage image)
 
 void VulkanObjectManager::safeDestroy(VkCommandBuffer commandBuffer)
 {
-    if (m_device->getInflightContext()->isInflight(commandBuffer))
+    if (m_device->getInflightObjects()->isInflight(commandBuffer))
     {
         m_commandBuffers.insert(commandBuffer);
     }
@@ -221,7 +221,7 @@ void VulkanObjectManager::safeDestroy(VkCommandBuffer commandBuffer)
 
 void VulkanObjectManager::safeDestroy(VkImageView imageView)
 {
-    if (m_device->getInflightContext()->isInflight(imageView))
+    if (m_device->getInflightObjects()->isInflight(imageView))
     {
         m_imageViews.insert(imageView);
     }
@@ -233,7 +233,7 @@ void VulkanObjectManager::safeDestroy(VkImageView imageView)
 }
 void VulkanObjectManager::safeDestroy(VkSemaphore semaphore)
 {
-    if (m_device->getInflightContext()->isInflight(semaphore))
+    if (m_device->getInflightObjects()->isInflight(semaphore))
     {
         m_semaphores.insert(semaphore);
     }
@@ -246,7 +246,7 @@ void VulkanObjectManager::safeDestroy(VkSemaphore semaphore)
 
 void VulkanObjectManager::safeDestroy(VkSampler sampler)
 {
-    if (m_device->getInflightContext()->isInflight(sampler))
+    if (m_device->getInflightObjects()->isInflight(sampler))
     {
         m_samplers.insert(sampler);
     }
@@ -258,7 +258,7 @@ void VulkanObjectManager::safeDestroy(VkSampler sampler)
 }
 void VulkanObjectManager::safeDestroy(VkPipeline pipeline)
 {
-    if (m_device->getInflightContext()->isInflight(pipeline))
+    if (m_device->getInflightObjects()->isInflight(pipeline))
     {
         m_pipelines.insert(pipeline);
     }
@@ -271,7 +271,7 @@ void VulkanObjectManager::safeDestroy(VkPipeline pipeline)
 
 void VulkanObjectManager::safeDestroy(VkPipelineLayout pipelineLayout)
 {
-    if (m_device->getInflightContext()->isInflight(pipelineLayout))
+    if (m_device->getInflightObjects()->isInflight(pipelineLayout))
     {
         m_pipelineLayouts.insert(pipelineLayout);
     }
@@ -284,7 +284,7 @@ void VulkanObjectManager::safeDestroy(VkPipelineLayout pipelineLayout)
 
 void VulkanObjectManager::safeDestroy(VkDescriptorSet descriptorSet)
 {
-    if (m_device->getInflightContext()->isInflight(descriptorSet))
+    if (m_device->getInflightObjects()->isInflight(descriptorSet))
     {
         m_descriptorSets.insert(descriptorSet);
     }
@@ -297,7 +297,7 @@ void VulkanObjectManager::safeDestroy(VkDescriptorSet descriptorSet)
 
 void VulkanObjectManager::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 {
-    if (m_device->getInflightContext()->isInflight(descriptorSetLayout))
+    if (m_device->getInflightObjects()->isInflight(descriptorSetLayout))
     {
         m_descriptorSetLayouts.insert(descriptorSetLayout);
     }
@@ -310,7 +310,7 @@ void VulkanObjectManager::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 
 void VulkanObjectManager::safeDestroy(VkFramebuffer framebuffer)
 {
-    if (m_device->getInflightContext()->isInflight(framebuffer))
+    if (m_device->getInflightObjects()->isInflight(framebuffer))
     {
         spdlog::trace("framebuffer is inflight {}", reinterpret_cast<void*>(framebuffer));
         m_framebuffers.insert(framebuffer);
@@ -324,7 +324,7 @@ void VulkanObjectManager::safeDestroy(VkFramebuffer framebuffer)
 
 void VulkanObjectManager::safeDestroy(VkRenderPass renderPass)
 {
-    if (m_device->getInflightContext()->isInflight(renderPass))
+    if (m_device->getInflightObjects()->isInflight(renderPass))
     {
         m_renderPasses.insert(renderPass);
     }

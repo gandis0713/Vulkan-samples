@@ -35,7 +35,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(*this, allocatorDescriptor);
 
-    m_inflightContext = std::make_unique<VulkanInflightContext>(this);
+    m_inflightObjects = std::make_unique<VulkanInflightObjects>(this);
 
     m_objectManager = VulkanObjectManager::create(this);
 
@@ -52,7 +52,7 @@ VulkanDevice::~VulkanDevice()
     m_semaphorePool.reset();
     m_fencePool.reset();
 
-    m_inflightContext.reset(); // after queue wait idle.
+    m_inflightObjects.reset(); // after queue wait idle.
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
@@ -193,9 +193,9 @@ VulkanCommandPool* VulkanDevice::getCommandPool()
     return m_commandBufferPool.get();
 }
 
-VulkanInflightContext* VulkanDevice::getInflightContext()
+VulkanInflightObjects* VulkanDevice::getInflightObjects()
 {
-    return m_inflightContext.get();
+    return m_inflightObjects.get();
 }
 
 VulkanObjectManager* VulkanDevice::getObjectManager()

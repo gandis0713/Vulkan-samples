@@ -5,7 +5,7 @@
 #include "vulkan_api.h"
 #include "vulkan_command_recorder.h"
 #include "vulkan_export.h"
-#include "vulkan_inflight_context.h"
+#include "vulkan_inflight_objects.h"
 #include "vulkan_submit_context.h"
 #include "vulkan_submitter.h"
 #include "vulkan_swapchain.h"

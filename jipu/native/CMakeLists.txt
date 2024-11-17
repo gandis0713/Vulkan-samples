@@ -18,7 +18,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_object_manager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.cpp
@@ -54,7 +54,7 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_object_manager.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.h

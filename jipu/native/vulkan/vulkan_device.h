@@ -11,7 +11,7 @@
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
-#include "vulkan_inflight_context.h"
+#include "vulkan_inflight_objects.h"
 #include "vulkan_object_manager.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
@@ -72,7 +72,7 @@ public:
     VulkanRenderPassCache* getRenderPassCache();
     VulkanFramebufferCache* getFramebufferCache();
     VulkanCommandPool* getCommandPool();
-    VulkanInflightContext* getInflightContext();
+    VulkanInflightObjects* getInflightObjects();
     VulkanObjectManager* getObjectManager();
 
 public:
@@ -103,7 +103,7 @@ private:
     VulkanRenderPassCache m_renderPassCache;
     VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
-    std::unique_ptr<VulkanInflightContext> m_inflightContext = nullptr;
+    std::unique_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 
     std::unique_ptr<VulkanObjectManager> m_objectManager = nullptr;
 
