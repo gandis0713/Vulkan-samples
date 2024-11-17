@@ -6,6 +6,7 @@ set(COMMON_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/dylib.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gpu_info.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ref_counted.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/thread_pool.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/assert.h
     ${CMAKE_CURRENT_SOURCE_DIR}/cast.h
@@ -15,6 +16,7 @@ set(COMMON_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/hash.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ref_counted.h
     ${CMAKE_CURRENT_SOURCE_DIR}/result.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/thread_pool.h
 )
 
 add_library(common
