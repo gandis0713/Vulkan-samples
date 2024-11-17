@@ -427,6 +427,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                                 currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
                             }
                         }
+                        currentSubmit.add(cmd->framebuffer->getVkFrameBuffer());
                         currentSubmit.add(cmd->renderPass->getVkRenderPass());
                     }
                     break;
