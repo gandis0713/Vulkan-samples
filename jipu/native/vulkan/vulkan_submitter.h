@@ -28,10 +28,10 @@ public:
     ~VulkanSubmitter();
 
 public:
-    void submit(const std::vector<VulkanSubmit::Info>& submits);
-    void present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
-    std::future<void> submitAsync(const std::vector<VulkanSubmit::Info>& submits);
-    std::future<void> presentAsync(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
+    void submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
+    void present(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
+    std::future<void> submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
+    std::future<void> presentAsync(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
 
 private:
     struct QueueGroup
@@ -48,9 +48,6 @@ private:
     std::vector<QueueGroup> m_queueGroups{};
 
     ThreadPool m_threadPool{ 10 };
-
-private:
-    VkFence m_fence = VK_NULL_HANDLE;
 };
 
 // Convert Helper

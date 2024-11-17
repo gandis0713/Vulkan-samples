@@ -30,9 +30,6 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
 
         m_queueGroups.push_back(queueGroup);
     }
-
-    // create fence.
-    m_fence = m_device->getFencePool()->create();
 }
 
 VulkanSubmitter::~VulkanSubmitter()
@@ -45,30 +42,28 @@ VulkanSubmitter::~VulkanSubmitter()
         for (auto queue : queueGroup.queues)
             vkAPI.QueueWaitIdle(queue);
 
-    vulkanDevice->getFencePool()->release(m_fence);
-
     // Doesn't need to destroy VkQueue.
 }
 
-std::future<void> VulkanSubmitter::submitAsync(const std::vector<VulkanSubmit::Info>& submits)
+std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
-    auto submitTask = [this, submits = submits]() -> void {
-        submit(submits);
+    auto submitTask = [this, fence = fence, submits = submits]() -> void {
+        submit(fence, submits);
     };
 
     return m_threadPool.enqueue(submitTask);
 }
 
-std::future<void> VulkanSubmitter::presentAsync(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
+std::future<void> VulkanSubmitter::presentAsync(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
 {
-    auto presentTask = [this, submitInfos = submitInfos, presentInfo = presentInfo]() -> void {
-        present(submitInfos, presentInfo);
+    auto presentTask = [this, fence = fence, submitInfos = submitInfos, presentInfo = presentInfo]() -> void {
+        present(fence, submitInfos, presentInfo);
     };
 
     return m_threadPool.enqueue(presentTask);
 }
 
-void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
+void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
     auto submitInfoSize = submits.size();
 
@@ -94,26 +89,26 @@ void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
-    VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
+    VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
+    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
     }
 }
 
-void VulkanSubmitter::present(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
+void VulkanSubmitter::present(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
 {
     // prepare submit and present infos
     {
@@ -140,7 +135,7 @@ void VulkanSubmitter::present(std::vector<VulkanSubmit::Info> submitInfos, Vulka
     }
 
     // submit
-    submit(submitInfos);
+    submit(fence, submitInfos);
 
     // present
     VkPresentInfoKHR info{};
