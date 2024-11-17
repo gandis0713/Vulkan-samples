@@ -1,5 +1,6 @@
 #pragma once
 
+#include "jipu/common/thread_pool.h"
 #include "vulkan_submit_context.h"
 #include "vulkan_swapchain.h"
 
@@ -45,6 +46,8 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     std::vector<QueueGroup> m_queueGroups{};
+
+    ThreadPool m_threadPool{ 10 };
 
 private:
     VkFence m_fence = VK_NULL_HANDLE;

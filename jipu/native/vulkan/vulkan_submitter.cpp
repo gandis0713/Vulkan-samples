@@ -52,20 +52,20 @@ VulkanSubmitter::~VulkanSubmitter()
 
 std::future<void> VulkanSubmitter::submitAsync(const std::vector<VulkanSubmit::Info>& submits)
 {
-    auto submitTask = [&](const std::vector<VulkanSubmit::Info>& submits) -> void {
+    auto submitTask = [this, submits = submits]() -> void {
         submit(submits);
     };
 
-    return std::async(std::launch::async, submitTask, submits);
+    return m_threadPool.enqueue(submitTask);
 }
 
 std::future<void> VulkanSubmitter::presentAsync(std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
 {
-    auto presentTask = [&](std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo) -> void {
+    auto presentTask = [this, submitInfos = submitInfos, presentInfo = presentInfo]() -> void {
         present(submitInfos, presentInfo);
     };
 
-    return std::async(std::launch::async, presentTask, submitInfos, presentInfo);
+    return m_threadPool.enqueue(presentTask);
 }
 
 void VulkanSubmitter::submit(const std::vector<VulkanSubmit::Info>& submits)
