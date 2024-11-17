@@ -31,7 +31,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     VulkanSubmitContext submitContext = VulkanSubmitContext::create(&m_device, commandRecordResults);
 
     // set inflight vulkan objects.
-    m_device.getInflightContext();
+    m_device.getInflightContext()->add(m_device.getFencePool()->create(), submitContext);
 
     // submit
     auto submitInfos = submitContext.getSubmitInfos();

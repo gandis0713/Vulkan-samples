@@ -496,4 +496,15 @@ std::vector<VulkanSubmit::Info> VulkanSubmitContext::getSubmitInfos() const
     return submitInfos;
 }
 
+std::vector<VulkanSubmit::Object> VulkanSubmitContext::getSubmitObjects() const
+{
+    std::vector<VulkanSubmit::Object> submitObjects{};
+    for (const auto& submit : m_submits)
+    {
+        submitObjects.push_back(submit.object);
+    }
+
+    return submitObjects;
+}
+
 } // namespace jipu

@@ -82,6 +82,7 @@ public:
 public:
     const std::vector<VulkanSubmit>& getSubmits() const;
     std::vector<VulkanSubmit::Info> getSubmitInfos() const;
+    std::vector<VulkanSubmit::Object> getSubmitObjects() const;
 
 private:
     std::vector<VulkanSubmit> m_submits{};
