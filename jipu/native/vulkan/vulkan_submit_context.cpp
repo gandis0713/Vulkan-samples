@@ -267,9 +267,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
                     switch (owner)
                     {
-                    case VulkanTexture::Owner::Swapchain:
+                    case VulkanTextureOwner::kSwapchain:
                         return SubmitType::kPresent;
-                    case VulkanTexture::Owner::User:
+                    case VulkanTextureOwner::kSelf:
                     default:
                         return SubmitType::kRender;
                     }

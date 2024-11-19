@@ -55,7 +55,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         throw std::runtime_error("Texture format must not be undefined.");
     }
 
-    if (m_descriptor.image == VK_NULL_HANDLE)
+    if (m_descriptor.owner == VulkanTextureOwner::kSelf && m_descriptor.image == VK_NULL_HANDLE)
     {
         VkImageCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -76,18 +76,18 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         auto& vulkanResourceAllocator = device->getResourceAllocator();
         m_resource = vulkanResourceAllocator.createTexture(createInfo);
 
-        m_owner = Owner::User;
+        m_owner = m_descriptor.owner;
     }
     else
     {
         m_resource.image = m_descriptor.image;
-        m_owner = Owner::Swapchain;
+        m_owner = m_descriptor.owner;
     }
 }
 
 VulkanTexture::~VulkanTexture()
 {
-    if (m_owner == Owner::User)
+    if (m_owner == VulkanTextureOwner::kSelf)
     {
         auto& vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
         vulkanResourceAllocator.destroyTexture(m_resource);
@@ -153,10 +153,10 @@ VkImageLayout VulkanTexture::getFinalLayout() const
 {
     switch (m_owner)
     {
-    case Owner::Swapchain:
+    case VulkanTextureOwner::kSwapchain:
         return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     default:
-    case Owner::User:
+    case VulkanTextureOwner::kSelf:
         return GenerateFinalImageLayout(m_descriptor.usage);
     }
 }
@@ -202,7 +202,7 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipeline
     vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-VulkanTexture::Owner VulkanTexture::getOwner() const
+VulkanTextureOwner VulkanTexture::getOwner() const
 {
     return m_owner;
 }

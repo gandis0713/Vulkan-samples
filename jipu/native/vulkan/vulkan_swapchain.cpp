@@ -123,9 +123,46 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
     return vkdescriptor;
 }
 
+VulkanSwapchainTexture::VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor, const VulkanSwapchainTextureDescriptor& swapchainTextureDescriptor)
+    : VulkanTexture(device, descriptor)
+    , m_imageIndex(swapchainTextureDescriptor.imageIndex)
+
+{
+}
+
+void VulkanSwapchainTexture::setAcquireSemaphore(VkSemaphore semaphore)
+{
+    m_semaphore = semaphore;
+}
+
+VkSemaphore VulkanSwapchainTexture::getAcquireSemaphore() const
+{
+    return m_semaphore;
+}
+
+uint32_t VulkanSwapchainTexture::getImageIndex() const
+{
+    return m_imageIndex;
+}
+
+VulkanSwapchainTextureView::VulkanSwapchainTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor)
+    : VulkanTextureView(texture, descriptor)
+{
+}
+
 VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false)
     : VulkanSwapchain(device, generateVulkanSwapchainDescriptor(device, descriptor))
 {
+}
+
+VkSemaphore VulkanSwapchainTextureView::getAcquireSemaphore() const
+{
+    return downcast(m_texture)->getAcquireSemaphore();
+}
+
+uint32_t VulkanSwapchainTextureView::getImageIndex() const
+{
+    return downcast(m_texture)->getImageIndex();
 }
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false)
@@ -164,11 +201,11 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
     vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, images.data());
 
     // create Textures by VkImage.
-    for (VkImage image : images)
+    for (auto index = 0; index < images.size(); ++index)
     {
-        VulkanTextureDescriptor descriptor{};
-        descriptor.image = image; // by swapchain
+        auto image = images[index];
 
+        VulkanTextureDescriptor descriptor{};
         descriptor.imageType = VK_IMAGE_TYPE_2D;
         descriptor.extent = { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 1 };
         descriptor.mipLevels = 1;
@@ -181,35 +218,32 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
         descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
         descriptor.flags = 0; // Optional
 
-        std::unique_ptr<VulkanTexture> texture = std::make_unique<VulkanTexture>(m_device, descriptor);
+        descriptor.image = image; // by swapchain image.
+        descriptor.owner = VulkanTextureOwner::kSwapchain;
+
+        VulkanSwapchainTextureDescriptor swapchainTextureDescriptor{};
+        swapchainTextureDescriptor.imageIndex = index;
+
+        std::unique_ptr<VulkanSwapchainTexture>
+            texture = std::make_unique<VulkanSwapchainTexture>(m_device, descriptor, swapchainTextureDescriptor);
         m_textures.push_back(std::move(texture));
     }
 
     // create TextureViews
-    for (std::unique_ptr<VulkanTexture>& texture : m_textures)
+    for (std::unique_ptr<VulkanSwapchainTexture>& texture : m_textures)
     {
         TextureViewDescriptor descriptor{};
         descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
-        auto textureView = std::make_unique<VulkanTextureView>(texture.get(), descriptor);
+        auto textureView = std::make_unique<VulkanSwapchainTextureView>(texture.get(), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
-
-    // create semaphore
-    auto swapchainImageSize = m_textures.size();
-    m_acquireImageSemaphores.resize(swapchainImageSize); // only resize. do not create semaphore here.
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    for (auto& semaphore : m_acquireImageSemaphores)
-    {
-        if (semaphore != VK_NULL_HANDLE)
-            m_device->getSemaphorePool()->release(semaphore);
-    }
 
     /* do not delete VkImages from swapchain. */
 
@@ -238,7 +272,7 @@ void VulkanSwapchain::present()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VulkanPresentInfo presentInfo{};
-    presentInfo.signalSemaphore.push_back(m_acquireImageSemaphores[m_acquiredImageIndex]);
+    presentInfo.signalSemaphore.push_back(downcast(m_textures[m_acquiredImageIndex].get())->getAcquireSemaphore());
     presentInfo.swapchains = { m_swapchain };
     presentInfo.imageIndices = { m_acquiredImageIndex };
 
@@ -247,25 +281,16 @@ void VulkanSwapchain::present()
 
 Texture* VulkanSwapchain::acquireNextTexture()
 {
-    VulkanDevice* vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    auto semaphore = m_device->getSemaphorePool()->create();
-    uint32_t acquireImageIndex = 0;
-    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
-    if (result != VK_SUCCESS)
-    {
-        spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
-    }
-
-    setAcquireImageSemaphore(semaphore, acquireImageIndex);
-    setAcquireImageIndex(acquireImageIndex);
-
-    return m_textures[acquireImageIndex].get();
+    return m_textures[acquireNextImageIndex()].get();
 }
 
 TextureView* VulkanSwapchain::acquireNextTextureView()
 {
+    return m_textureViews[acquireNextImageIndex()].get();
+}
+
+uint32_t VulkanSwapchain::acquireNextImageIndex()
+{
     VulkanDevice* vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
@@ -277,34 +302,42 @@ TextureView* VulkanSwapchain::acquireNextTextureView()
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
     }
 
-    setAcquireImageSemaphore(semaphore, acquireImageIndex);
-    setAcquireImageIndex(acquireImageIndex);
+    setAcquireImageInfo(acquireImageIndex, semaphore);
 
-    return m_textureViews[acquireImageIndex].get();
+    return acquireImageIndex;
 }
 
-void VulkanSwapchain::setAcquireImageIndex(const uint32_t imageIndex)
+void VulkanSwapchain::setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore semaphore)
 {
+    if (m_textures.size() <= imageIndex)
+    {
+        throw std::runtime_error("Failed to set acquire image semaphore. Invalid image index.");
+    }
+
+    auto texture = m_textures[imageIndex].get();
+    if (texture->getAcquireSemaphore() != VK_NULL_HANDLE)
+    {
+        m_device->getSemaphorePool()->release(texture->getAcquireSemaphore());
+    }
+
+    m_textures[imageIndex]->setAcquireSemaphore(semaphore);
+
     m_acquiredImageIndex = imageIndex;
+}
+
+VkSemaphore VulkanSwapchain::getAcquireSemaphore(const uint32_t imageIndex) const
+{
+    if (m_textures.size() <= imageIndex)
+    {
+        throw std::runtime_error("Failed to get acquire semaphore. Invalid image index.");
+    }
+
+    return m_textures[imageIndex]->getAcquireSemaphore();
 }
 
 uint32_t VulkanSwapchain::getAcquireImageIndex() const
 {
     return m_acquiredImageIndex;
-}
-
-void VulkanSwapchain::setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex)
-{
-    if (m_acquireImageSemaphores.size() <= imageIndex)
-    {
-        throw std::runtime_error("Failed to set acquire image semaphore. Invalid image index.");
-    }
-
-    if (m_acquireImageSemaphores[imageIndex] != VK_NULL_HANDLE)
-    {
-        m_device->getSemaphorePool()->release(m_acquireImageSemaphores[imageIndex]);
-    }
-    m_acquireImageSemaphores[imageIndex] = semaphore;
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

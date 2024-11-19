@@ -27,11 +27,11 @@ public:
 public:
     VkImageView getVkImageView() const;
 
-private:
+protected:
     VulkanTexture* m_texture = nullptr;
     const TextureViewDescriptor m_descriptor{};
 
-private:
+protected:
     VkImageView m_imageView = VK_NULL_HANDLE;
 };
 

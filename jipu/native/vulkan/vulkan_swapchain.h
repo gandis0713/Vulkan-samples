@@ -42,6 +42,11 @@ struct VulkanSwapchainDescriptor
     VulkanQueue* queue = nullptr;
 };
 
+struct VulkanSwapchainTextureDescriptor
+{
+    uint32_t imageIndex = 0;
+};
+
 struct VulkanPresentInfo
 {
     std::vector<VkSemaphore> signalSemaphore{};
@@ -49,6 +54,36 @@ struct VulkanPresentInfo
     std::vector<VkSwapchainKHR> swapchains{};
     std::vector<uint32_t> imageIndices{};
 };
+
+class VULKAN_EXPORT VulkanSwapchainTexture : public VulkanTexture
+{
+public:
+    VulkanSwapchainTexture() = delete;
+    VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor&, const VulkanSwapchainTextureDescriptor&);
+    ~VulkanSwapchainTexture() override = default;
+
+    void setAcquireSemaphore(VkSemaphore semaphore);
+
+    VkSemaphore getAcquireSemaphore() const;
+    uint32_t getImageIndex() const;
+
+private:
+    VkSemaphore m_semaphore{};
+    uint32_t m_imageIndex = 0u;
+};
+DOWN_CAST(VulkanSwapchainTexture, VulkanTexture);
+
+class VULKAN_EXPORT VulkanSwapchainTextureView : public VulkanTextureView
+{
+public:
+    VulkanSwapchainTextureView() = delete;
+    VulkanSwapchainTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor);
+    ~VulkanSwapchainTextureView() override = default;
+
+    VkSemaphore getAcquireSemaphore() const;
+    uint32_t getImageIndex() const;
+};
+DOWN_CAST(VulkanSwapchainTextureView, VulkanTextureView);
 
 class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
@@ -73,20 +108,22 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
-    void setAcquireImageIndex(const uint32_t imageIndex);
+    uint32_t acquireNextImageIndex();
+
+    void setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore semaphore);
+
+    VkSemaphore getAcquireSemaphore(const uint32_t imageIndex) const;
     uint32_t getAcquireImageIndex() const;
-    void setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex);
 
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanSwapchainDescriptor m_descriptor;
 
-    std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
-    std::vector<std::unique_ptr<VulkanTextureView>> m_textureViews{};
+    std::vector<std::unique_ptr<VulkanSwapchainTexture>> m_textures{};
+    std::vector<std::unique_ptr<VulkanSwapchainTextureView>> m_textureViews{};
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-    std::vector<VkSemaphore> m_acquireImageSemaphores{};
     uint32_t m_acquiredImageIndex = 0u;
 };
 
