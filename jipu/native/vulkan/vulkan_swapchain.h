@@ -69,7 +69,7 @@ public:
     VkSemaphore getAcquireSemaphore() const;
 
 private:
-    VkSemaphore m_semaphore{};
+    VkSemaphore m_semaphore = VK_NULL_HANDLE;
     uint32_t m_imageIndex = 0u;
 };
 DOWN_CAST(VulkanSwapchainTexture, VulkanTexture);

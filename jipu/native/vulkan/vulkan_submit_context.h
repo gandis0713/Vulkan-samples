@@ -28,6 +28,8 @@ struct VulkanSubmit
         std::vector<VkSemaphore> signalSemaphores{};
         std::vector<VkSemaphore> waitSemaphores{};
         std::vector<VkPipelineStageFlags> waitStages{};
+
+        uint32_t swapchainIndex = 0; // for presnet submit type
     } info{};
 
     struct Object

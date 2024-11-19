@@ -29,9 +29,9 @@ public:
 
 public:
     void submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
-    void present(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
     std::future<void> submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
-    std::future<void> presentAsync(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo);
+
+    void present(VulkanPresentInfo presentInfo);
 
 private:
     struct QueueGroup

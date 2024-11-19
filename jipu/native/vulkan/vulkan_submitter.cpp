@@ -55,16 +55,6 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
     return m_threadPool.enqueue(submitTask);
 }
 
-std::future<void> VulkanSubmitter::presentAsync(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
-{
-    auto presentTask = [this, fence = fence, submitInfos = submitInfos, presentInfo = presentInfo]() -> void {
-        std::lock_guard<std::mutex> lock(m_queueMutex);
-        present(fence, submitInfos, presentInfo);
-    };
-
-    return m_threadPool.enqueue(presentTask);
-}
-
 void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
     auto submitInfoSize = submits.size();
@@ -112,36 +102,8 @@ void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info
     m_device->getInflightObjects()->clear(fence);
 }
 
-void VulkanSubmitter::present(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
+void VulkanSubmitter::present(VulkanPresentInfo presentInfo)
 {
-    // prepare submit and present infos
-    {
-        // add acquire image semaphore to submit infos.
-        for (auto& submitInfo : submitInfos)
-        {
-            if (submitInfo.type == SubmitType::kPresent)
-            {
-                submitInfo.waitSemaphores.insert(submitInfo.waitSemaphores.end(),
-                                                 presentInfo.signalSemaphore.begin(),
-                                                 presentInfo.signalSemaphore.end());
-                submitInfo.waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            }
-        }
-
-        // add render semaphore to present infos.
-        for (const auto& submitInfo : submitInfos)
-        {
-            if (submitInfo.type == SubmitType::kPresent)
-            {
-                presentInfo.waitSemaphores.insert(presentInfo.waitSemaphores.end(), submitInfo.signalSemaphores.begin(), submitInfo.signalSemaphores.end());
-            }
-        }
-    }
-
-    // submit
-    submit(fence, submitInfos);
-
-    // present
     VkPresentInfoKHR info{};
     info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     info.waitSemaphoreCount = static_cast<uint32_t>(presentInfo.waitSemaphores.size());

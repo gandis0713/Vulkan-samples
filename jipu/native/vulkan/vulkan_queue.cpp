@@ -32,11 +32,9 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     // submit
     auto submits = submitContext.getSubmits();
+    auto submitInfos = submitContext.getSubmitInfos();
 
-    std::vector<VulkanSubmit::Info> notPresentSubmitInfos{};
     std::vector<VulkanSubmit::Info> presentSubmitInfos{};
-    std::vector<VulkanSubmit> notPresnetSubmits{};
-    std::vector<VulkanSubmit> presentSubmits{};
     for (const auto& submit : submits)
     {
         switch (submit.info.type)
@@ -44,12 +42,9 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         case SubmitType::kCompute:
         case SubmitType::kRender:
         case SubmitType::kTransfer:
-            notPresentSubmitInfos.push_back(submit.info);
-            notPresnetSubmits.push_back(submit);
             break;
         case SubmitType::kPresent:
             presentSubmitInfos.push_back(submit.info);
-            presentSubmits.push_back(submit);
             break;
         case SubmitType::kNone:
         default:
@@ -58,37 +53,33 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         }
     }
 
-    if (!notPresentSubmitInfos.empty())
+    for (auto& presentSubmitInfo : presentSubmitInfos)
     {
-        auto fence = m_device->getFencePool()->create();
-        m_device->getInflightObjects()->add(fence, notPresnetSubmits);
-
-        auto future = m_submitter->submitAsync(fence, notPresentSubmitInfos);
-        future.get();
+        m_presentSemaphores[presentSubmitInfo.swapchainIndex] = presentSubmitInfo.signalSemaphores;
     }
 
-    if (!presentSubmitInfos.empty())
-    {
-        if (m_presentSubmitInfos.first == VK_NULL_HANDLE)
-        {
-            m_presentSubmitInfos.first = m_device->getFencePool()->create();
-        }
+    auto fence = m_device->getFencePool()->create();
+    m_device->getInflightObjects()->add(fence, submits);
 
-        auto fence = m_presentSubmitInfos.first;
-        m_device->getInflightObjects()->add(fence, presentSubmits);
-
-        m_presentSubmitInfos.second.insert(m_presentSubmitInfos.second.end(),
-                                           presentSubmitInfos.begin(),
-                                           presentSubmitInfos.end());
-    }
+    auto future = m_submitter->submitAsync(fence, submitInfos);
+    future.get();
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
-    auto future = m_submitter->presentAsync(m_presentSubmitInfos.first, m_presentSubmitInfos.second, presentInfo);
-    future.get();
+    for (auto imageIndex : presentInfo.imageIndices)
+    {
+        if (m_presentSemaphores.contains(imageIndex))
+        {
+            presentInfo.waitSemaphores.insert(presentInfo.waitSemaphores.end(),
+                                              m_presentSemaphores[imageIndex].begin(),
+                                              m_presentSemaphores[imageIndex].end());
 
-    m_presentSubmitInfos = { VK_NULL_HANDLE, {} };
+            m_presentSemaphores.erase(imageIndex);
+        }
+    }
+
+    m_submitter->present(presentInfo);
 }
 
 std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)

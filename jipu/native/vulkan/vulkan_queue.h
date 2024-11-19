@@ -37,7 +37,7 @@ private:
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 
 private:
-    std::pair<VkFence, std::vector<VulkanSubmit::Info>> m_presentSubmitInfos{};
+    std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSemaphores{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);

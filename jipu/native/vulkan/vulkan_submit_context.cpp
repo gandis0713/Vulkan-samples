@@ -315,6 +315,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     context.m_submits.push_back(currentSubmit);
                     currentSubmit = {};
 
+                    // set submit type
+                    {
+                        currentSubmit.info.type = getSubmitType(result);
+                    }
+
                     // set signal semaphore
                     {
                         auto semaphore = device->getSemaphorePool()->create();
@@ -329,49 +334,72 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                 }
 
                 // set wait semaphore
-                if (hasSrcDependency) // set wait semaphore and resource info
                 {
-                    std::vector<VkPipelineStageFlags> waitStages{};
-                    std::vector<VkSemaphore> waitSemaphores{};
-
-                    auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
-
-                    for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
+                    if (hasSrcDependency) // set wait semaphore and resource info
                     {
-                        for (const auto& [dstBuffer, dstBufferUsageInfo] : notSynedPassResourceInfo.dst.buffers)
-                        {
-                            if (findSrcBuffer(submittedRecordResults, dstBuffer))
-                            {
-                                auto bufferWaitSemaphores = getSrcBufferSemaphores(context.m_submits, dstBuffer);
-                                waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+                        std::vector<VkPipelineStageFlags> waitStages{};
+                        std::vector<VkSemaphore> waitSemaphores{};
 
-                                waitStages.push_back(dstBufferUsageInfo.stageFlags);
+                        auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
+
+                        for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
+                        {
+                            for (const auto& [dstBuffer, dstBufferUsageInfo] : notSynedPassResourceInfo.dst.buffers)
+                            {
+                                if (findSrcBuffer(submittedRecordResults, dstBuffer))
+                                {
+                                    auto bufferWaitSemaphores = getSrcBufferSemaphores(context.m_submits, dstBuffer);
+                                    waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+
+                                    waitStages.push_back(dstBufferUsageInfo.stageFlags);
+                                }
+                            }
+
+                            for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedPassResourceInfo.dst.textures)
+                            {
+                                if (findSrcTexture(submittedRecordResults, dstTexture))
+                                {
+                                    auto bufferWaitSemaphores = getSrcTextureSemaphores(context.m_submits, dstTexture);
+                                    waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+
+                                    waitStages.push_back(dstTextureUsageInfo.stageFlags);
+                                }
                             }
                         }
 
-                        for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedPassResourceInfo.dst.textures)
-                        {
-                            if (findSrcTexture(submittedRecordResults, dstTexture))
-                            {
-                                auto bufferWaitSemaphores = getSrcTextureSemaphores(context.m_submits, dstTexture);
-                                waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+                        currentSubmit.addWaitSemaphore(waitSemaphores, waitStages);
+                    }
 
-                                waitStages.push_back(dstTextureUsageInfo.stageFlags);
+                    // set wait semaphore and image index for swapchain image
+                    {
+                        if (currentSubmit.info.type == SubmitType::kPresent)
+                        {
+                            auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
+                            for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
+                            {
+                                for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedPassResourceInfo.dst.textures)
+                                {
+                                    VulkanTexture* vulkanTexture = downcast(dstTexture);
+                                    if (vulkanTexture->getOwner() == VulkanTextureOwner::kSwapchain)
+                                    {
+                                        VulkanSwapchainTexture* vulkanSwapchainTexture = downcast(vulkanTexture);
+
+                                        VkSemaphore semaphore = vulkanSwapchainTexture->getAcquireSemaphore();
+                                        VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                                        currentSubmit.addWaitSemaphore({ semaphore }, { flags });
+
+                                        currentSubmit.info.swapchainIndex = vulkanSwapchainTexture->getImageIndex();
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-
-                    currentSubmit.addWaitSemaphore(waitSemaphores, waitStages);
                 }
 
                 // set signal semaphore for external resource
                 {
                     // TODO
-                }
-
-                // set submit type
-                {
-                    currentSubmit.info.type = getSubmitType(result);
                 }
             }
 
