@@ -34,28 +34,32 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     auto submits = submitContext.getSubmits();
     auto submitInfos = submitContext.getSubmitInfos();
 
-    std::vector<VulkanSubmit::Info> presentSubmitInfos{};
-    for (const auto& submit : submits)
+    // set present semaphores.
     {
-        switch (submit.info.type)
-        {
-        case SubmitType::kCompute:
-        case SubmitType::kRender:
-        case SubmitType::kTransfer:
-            break;
-        case SubmitType::kPresent:
-            presentSubmitInfos.push_back(submit.info);
-            break;
-        case SubmitType::kNone:
-        default:
-            spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
-            break;
-        }
-    }
 
-    for (auto& presentSubmitInfo : presentSubmitInfos)
-    {
-        m_presentSemaphores[presentSubmitInfo.swapchainIndex] = presentSubmitInfo.signalSemaphores;
+        std::vector<VulkanSubmit::Info> presentSubmitInfos{};
+        for (const auto& submit : submits)
+        {
+            switch (submit.info.type)
+            {
+            case SubmitType::kCompute:
+            case SubmitType::kRender:
+            case SubmitType::kTransfer:
+                break;
+            case SubmitType::kPresent:
+                presentSubmitInfos.push_back(submit.info);
+                break;
+            case SubmitType::kNone:
+            default:
+                spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
+                break;
+            }
+        }
+
+        for (auto& presentSubmitInfo : presentSubmitInfos)
+        {
+            m_presentSemaphores[presentSubmitInfo.swapchainIndex] = presentSubmitInfo.signalSemaphores;
+        }
     }
 
     auto fence = m_device->getFencePool()->create();
