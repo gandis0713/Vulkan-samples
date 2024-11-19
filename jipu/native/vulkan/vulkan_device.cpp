@@ -75,7 +75,7 @@ std::unique_ptr<BindGroup> VulkanDevice::createBindGroup(const BindGroupDescript
 
 std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const BindGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindGroupLayout>(*this, descriptor);
+    return std::make_unique<VulkanBindGroupLayout>(this, descriptor);
 }
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
@@ -130,7 +130,7 @@ std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanR
 
 std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindGroupLayout>(*this, descriptor);
+    return std::make_unique<VulkanBindGroupLayout>(this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)

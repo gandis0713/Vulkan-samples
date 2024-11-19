@@ -22,8 +22,8 @@ class VULKAN_EXPORT VulkanBindGroupLayout : public BindGroupLayout
 {
 public:
     VulkanBindGroupLayout() = delete;
-    VulkanBindGroupLayout(VulkanDevice& device, const BindGroupLayoutDescriptor& descriptor);
-    VulkanBindGroupLayout(VulkanDevice& device, const VulkanBindGroupLayoutDescriptor& descriptor);
+    VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor);
+    VulkanBindGroupLayout(VulkanDevice* device, const VulkanBindGroupLayoutDescriptor& descriptor);
     ~VulkanBindGroupLayout() override;
 
     std::vector<BufferBindingLayout> getBufferBindingLayouts() const override;
@@ -45,7 +45,7 @@ private:
     VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const VulkanBindGroupLayoutDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
