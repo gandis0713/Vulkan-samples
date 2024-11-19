@@ -123,7 +123,7 @@ std::vector<std::unique_ptr<PhysicalDevice>> VulkanAdapter::getPhysicalDevices()
         VulkanPhysicalDeviceDescriptor descriptor{};
         descriptor.physicalDevice = physicalDevice;
 
-        auto device = std::make_unique<VulkanPhysicalDevice>(*this, descriptor);
+        auto device = std::make_unique<VulkanPhysicalDevice>(this, descriptor);
         physicalDevices.push_back(std::move(device));
     }
 
@@ -132,7 +132,7 @@ std::vector<std::unique_ptr<PhysicalDevice>> VulkanAdapter::getPhysicalDevices()
 
 std::unique_ptr<Surface> VulkanAdapter::createSurface(const SurfaceDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSurface>(*this, descriptor);
+    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 Instance* VulkanAdapter::getInstance() const
@@ -142,7 +142,7 @@ Instance* VulkanAdapter::getInstance() const
 
 std::unique_ptr<Surface> VulkanAdapter::createSurface(const VulkanSurfaceDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSurface>(*this, descriptor);
+    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 VkInstance VulkanAdapter::getVkInstance() const

@@ -33,7 +33,7 @@ class VULKAN_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;
-    VulkanPhysicalDevice(VulkanAdapter& adapter, const VulkanPhysicalDeviceDescriptor& descriptor);
+    VulkanPhysicalDevice(VulkanAdapter* adapter, const VulkanPhysicalDeviceDescriptor& descriptor);
     ~VulkanPhysicalDevice() override;
 
     std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) override;
@@ -59,7 +59,7 @@ private:
     void gatherPhysicalDeviceInfo();
 
 protected:
-    VulkanAdapter& m_adapter;
+    VulkanAdapter* m_adapter = nullptr;
 
 private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;

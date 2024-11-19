@@ -30,7 +30,7 @@ void VulkanSurface::createSurfaceKHR()
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
     surfaceCreateInfo.pLayer = m_descriptor.layer;
 
-    VkResult result = m_adapter.vkAPI.CreateMetalSurfaceEXT(m_adapter.getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+    VkResult result = m_adapter->vkAPI.CreateMetalSurfaceEXT(m_adapter->getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
 
     if (result != VK_SUCCESS)
     {
@@ -79,14 +79,14 @@ void VulkanSurface::createSurfaceKHR()
 //         createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
 //         createInfo.pView = (__bridge void*)nsView;
 
-//         VulkanAdapter& adapter = downcast(m_adapter);
-//         const VulkanAPI& vkAPI = adapter.vkAPI;
+//         VulkanAdapter* adapter = downcast(m_adapter);
+//         const VulkanAPI& vkAPI = adapter->vkAPI;
 //         if (vkAPI.CreateMacOSSurfaceMVK == nullptr)
 //         {
 //             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");
 //         }
 
-//         VkResult result = vkAPI.CreateMacOSSurfaceMVK(adapter.getVkInstance(), &createInfo, nullptr, &m_surface);
+//         VkResult result = vkAPI.CreateMacOSSurfaceMVK(adapter->getVkInstance(), &createInfo, nullptr, &m_surface);
 
 //         if (result != VK_SUCCESS)
 //         {

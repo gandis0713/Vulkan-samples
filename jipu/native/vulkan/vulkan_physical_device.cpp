@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanAdapter& adapter, const VulkanPhysicalDeviceDescriptor& descriptor)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanAdapter* adapter, const VulkanPhysicalDeviceDescriptor& descriptor)
     : m_adapter(adapter)
 {
     m_physicalDevice = descriptor.physicalDevice;
@@ -57,12 +57,12 @@ SurfaceCapabilities VulkanPhysicalDevice::getSurfaceCapabilities(Surface* surfac
 
 Adapter* VulkanPhysicalDevice::getAdapter() const
 {
-    return &m_adapter;
+    return m_adapter;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
-    return downcast(m_adapter).getVkInstance();
+    return downcast(m_adapter)->getVkInstance();
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
@@ -77,7 +77,7 @@ const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInf
 
 void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 {
-    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter)->vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
@@ -194,7 +194,7 @@ VulkanSurfaceInfo VulkanPhysicalDevice::gatherSurfaceInfo(VulkanSurface* surface
 {
     VulkanSurfaceInfo surfaceInfo{};
 
-    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter)->vkAPI;
     VkResult result = vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface->getVkSurface(), &surfaceInfo.capabilities);
     if (result != VK_SUCCESS)
     {
@@ -263,7 +263,7 @@ int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 
 bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
 {
-    const VulkanAPI& vkAPI = downcast(m_adapter).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_adapter)->vkAPI;
 
     VkFormatProperties formatProperties{};
     vkAPI.GetPhysicalDeviceFormatProperties(m_physicalDevice, format, &formatProperties);

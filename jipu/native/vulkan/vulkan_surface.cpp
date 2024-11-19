@@ -8,12 +8,12 @@
 namespace jipu
 {
 
-VulkanSurface::VulkanSurface(VulkanAdapter& adapter, const SurfaceDescriptor& descriptor)
+VulkanSurface::VulkanSurface(VulkanAdapter* adapter, const SurfaceDescriptor& descriptor)
     : VulkanSurface(adapter, generateVulkanSurfaceDescriptor(descriptor))
 {
 }
 
-VulkanSurface::VulkanSurface(VulkanAdapter& adapter, const VulkanSurfaceDescriptor& descriptor)
+VulkanSurface::VulkanSurface(VulkanAdapter* adapter, const VulkanSurfaceDescriptor& descriptor)
     : m_adapter(adapter)
     , m_descriptor(descriptor)
 {
@@ -22,10 +22,10 @@ VulkanSurface::VulkanSurface(VulkanAdapter& adapter, const VulkanSurfaceDescript
 
 VulkanSurface::~VulkanSurface()
 {
-    auto& vulkanAdapter = downcast(m_adapter);
-    const VulkanAPI& vkAPI = vulkanAdapter.vkAPI;
+    auto vulkanAdapter = downcast(m_adapter);
+    const VulkanAPI& vkAPI = vulkanAdapter->vkAPI;
 
-    vkAPI.DestroySurfaceKHR(vulkanAdapter.getVkInstance(), m_surface, nullptr);
+    vkAPI.DestroySurfaceKHR(vulkanAdapter->getVkInstance(), m_surface, nullptr);
 }
 
 VkSurfaceKHR VulkanSurface::getVkSurface() const
