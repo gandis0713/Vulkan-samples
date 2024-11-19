@@ -96,7 +96,7 @@ VulkanTexture::~VulkanTexture()
 
 std::unique_ptr<TextureView> VulkanTexture::createTextureView(const TextureViewDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTextureView>(*this, descriptor);
+    return std::make_unique<VulkanTextureView>(this, descriptor);
 }
 
 TextureType VulkanTexture::getType() const

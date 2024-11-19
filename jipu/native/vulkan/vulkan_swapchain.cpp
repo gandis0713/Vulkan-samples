@@ -191,7 +191,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
         TextureViewDescriptor descriptor{};
         descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
-        auto textureView = std::make_unique<VulkanTextureView>(*texture, descriptor);
+        auto textureView = std::make_unique<VulkanTextureView>(texture.get(), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
 
