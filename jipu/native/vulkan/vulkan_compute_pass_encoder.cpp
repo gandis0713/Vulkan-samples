@@ -24,11 +24,11 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandEncoder* command
     commandEncodingContext.commands.push_back(std::make_unique<BeginComputePassCommand>(std::move(command)));
 }
 
-void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
+void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
 {
     SetComputePipelineCommand command{
         { .type = CommandType::kSetComputePipeline },
-        .pipeline = &pipeline
+        .pipeline = pipeline
     };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->context();
@@ -37,12 +37,12 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
     commandEncodingContext.commands.push_back(std::make_unique<SetComputePipelineCommand>(std::move(command)));
 }
 
-void VulkanComputePassEncoder::setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset)
+void VulkanComputePassEncoder::setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset)
 {
     SetBindGroupCommand command{
         { .type = CommandType::kSetComputeBindGroup },
         .index = index,
-        .bindGroup = &bindGroup,
+        .bindGroup = bindGroup,
         .dynamicOffset = dynamicOffset,
     };
 

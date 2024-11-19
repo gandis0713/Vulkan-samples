@@ -40,9 +40,9 @@ public:
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
-    void setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset = {}) override;
-    void setVertexBuffer(uint32_t slot, Buffer& buffer) override;
-    void setIndexBuffer(Buffer& buffer, IndexFormat format) override;
+    void setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset = {}) override;
+    void setVertexBuffer(uint32_t slot, Buffer* buffer) override;
+    void setIndexBuffer(Buffer* buffer, IndexFormat format) override;
     void setViewport(float x,
                      float y,
                      float width,

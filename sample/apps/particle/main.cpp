@@ -163,8 +163,8 @@ void ParticleSample::draw()
 
     ComputePassEncoderDescriptor computePassDescriptor{};
     std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
-    computePassEncoder->setPipeline(*m_computePipeline);
-    computePassEncoder->setBindGroup(0, *m_computeBindGroups[(m_vertexIndex + 1) % 2]);
+    computePassEncoder->setPipeline(m_computePipeline.get());
+    computePassEncoder->setBindGroup(0, m_computeBindGroups[(m_vertexIndex + 1) % 2].get());
     computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
     computePassEncoder->end();
 
@@ -188,7 +188,7 @@ void ParticleSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);

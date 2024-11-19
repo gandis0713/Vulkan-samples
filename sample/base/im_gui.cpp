@@ -472,11 +472,11 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_pipeline.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
-        renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
+        renderPassEncoder->setBindGroup(0, m_bindGroups[0].get());
+        renderPassEncoder->setBindGroup(1, m_bindGroups[1].get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;

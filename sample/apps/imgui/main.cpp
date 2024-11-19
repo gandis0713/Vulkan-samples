@@ -95,7 +95,7 @@ void ImGuiSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);

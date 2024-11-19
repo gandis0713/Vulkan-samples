@@ -19,8 +19,8 @@ public:
     ~VulkanComputePassEncoder() override = default;
 
 public:
-    void setPipeline(ComputePipeline& pipeline) override;
-    void setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset = {}) override;
+    void setPipeline(ComputePipeline* pipeline) override;
+    void setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset = {}) override;
     void dispatch(uint32_t x, uint32_t y = 1, uint32_t z = 1) override;
     void end() override;
 

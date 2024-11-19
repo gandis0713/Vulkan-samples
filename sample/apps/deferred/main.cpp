@@ -380,10 +380,10 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
-        renderPassEncoder->setBindGroup(0, *m_offscreen.bindGroups[0]);
-        renderPassEncoder->setBindGroup(1, *m_offscreen.bindGroups[1]);
+        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setBindGroup(0, m_offscreen.bindGroups[0].get());
+        renderPassEncoder->setBindGroup(1, m_offscreen.bindGroups[1].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
@@ -412,8 +412,8 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_composition.renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
-        renderPassEncoder->setBindGroup(0, *m_composition.bindGroups[0]);
+        renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
+        renderPassEncoder->setBindGroup(0, m_composition.bindGroups[0].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);

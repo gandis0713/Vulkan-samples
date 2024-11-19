@@ -283,11 +283,11 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
     commandEncodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
 }
 
-void VulkanRenderPassEncoder::setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset)
+void VulkanRenderPassEncoder::setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset)
 {
     SetBindGroupCommand command{ { .type = CommandType::kSetRenderBindGroup },
                                  .index = index,
-                                 .bindGroup = &bindGroup,
+                                 .bindGroup = bindGroup,
                                  .dynamicOffset = dynamicOffset };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->context();
@@ -296,11 +296,11 @@ void VulkanRenderPassEncoder::setBindGroup(uint32_t index, BindGroup& bindGroup,
     commandEncodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
-void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
+void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer* buffer)
 {
     SetVertexBufferCommand command{ { .type = CommandType::kSetVertexBuffer },
                                     .slot = slot,
-                                    .buffer = &buffer };
+                                    .buffer = buffer };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
@@ -308,10 +308,10 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
     commandEncodingContext.commands.push_back(std::make_unique<SetVertexBufferCommand>(std::move(command)));
 }
 
-void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
+void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer, IndexFormat format)
 {
     SetIndexBufferCommand command{ { .type = CommandType::kSetIndexBuffer },
-                                   .buffer = &buffer,
+                                   .buffer = buffer,
                                    .format = format };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->context();

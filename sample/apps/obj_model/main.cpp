@@ -209,10 +209,10 @@ void OBJModelSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
-    renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
-    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-    renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+    renderPassEncoder->setBindGroup(0, m_bindGroups[0].get());
+    renderPassEncoder->setBindGroup(1, m_bindGroups[1].get());
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);

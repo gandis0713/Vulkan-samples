@@ -117,9 +117,9 @@ void QuerySample::draw()
             renderPassEncoder->beginOcclusionQuery(0);
         }
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroup);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setBindGroup(0, m_bindGroup.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
