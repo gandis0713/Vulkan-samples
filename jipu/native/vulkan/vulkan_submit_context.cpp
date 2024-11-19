@@ -84,24 +84,24 @@ void VulkanSubmit::add(VkRenderPass renderPass)
     object.renderPasses.insert(renderPass);
 }
 
-void VulkanSubmit::addSrcBuffer(VkBuffer buffer)
+void VulkanSubmit::addSrcBuffer(VulkanBufferResource buffer)
 {
-    object.srcResource.buffers.insert(buffer);
+    object.srcResource.buffers.insert({ buffer.buffer, buffer.memory });
 }
 
-void VulkanSubmit::addSrcImage(VkImage image)
+void VulkanSubmit::addSrcImage(VulkanTextureResource image)
 {
-    object.srcResource.images.insert(image);
+    object.srcResource.images.insert({ image.image, image.memory });
 }
 
-void VulkanSubmit::addDstBuffer(VkBuffer buffer)
+void VulkanSubmit::addDstBuffer(VulkanBufferResource buffer)
 {
-    object.dstResource.buffers.insert(buffer);
+    object.srcResource.buffers.insert({ buffer.buffer, buffer.memory });
 }
 
-void VulkanSubmit::addDstImage(VkImage image)
+void VulkanSubmit::addDstImage(VulkanTextureResource image)
 {
-    object.dstResource.images.insert(image);
+    object.srcResource.images.insert({ image.image, image.memory });
 }
 
 VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results)
@@ -324,8 +324,8 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
                 // set command buffer
                 {
-                    auto commandBuffer = downcast(result.commandBuffer)->getVkCommandBuffer();
-                    currentSubmit.add(commandBuffer);
+                    auto commandBuffer = downcast(result.commandBuffer);
+                    currentSubmit.add(commandBuffer->getVkCommandBuffer());
                 }
 
                 // set wait semaphore
@@ -428,8 +428,8 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
                         for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {
-                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
-                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
+                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
                         }
                         for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                         {
@@ -437,8 +437,8 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         }
                         for (auto& binding : cmd->bindGroup->getTextureBindings())
                         {
-                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
-                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());
+                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
 
                             currentSubmit.add(downcast(binding.textureView)->getVkImageView());
                         }
@@ -448,11 +448,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         auto cmd = reinterpret_cast<BeginRenderPassCommand*>(command.get());
                         for (auto& colorAttachment : cmd->framebuffer->getColorAttachments())
                         {
-                            currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVkImage());
+                            currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
                             currentSubmit.add(downcast(colorAttachment.renderView)->getVkImageView());
                             if (colorAttachment.resolveView)
                             {
-                                currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVkImage());
+                                currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
                                 currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
                             }
                         }
@@ -471,8 +471,8 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
                         for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {
-                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
-                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
+                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
                         }
                         for (auto& binding : cmd->bindGroup->getSmaplerBindings())
                         {
@@ -480,8 +480,8 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         }
                         for (auto& binding : cmd->bindGroup->getTextureBindings())
                         {
-                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
-                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());
+                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
 
                             currentSubmit.add(downcast(binding.textureView)->getVkImageView());
                         }
@@ -489,12 +489,12 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kSetIndexBuffer: {
                         auto cmd = reinterpret_cast<SetIndexBufferCommand*>(command.get());
-                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVkBuffer());
+                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVulkanBufferResource());
                     }
                     break;
                     case CommandType::kSetVertexBuffer: {
                         auto cmd = reinterpret_cast<SetVertexBufferCommand*>(command.get());
-                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVkBuffer());
+                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVulkanBufferResource());
                     }
                     break;
                     }

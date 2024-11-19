@@ -10,6 +10,7 @@
 #include "vulkan_submitter.h"
 #include "vulkan_swapchain.h"
 
+#include <future>
 #include <unordered_map>
 
 namespace jipu
@@ -38,6 +39,7 @@ private:
 
 private:
     std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSemaphores{};
+    std::unordered_map<uint32_t, std::future<void>> m_presentTasks{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);

@@ -67,6 +67,8 @@ public:
 
 public:
     VkImage getVkImage() const;
+    VulkanMemory getVulkanMemory() const;
+    VulkanTextureResource getVulkanTextureResource() const;
 
     /// @brief generate final layout by usage.
     /// @return VKImageLayout

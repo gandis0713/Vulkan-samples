@@ -44,11 +44,31 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
         inflightObject.framebuffers.insert(submit.object.framebuffers.begin(), submit.object.framebuffers.end());
         inflightObject.renderPasses.insert(submit.object.renderPasses.begin(), submit.object.renderPasses.end());
 
-        inflightObject.buffers.insert(submit.object.srcResource.buffers.begin(), submit.object.srcResource.buffers.end());
-        inflightObject.buffers.insert(submit.object.dstResource.buffers.begin(), submit.object.dstResource.buffers.end());
+        // for buffer
+        {
+            for (const auto& bufferResource : submit.object.srcResource.buffers)
+            {
+                inflightObject.buffers.insert({ bufferResource.first, bufferResource.second });
+            }
 
-        inflightObject.images.insert(submit.object.srcResource.images.begin(), submit.object.srcResource.images.end());
-        inflightObject.images.insert(submit.object.dstResource.images.begin(), submit.object.dstResource.images.end());
+            for (const auto& bufferResource : submit.object.dstResource.buffers)
+            {
+                inflightObject.buffers.insert({ bufferResource.first, bufferResource.second });
+            }
+        }
+
+        // for image
+        {
+            for (const auto& imageResource : submit.object.srcResource.images)
+            {
+                inflightObject.images.insert({ imageResource.first, imageResource.second });
+            }
+
+            for (const auto& imageResource : submit.object.dstResource.images)
+            {
+                inflightObject.images.insert({ imageResource.first, imageResource.second });
+            }
+        }
     }
 }
 

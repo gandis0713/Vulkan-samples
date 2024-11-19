@@ -9,9 +9,9 @@
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #include "vk_mem_alloc.h"
 
-using VulkanAllocation = VmaAllocation;
+using VulkanMemory = VmaAllocation;
 #else
-using VulkanAllocation = VkDeviceMemory;
+using VulkanMemory = VkDeviceMemory;
 #endif
 
 namespace jipu
@@ -20,13 +20,13 @@ namespace jipu
 struct VulkanBufferResource
 {
     VkBuffer buffer = VK_NULL_HANDLE;
-    VulkanAllocation allocation = VK_NULL_HANDLE;
+    VulkanMemory memory = VK_NULL_HANDLE;
 };
 
 struct VulkanTextureResource
 {
     VkImage image = VK_NULL_HANDLE;
-    VulkanAllocation allocation = VK_NULL_HANDLE;
+    VulkanMemory memory = VK_NULL_HANDLE;
 };
 
 } // namespace jipu

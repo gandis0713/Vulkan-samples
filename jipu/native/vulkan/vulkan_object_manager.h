@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulkan_api.h"
+#include "vulkan_resource.h"
 
 #include <memory>
 #include <unordered_set>
@@ -18,8 +19,9 @@ public:
     VulkanObjectManager() = delete;
     ~VulkanObjectManager();
 
-    void safeDestroy(VkBuffer buffer);
-    void safeDestroy(VkImage image);
+public:
+    void safeDestroy(VkBuffer buffer, VulkanMemory memory);
+    void safeDestroy(VkImage image, VulkanMemory memory);
     void safeDestroy(VkCommandBuffer commandBuffer);
     void safeDestroy(VkImageView imageView);
     void safeDestroy(VkSemaphore semaphore);
@@ -32,8 +34,8 @@ public:
     void safeDestroy(VkRenderPass renderPass);
 
 private:
-    void destroy(VkBuffer buffer);
-    void destroy(VkImage image);
+    void destroy(VkBuffer buffer, VulkanMemory memory);
+    void destroy(VkImage image, VulkanMemory memory);
     void destroy(VkCommandBuffer commandBuffer);
     void destroy(VkImageView imageView);
     void destroy(VkSemaphore semaphore);
@@ -52,8 +54,8 @@ private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    std::unordered_set<VkBuffer> m_buffers{};
-    std::unordered_set<VkImage> m_images{};
+    std::unordered_map<VkBuffer, VulkanMemory> m_buffers{};
+    std::unordered_map<VkImage, VulkanMemory> m_images{};
     std::unordered_set<VkCommandBuffer> m_commandBuffers{};
     std::unordered_set<VkImageView> m_imageViews{};
     std::unordered_set<VkSemaphore> m_semaphores{};

@@ -26,19 +26,19 @@ VulkanObjectManager::VulkanObjectManager(VulkanDevice* device)
             }
         }
 
-        for (auto& buffer : object.buffers)
+        for (auto& [buffer, memory] : object.buffers)
         {
             if (m_buffers.contains(buffer))
             {
-                safeDestroy(buffer);
+                safeDestroy(buffer, memory);
             }
         }
 
-        for (auto& image : object.images)
+        for (auto& [image, memory] : object.images)
         {
             if (m_images.contains(image))
             {
-                safeDestroy(image);
+                safeDestroy(image, memory);
             }
         }
 
@@ -120,14 +120,14 @@ VulkanObjectManager::~VulkanObjectManager()
 {
     m_device->getInflightObjects()->unsubscribe(this);
 
-    for (auto buffer : m_buffers)
+    for (auto [buffer, memory] : m_buffers)
     {
-        m_device->vkAPI.DestroyBuffer(m_device->getVkDevice(), buffer, nullptr);
+        m_device->getResourceAllocator().destroyBufferResource({ buffer, memory });
     }
 
-    for (auto image : m_images)
+    for (auto [image, memory] : m_images)
     {
-        m_device->vkAPI.DestroyImage(m_device->getVkDevice(), image, nullptr);
+        m_device->getResourceAllocator().destroyTextureResource({ image, memory });
     }
 
     for (auto commandBuffer : m_commandBuffers)
@@ -181,28 +181,28 @@ VulkanObjectManager::~VulkanObjectManager()
     }
 }
 
-void VulkanObjectManager::safeDestroy(VkBuffer buffer)
+void VulkanObjectManager::safeDestroy(VkBuffer buffer, VulkanMemory memory)
 {
     if (m_device->getInflightObjects()->isInflight(buffer))
     {
-        m_buffers.insert(buffer);
+        m_buffers.insert({ buffer, memory });
     }
     else
     {
-        destroy(buffer);
+        destroy(buffer, memory);
     }
 }
 
-void VulkanObjectManager::safeDestroy(VkImage image)
+void VulkanObjectManager::safeDestroy(VkImage image, VulkanMemory memory)
 {
     if (m_device->getInflightObjects()->isInflight(image))
     {
-        m_images.insert(image);
+        m_images.insert({ image, memory });
     }
     else
     {
         m_images.erase(image);
-        destroy(image);
+        destroy(image, memory);
     }
 }
 
@@ -312,7 +312,6 @@ void VulkanObjectManager::safeDestroy(VkFramebuffer framebuffer)
 {
     if (m_device->getInflightObjects()->isInflight(framebuffer))
     {
-        spdlog::trace("framebuffer is inflight {}", reinterpret_cast<void*>(framebuffer));
         m_framebuffers.insert(framebuffer);
     }
     else
@@ -335,14 +334,14 @@ void VulkanObjectManager::safeDestroy(VkRenderPass renderPass)
     }
 }
 
-void VulkanObjectManager::destroy(VkBuffer buffer)
+void VulkanObjectManager::destroy(VkBuffer buffer, VulkanMemory memory)
 {
-    m_device->vkAPI.DestroyBuffer(m_device->getVkDevice(), buffer, nullptr);
+    m_device->getResourceAllocator().destroyBufferResource({ buffer, memory });
 }
 
-void VulkanObjectManager::destroy(VkImage image)
+void VulkanObjectManager::destroy(VkImage image, VulkanMemory memory)
 {
-    m_device->vkAPI.DestroyImage(m_device->getVkDevice(), image, nullptr);
+    m_device->getResourceAllocator().destroyTextureResource({ image, memory });
 }
 
 void VulkanObjectManager::destroy(VkCommandBuffer commandBuffer)

@@ -32,15 +32,14 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     auto& vulkanResourceAllocator = device->getResourceAllocator();
-    m_resource = vulkanResourceAllocator.createBuffer(bufferCreateInfo);
+    m_resource = vulkanResourceAllocator.createBufferResource(bufferCreateInfo);
 }
 
 VulkanBuffer::~VulkanBuffer()
 {
     unmap();
 
-    auto& vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
-    vulkanResourceAllocator.destroyBuffer(m_resource);
+    m_device->getObjectManager()->safeDestroy(m_resource.buffer, m_resource.memory);
 }
 
 void* VulkanBuffer::map()
@@ -48,7 +47,7 @@ void* VulkanBuffer::map()
     if (m_mappedPtr == nullptr)
     {
         auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
-        m_mappedPtr = resourceAllocator.map(m_resource.allocation);
+        m_mappedPtr = resourceAllocator.map(m_resource.memory);
     }
 
     return m_mappedPtr;
@@ -58,7 +57,7 @@ void VulkanBuffer::unmap()
     if (m_mappedPtr)
     {
         auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
-        resourceAllocator.unmap(m_resource.allocation);
+        resourceAllocator.unmap(m_resource.memory);
 
         m_mappedPtr = nullptr;
     }
@@ -98,6 +97,16 @@ void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageF
 VkBuffer VulkanBuffer::getVkBuffer() const
 {
     return m_resource.buffer;
+}
+
+VulkanMemory VulkanBuffer::getVulkanMemory() const
+{
+    return m_resource.memory;
+}
+
+VulkanBufferResource VulkanBuffer::getVulkanBufferResource() const
+{
+    return m_resource;
 }
 
 // Convert Helper

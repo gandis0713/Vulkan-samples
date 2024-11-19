@@ -74,7 +74,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         createInfo.flags = m_descriptor.flags;
 
         auto& vulkanResourceAllocator = device->getResourceAllocator();
-        m_resource = vulkanResourceAllocator.createTexture(createInfo);
+        m_resource = vulkanResourceAllocator.createTextureResource(createInfo);
 
         m_owner = m_descriptor.owner;
     }
@@ -90,7 +90,7 @@ VulkanTexture::~VulkanTexture()
     if (m_owner == VulkanTextureOwner::kSelf)
     {
         auto& vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
-        vulkanResourceAllocator.destroyTexture(m_resource);
+        vulkanResourceAllocator.destroyTextureResource(m_resource);
     }
 }
 
@@ -147,6 +147,16 @@ VulkanDevice* VulkanTexture::getDevice() const
 VkImage VulkanTexture::getVkImage() const
 {
     return m_resource.image;
+}
+
+VulkanMemory VulkanTexture::getVulkanMemory() const
+{
+    return m_resource.memory;
+}
+
+VulkanTextureResource VulkanTexture::getVulkanTextureResource() const
+{
+    return m_resource;
 }
 
 VkImageLayout VulkanTexture::getFinalLayout() const

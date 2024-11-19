@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "vulkan_api.h"
-
 #include "vulkan_command_recorder.h"
+#include "vulkan_resource.h"
 
 namespace jipu
 {
@@ -36,8 +36,8 @@ struct VulkanSubmit
     {
         struct Resource
         {
-            std::unordered_set<VkBuffer> buffers{};
-            std::unordered_set<VkImage> images{};
+            std::unordered_map<VkBuffer, VulkanMemory> buffers{};
+            std::unordered_map<VkImage, VulkanMemory> images{};
         };
 
         std::unordered_set<VkImageView> imageViews{};
@@ -65,10 +65,10 @@ struct VulkanSubmit
     void add(VkFramebuffer framebuffer);
     void add(VkRenderPass renderPass);
 
-    void addSrcBuffer(VkBuffer buffer);
-    void addSrcImage(VkImage image);
-    void addDstBuffer(VkBuffer buffer);
-    void addDstImage(VkImage image);
+    void addSrcBuffer(VulkanBufferResource buffer);
+    void addSrcImage(VulkanTextureResource image);
+    void addDstBuffer(VulkanBufferResource buffer);
+    void addDstImage(VulkanTextureResource image);
 };
 
 class VulkanDevice;

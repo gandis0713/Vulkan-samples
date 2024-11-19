@@ -22,8 +22,7 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const Compute
 
 VulkanComputePipeline::~VulkanComputePipeline()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+    m_device->getObjectManager()->safeDestroy(m_pipeline);
 }
 
 PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
@@ -429,8 +428,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRen
 
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+    m_device->getObjectManager()->safeDestroy(m_pipeline);
 }
 
 PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const

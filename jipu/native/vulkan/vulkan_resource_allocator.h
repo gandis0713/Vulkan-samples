@@ -18,14 +18,14 @@ public:
     VulkanResourceAllocator(VulkanDevice* device, const VulkanResourceAllocatorDescriptor& descriptor);
     ~VulkanResourceAllocator();
 
-    VulkanBufferResource createBuffer(const VkBufferCreateInfo& createInfo);
-    void destroyBuffer(const VulkanBufferResource& bufferResource);
+    VulkanBufferResource createBufferResource(const VkBufferCreateInfo& createInfo);
+    void destroyBufferResource(const VulkanBufferResource& bufferResource);
 
-    VulkanTextureResource createTexture(const VkImageCreateInfo& createInfo);
-    void destroyTexture(VulkanTextureResource textureResource);
+    VulkanTextureResource createTextureResource(const VkImageCreateInfo& createInfo);
+    void destroyTextureResource(VulkanTextureResource textureResource);
 
-    void* map(VulkanAllocation allocation);
-    void unmap(VulkanAllocation allocation);
+    void* map(VulkanMemory allocation);
+    void unmap(VulkanMemory allocation);
 
 private:
     VulkanDevice* m_device = nullptr;

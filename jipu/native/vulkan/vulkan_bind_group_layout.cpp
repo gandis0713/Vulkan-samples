@@ -80,8 +80,7 @@ VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const VulkanB
 
 VulkanBindGroupLayout::~VulkanBindGroupLayout()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyDescriptorSetLayout(vulkanDevice->getVkDevice(), m_descriptorSetLayout, nullptr);
+    m_device->getObjectManager()->safeDestroy(m_descriptorSetLayout);
 }
 
 std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const

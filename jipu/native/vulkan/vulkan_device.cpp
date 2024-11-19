@@ -48,10 +48,6 @@ VulkanDevice::~VulkanDevice()
 
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
-    m_commandBufferPool.reset();
-    m_semaphorePool.reset();
-    m_fencePool.reset();
-
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
@@ -59,7 +55,11 @@ VulkanDevice::~VulkanDevice()
 
     m_objectManager.reset();
 
-    m_inflightObjects.reset(); // after queue wait idle.
+    m_commandBufferPool.reset();
+    m_semaphorePool.reset();
+    m_fencePool.reset();
+
+    m_inflightObjects.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
 }

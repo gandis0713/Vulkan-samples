@@ -168,10 +168,7 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
 
 VulkanBindGroup::~VulkanBindGroup()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    vkAPI.FreeDescriptorSets(vulkanDevice->getVkDevice(), vulkanDevice->getVkDescriptorPool(), 1, &m_descriptorSet);
+    m_device->getObjectManager()->safeDestroy(m_descriptorSet);
 }
 
 BindGroupLayout* VulkanBindGroup::getLayout() const

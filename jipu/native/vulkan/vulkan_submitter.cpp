@@ -47,16 +47,6 @@ VulkanSubmitter::~VulkanSubmitter()
 
 std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
-    auto submitTask = [this, fence = fence, submits = submits]() -> void {
-        std::lock_guard<std::mutex> lock(m_queueMutex);
-        submit(fence, submits);
-    };
-
-    return m_threadPool.enqueue(submitTask);
-}
-
-void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
-{
     auto submitInfoSize = submits.size();
 
     std::vector<VkSubmitInfo> submitInfos{};
@@ -87,17 +77,30 @@ void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info
         throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
-    }
+    auto submitTask = [this, fence = fence, submits = submits]() -> void {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
 
-    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &fence);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
-    }
+        auto vulkanDevice = downcast(m_device);
+        const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+        VkResult result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
+        }
+
+        result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &fence);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
+        }
+    };
+
+    return m_threadPool.enqueue(submitTask);
+}
+
+void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
+{
+    submitAsync(fence, submits).get();
 
     m_device->getInflightObjects()->clear(fence);
 }

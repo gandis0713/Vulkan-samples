@@ -34,9 +34,13 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     auto submits = submitContext.getSubmits();
     auto submitInfos = submitContext.getSubmitInfos();
 
+    auto fence = m_device->getFencePool()->create();
+    m_device->getInflightObjects()->add(fence, submits);
+
+    auto future = m_submitter->submitAsync(fence, submitInfos);
+
     // set present semaphores.
     {
-
         std::vector<VulkanSubmit::Info> presentSubmitInfos{};
         for (const auto& submit : submits)
         {
@@ -58,15 +62,17 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
         for (auto& presentSubmitInfo : presentSubmitInfos)
         {
-            m_presentSemaphores[presentSubmitInfo.swapchainIndex] = presentSubmitInfo.signalSemaphores;
+            auto& index = presentSubmitInfo.swapchainIndex;
+
+            if (m_presentTasks.contains(index))
+                m_presentTasks[index].get(); // wait previous present task.
+
+            m_presentTasks[index] = std::move(future);
+            m_presentSemaphores[index] = presentSubmitInfo.signalSemaphores;
         }
     }
 
-    auto fence = m_device->getFencePool()->create();
-    m_device->getInflightObjects()->add(fence, submits);
-
-    auto future = m_submitter->submitAsync(fence, submitInfos);
-    future.get();
+    // future.get();
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
