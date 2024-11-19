@@ -1,5 +1,7 @@
 #include "vulkan_submit_context.h"
 
+#include "vulkan_bind_group.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
@@ -425,6 +427,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kSetComputeBindGroup: {
                         auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->bindGroup)->getVkDescriptorSet());
                         currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
                         for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {
@@ -468,6 +471,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kSetRenderBindGroup: {
                         auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->bindGroup)->getVkDescriptorSet());
                         currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
                         for (auto& binding : cmd->bindGroup->getBufferBindings())
                         {

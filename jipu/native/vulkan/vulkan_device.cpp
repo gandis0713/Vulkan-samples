@@ -46,20 +46,19 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
-    vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
-    m_resourceAllocator.reset();
-
     m_objectManager.reset();
+
+    m_inflightObjects.reset();
+
+    vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
+    m_resourceAllocator.reset();
 
     m_commandBufferPool.reset();
     m_semaphorePool.reset();
     m_fencePool.reset();
-
-    m_inflightObjects.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
 }
