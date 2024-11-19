@@ -19,7 +19,7 @@ class VULKAN_EXPORT VulkanComputePipeline : public ComputePipeline
 {
 public:
     VulkanComputePipeline() = delete;
-    VulkanComputePipeline(VulkanDevice& device, const ComputePipelineDescriptor& descriptor);
+    VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor);
     ~VulkanComputePipeline() override;
 
     VulkanComputePipeline(const VulkanComputePipeline&) = delete;
@@ -35,7 +35,7 @@ private:
     void initialize();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
     const ComputePipelineDescriptor m_descriptor;
 
@@ -100,8 +100,8 @@ class VULKAN_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;
-    VulkanRenderPipeline(VulkanDevice& device, const RenderPipelineDescriptor& descriptor);
-    VulkanRenderPipeline(VulkanDevice& device, const VulkanRenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor);
     ~VulkanRenderPipeline() override;
 
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
@@ -117,7 +117,7 @@ private:
     void initialize();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const VulkanRenderPipelineDescriptor m_descriptor;
 
 private:
@@ -141,7 +141,7 @@ VulkanPipelineColorBlendStateCreateInfo VULKAN_EXPORT generateColorBlendStateCre
 VkPipelineDepthStencilStateCreateInfo VULKAN_EXPORT generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 VulkanPipelineDynamicStateCreateInfo VULKAN_EXPORT generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 std::vector<VkPipelineShaderStageCreateInfo> VULKAN_EXPORT generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor);
-VulkanRenderPipelineDescriptor VULKAN_EXPORT generateVulkanRenderPipelineDescriptor(VulkanDevice& device, const RenderPipelineDescriptor& descriptor);
+VulkanRenderPipelineDescriptor VULKAN_EXPORT generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

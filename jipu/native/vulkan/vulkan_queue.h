@@ -20,7 +20,7 @@ class VULKAN_EXPORT VulkanQueue : public Queue
 {
 public:
     VulkanQueue() = delete;
-    VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false);
+    VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
 public:
@@ -33,7 +33,7 @@ private:
     std::vector<VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 
 private:

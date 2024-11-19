@@ -48,6 +48,8 @@ private:
     std::vector<QueueGroup> m_queueGroups{};
 
     ThreadPool m_threadPool{ 10 };
+
+    std::mutex m_queueMutex{};
 };
 
 // Convert Helper

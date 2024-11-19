@@ -13,7 +13,7 @@ namespace jipu
 {
 
 // Vulkan Compute Pipeline
-VulkanComputePipeline::VulkanComputePipeline(VulkanDevice& device, const ComputePipelineDescriptor& descriptor)
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -22,8 +22,8 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice& device, const Compute
 
 VulkanComputePipeline::~VulkanComputePipeline()
 {
-    auto& vulkanDevice = downcast(m_device);
-    vulkanDevice.vkAPI.DestroyPipeline(vulkanDevice.getVkDevice(), m_pipeline, nullptr);
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
@@ -54,10 +54,10 @@ void VulkanComputePipeline::initialize()
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineCreateInfo.basePipelineIndex = -1;              // Optional
 
-    auto& vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    if (VK_SUCCESS != vkAPI.CreateComputePipelines(vulkanDevice.getVkDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline))
+    if (VK_SUCCESS != vkAPI.CreateComputePipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline))
     {
         throw std::runtime_error("Failed to create compute pipelines.");
     }
@@ -391,7 +391,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipeli
     return vkdescriptor;
 }
 
-VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevice& device, const RenderPipelineDescriptor& descriptor)
+VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
 {
     VulkanRenderPipelineDescriptor vkdescriptor{
         .next = nullptr,
@@ -406,7 +406,7 @@ VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevi
         .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
         .dynamicState = generateDynamicStateCreateInfo(descriptor),
         .layout = downcast(descriptor.layout),
-        .renderPass = device.getRenderPass(generateVulkanRenderPassDescriptor(descriptor)),
+        .renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor)),
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE, // Optional
         .basePipelineIndex = -1,              // Optional
@@ -415,12 +415,12 @@ VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevi
     return vkdescriptor;
 }
 
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice& device, const RenderPipelineDescriptor& descriptor)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
     : VulkanRenderPipeline(device, generateVulkanRenderPipelineDescriptor(device, descriptor))
 {
 }
 
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice& device, const VulkanRenderPipelineDescriptor& descriptor)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -429,8 +429,8 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice& device, const VulkanRen
 
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
-    auto& vulkanDevice = downcast(m_device);
-    vulkanDevice.vkAPI.DestroyPipeline(vulkanDevice.getVkDevice(), m_pipeline, nullptr);
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
@@ -488,8 +488,8 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;
     pipelineInfo.basePipelineIndex = descriptor.basePipelineIndex;
 
-    auto& vulkanDevice = downcast(m_device);
-    if (vulkanDevice.vkAPI.CreateGraphicsPipelines(vulkanDevice.getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
+    auto vulkanDevice = downcast(m_device);
+    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }

@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -52,7 +52,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassD
     renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(descriptor.subpassDependencies.size());
     renderPassCreateInfo.pDependencies = descriptor.subpassDependencies.data();
 
-    if (device.vkAPI.CreateRenderPass(device.getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (device->vkAPI.CreateRenderPass(device->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -60,12 +60,12 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto& vulkanDevice = downcast(m_device);
+    auto vulkanDevice = downcast(m_device);
 
-    auto framebufferCache = vulkanDevice.getFramebufferCache();
+    auto framebufferCache = vulkanDevice->getFramebufferCache();
     framebufferCache->invalidate(this);
 
-    vulkanDevice.vkAPI.DestroyRenderPass(vulkanDevice.getVkDevice(), m_renderPass, nullptr);
+    vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
 }
 
 const std::vector<RenderPassColorAttachment>& VulkanRenderPass::getColorAttachments() const
@@ -211,7 +211,7 @@ bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor
     return true;
 }
 
-VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice& device)
+VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
     : m_device(device)
 {
 }

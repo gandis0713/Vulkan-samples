@@ -48,6 +48,7 @@ VulkanSubmitter::~VulkanSubmitter()
 std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
     auto submitTask = [this, fence = fence, submits = submits]() -> void {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
         submit(fence, submits);
     };
 
@@ -57,6 +58,7 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
 std::future<void> VulkanSubmitter::presentAsync(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)
 {
     auto presentTask = [this, fence = fence, submitInfos = submitInfos, presentInfo = presentInfo]() -> void {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
         present(fence, submitInfos, presentInfo);
     };
 
@@ -106,6 +108,8 @@ void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info
     {
         throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
     }
+
+    m_device->getInflightObjects()->clear(fence);
 }
 
 void VulkanSubmitter::present(VkFence fence, std::vector<VulkanSubmit::Info> submitInfos, VulkanPresentInfo presentInfo)

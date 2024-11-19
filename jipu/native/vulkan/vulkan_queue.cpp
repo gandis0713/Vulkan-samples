@@ -12,9 +12,9 @@
 namespace jipu
 {
 
-VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false)
+VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
     : m_device(device)
-    , m_submitter(std::make_unique<VulkanSubmitter>(&device))
+    , m_submitter(std::make_unique<VulkanSubmitter>(device))
 {
 }
 
@@ -28,7 +28,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     std::vector<VulkanCommandRecordResult> commandRecordResults = recordCommands(commandBuffers);
 
     // generate Submit context.
-    VulkanSubmitContext submitContext = VulkanSubmitContext::create(&m_device, commandRecordResults);
+    VulkanSubmitContext submitContext = VulkanSubmitContext::create(m_device, commandRecordResults);
 
     // submit
     auto submits = submitContext.getSubmits();
@@ -60,8 +60,8 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     if (!notPresentSubmitInfos.empty())
     {
-        auto fence = m_device.getFencePool()->create();
-        m_device.getInflightObjects()->add(fence, notPresnetSubmits);
+        auto fence = m_device->getFencePool()->create();
+        m_device->getInflightObjects()->add(fence, notPresnetSubmits);
 
         auto future = m_submitter->submitAsync(fence, notPresentSubmitInfos);
         future.get();
@@ -71,11 +71,11 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     {
         if (m_presentSubmitInfos.first == VK_NULL_HANDLE)
         {
-            m_presentSubmitInfos.first = m_device.getFencePool()->create();
+            m_presentSubmitInfos.first = m_device->getFencePool()->create();
         }
 
         auto fence = m_presentSubmitInfos.first;
-        m_device.getInflightObjects()->add(fence, presentSubmits);
+        m_device->getInflightObjects()->add(fence, presentSubmits);
 
         m_presentSubmitInfos.second.insert(m_presentSubmitInfos.second.end(),
                                            presentSubmitInfos.begin(),

@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-VulkanBuffer::VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descriptor) noexcept(false)
+VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -31,7 +31,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descrip
     bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    auto& vulkanResourceAllocator = device.getResourceAllocator();
+    auto& vulkanResourceAllocator = device->getResourceAllocator();
     m_resource = vulkanResourceAllocator.createBuffer(bufferCreateInfo);
 }
 
@@ -39,7 +39,7 @@ VulkanBuffer::~VulkanBuffer()
 {
     unmap();
 
-    auto& vulkanResourceAllocator = downcast(m_device).getResourceAllocator();
+    auto& vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
     vulkanResourceAllocator.destroyBuffer(m_resource);
 }
 
@@ -47,7 +47,7 @@ void* VulkanBuffer::map()
 {
     if (m_mappedPtr == nullptr)
     {
-        auto& resourceAllocator = downcast(m_device).getResourceAllocator();
+        auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
         m_mappedPtr = resourceAllocator.map(m_resource.allocation);
     }
 
@@ -57,7 +57,7 @@ void VulkanBuffer::unmap()
 {
     if (m_mappedPtr)
     {
-        auto& resourceAllocator = downcast(m_device).getResourceAllocator();
+        auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
         resourceAllocator.unmap(m_resource.allocation);
 
         m_mappedPtr = nullptr;
@@ -76,8 +76,8 @@ uint64_t VulkanBuffer::getSize() const
 
 void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags)
 {
-    auto& vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkBufferMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;

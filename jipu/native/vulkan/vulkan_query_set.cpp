@@ -5,18 +5,18 @@
 namespace jipu
 {
 
-VulkanQuerySet::VulkanQuerySet(VulkanDevice& device, const QuerySetDescriptor& descriptor)
+VulkanQuerySet::VulkanQuerySet(VulkanDevice* device, const QuerySetDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
-    auto& vkAPI = m_device.vkAPI;
+    auto& vkAPI = m_device->vkAPI;
 
     VkQueryPoolCreateInfo queryPoolInfo = {};
     queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
     queryPoolInfo.queryType = ToVkQueryType(m_descriptor.type);
     queryPoolInfo.queryCount = static_cast<uint32_t>(m_descriptor.count);
 
-    VkResult result = vkAPI.CreateQueryPool(m_device.getVkDevice(), &queryPoolInfo, nullptr, &m_queryPool);
+    VkResult result = vkAPI.CreateQueryPool(m_device->getVkDevice(), &queryPoolInfo, nullptr, &m_queryPool);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create query pool.");
@@ -25,8 +25,8 @@ VulkanQuerySet::VulkanQuerySet(VulkanDevice& device, const QuerySetDescriptor& d
 
 VulkanQuerySet::~VulkanQuerySet()
 {
-    auto& vkAPI = m_device.vkAPI;
-    vkAPI.DestroyQueryPool(m_device.getVkDevice(), m_queryPool, nullptr);
+    auto& vkAPI = m_device->vkAPI;
+    vkAPI.DestroyQueryPool(m_device->getVkDevice(), m_queryPool, nullptr);
 }
 
 QueryType VulkanQuerySet::getType() const

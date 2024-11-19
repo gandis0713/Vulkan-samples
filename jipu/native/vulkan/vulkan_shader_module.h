@@ -14,13 +14,13 @@ class VULKAN_EXPORT VulkanShaderModule : public ShaderModule
 {
 public:
     VulkanShaderModule() = delete;
-    VulkanShaderModule(VulkanDevice& device, const ShaderModuleDescriptor& descriptor);
+    VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor);
     ~VulkanShaderModule() override;
 
     VkShaderModule getVkShaderModule() const;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
 private:
     VkShaderModule m_shaderModule = VK_NULL_HANDLE;

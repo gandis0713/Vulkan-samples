@@ -12,7 +12,7 @@
 namespace jipu
 {
 
-VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -39,7 +39,7 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
                                                    .height = descriptor.height,
                                                    .layers = descriptor.layers };
 
-    if (m_device.vkAPI.CreateFramebuffer(device.getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
+    if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create framebuffer!");
     }
@@ -47,7 +47,7 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
 
 VulkanFramebuffer::~VulkanFramebuffer()
 {
-    m_device.getObjectManager()->safeDestroy(m_framebuffer);
+    m_device->getObjectManager()->safeDestroy(m_framebuffer);
 }
 
 const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttachments() const
@@ -114,7 +114,7 @@ bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescript
     return false;
 }
 
-VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice& device)
+VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice* device)
     : m_device(device)
 {
     // TODO

@@ -114,22 +114,22 @@ void unmapResource(VmaAllocator allocator, VmaAllocation allocation)
     vmaUnmapMemory(allocator, allocation);
 }
 #else
-VulkanBufferResource createBufferResource(VulkanDevice& device, const VkBufferCreateInfo& createInfo)
+VulkanBufferResource createBufferResource(VulkanDevice* device, const VkBufferCreateInfo& createInfo)
 {
-    const VulkanAPI& vkAPI = device.vkAPI;
+    const VulkanAPI& vkAPI = device->vkAPI;
     VkBuffer buffer = VK_NULL_HANDLE;
-    VkResult result = vkAPI.CreateBuffer(device.getVkDevice(), &createInfo, nullptr, &buffer);
+    VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &createInfo, nullptr, &buffer);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
     }
 
     VkMemoryRequirements memoryRequirements{};
-    vkAPI.GetBufferMemoryRequirements(device.getVkDevice(), buffer, &memoryRequirements);
+    vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), buffer, &memoryRequirements);
 
     VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; // TODO: set memory property flags by create information.
 
-    int memoryTypeIndex = downcast(device.getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
+    int memoryTypeIndex = downcast(device->getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
     if (memoryTypeIndex == -1)
     {
         throw std::runtime_error("Failed to find memory type index");
@@ -140,17 +140,17 @@ VulkanBufferResource createBufferResource(VulkanDevice& device, const VkBufferCr
                                              .memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex) };
 
     VkDeviceMemory deviceMemory = VK_NULL_HANDLE;
-    result = vkAPI.AllocateMemory(device.getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
+    result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to allocate memory");
     }
 
-    result = vkAPI.BindBufferMemory(device.getVkDevice(), buffer, deviceMemory, 0);
+    result = vkAPI.BindBufferMemory(device->getVkDevice(), buffer, deviceMemory, 0);
     if (result != VK_SUCCESS)
     {
         // TODO: delete VkBuffer resource automatically.
-        device.vkAPI.DestroyBuffer(device.getVkDevice(), buffer, nullptr);
+        device->vkAPI.DestroyBuffer(device->getVkDevice(), buffer, nullptr);
 
         throw std::runtime_error("Failed to bind memory");
     }
@@ -158,28 +158,28 @@ VulkanBufferResource createBufferResource(VulkanDevice& device, const VkBufferCr
     return { .buffer = buffer, .allocation = deviceMemory };
 }
 
-void destroyBufferResource(VulkanDevice& device, const VulkanBufferResource& bufferResource)
+void destroyBufferResource(VulkanDevice* device, const VulkanBufferResource& bufferResource)
 {
-    device.vkAPI.FreeMemory(device.getVkDevice(), bufferResource.allocation, nullptr);
-    device.vkAPI.DestroyBuffer(device.getVkDevice(), bufferResource.buffer, nullptr);
+    device->vkAPI.FreeMemory(device->getVkDevice(), bufferResource.allocation, nullptr);
+    device->vkAPI.DestroyBuffer(device->getVkDevice(), bufferResource.buffer, nullptr);
 }
 
-VulkanTextureResource createTextureResource(VulkanDevice& device, const VkImageCreateInfo& createInfo)
+VulkanTextureResource createTextureResource(VulkanDevice* device, const VkImageCreateInfo& createInfo)
 {
-    const VulkanAPI& vkAPI = device.vkAPI;
+    const VulkanAPI& vkAPI = device->vkAPI;
     VkImage image = VK_NULL_HANDLE;
-    VkResult result = vkAPI.CreateImage(device.getVkDevice(), &createInfo, nullptr, &image);
+    VkResult result = vkAPI.CreateImage(device->getVkDevice(), &createInfo, nullptr, &image);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create image. error: {}", static_cast<int32_t>(result)));
     }
 
     VkMemoryRequirements memoryRequirements{};
-    vkAPI.GetImageMemoryRequirements(device.getVkDevice(), image, &memoryRequirements);
+    vkAPI.GetImageMemoryRequirements(device->getVkDevice(), image, &memoryRequirements);
 
     VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: set memory property flags by create information.
 
-    int memoryTypeIndex = downcast(device.getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
+    int memoryTypeIndex = downcast(device->getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
     if (memoryTypeIndex == -1)
     {
         throw std::runtime_error("Failed to find memory type index");
@@ -190,59 +190,59 @@ VulkanTextureResource createTextureResource(VulkanDevice& device, const VkImageC
                                              .memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex) };
 
     VkDeviceMemory deviceMemory = VK_NULL_HANDLE;
-    result = vkAPI.AllocateMemory(device.getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
+    result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to allocate memory");
     }
 
-    result = vkAPI.BindImageMemory(device.getVkDevice(), image, deviceMemory, 0);
+    result = vkAPI.BindImageMemory(device->getVkDevice(), image, deviceMemory, 0);
     if (result != VK_SUCCESS)
     {
         // TODO: delete VkImage resource automatically.
-        device.vkAPI.DestroyImage(device.getVkDevice(), image, nullptr);
+        device->vkAPI.DestroyImage(device->getVkDevice(), image, nullptr);
 
         throw std::runtime_error(fmt::format("Failed to bind memory. {}", static_cast<int32_t>(result)));
     }
 
     return { .image = image, .allocation = deviceMemory };
 }
-void destroyTextureResource(VulkanDevice& device, const VulkanTextureResource& textureResource)
+void destroyTextureResource(VulkanDevice* device, const VulkanTextureResource& textureResource)
 {
-    device.vkAPI.FreeMemory(device.getVkDevice(), textureResource.allocation, nullptr);
-    device.vkAPI.DestroyImage(device.getVkDevice(), textureResource.image, nullptr);
+    device->vkAPI.FreeMemory(device->getVkDevice(), textureResource.allocation, nullptr);
+    device->vkAPI.DestroyImage(device->getVkDevice(), textureResource.image, nullptr);
 }
-void* mapResource(VulkanDevice& device, VulkanAllocation allocation)
+void* mapResource(VulkanDevice* device, VulkanAllocation allocation)
 {
     void* data = nullptr;
-    VkResult result = device.vkAPI.MapMemory(device.getVkDevice(), allocation, 0, VK_WHOLE_SIZE, 0, &data);
+    VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), allocation, 0, VK_WHOLE_SIZE, 0, &data);
     if (result != VK_SUCCESS)
     {
         spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
     }
     return data;
 }
-void unmapResource(VulkanDevice& device, VkDeviceMemory memory)
+void unmapResource(VulkanDevice* device, VkDeviceMemory memory)
 {
-    device.vkAPI.UnmapMemory(device.getVkDevice(), memory);
+    device->vkAPI.UnmapMemory(device->getVkDevice(), memory);
 }
 #endif
 
 } // namespace
 
-VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const VulkanResourceAllocatorDescriptor& descriptor)
+VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const VulkanResourceAllocatorDescriptor& descriptor)
     : m_device(device)
 {
 #if defined(USE_VMA)
-    auto& vulkanPhysicalDevice = downcast(m_device.getPhysicalDevice());
-    auto& vulkanInstance = downcast(vulkanPhysicalDevice.getInstance());
+    auto& vulkanPhysicalDevice = downcast(m_device->getPhysicalDevice());
+    auto& vulkanInstance = downcast(vulkanPhysicalDevice->getInstance());
 
-    auto physicalDevice = vulkanPhysicalDevice.getVkPhysicalDevice();
+    auto physicalDevice = vulkanPhysicalDevice->getVkPhysicalDevice();
     auto instance = vulkanInstance.getVkInstance();
 
 #if defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
     m_vmaFunctions.vkGetInstanceProcAddr = vulkanInstance.vkAPI.GetInstanceProcAddr;
-    m_vmaFunctions.vkGetDeviceProcAddr = m_device.vkAPI.GetDeviceProcAddr;
+    m_vmaFunctions.vkGetDeviceProcAddr = m_device->vkAPI.GetDeviceProcAddr;
 #else
     // TODO: set functions
 #endif
@@ -250,7 +250,7 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const Vul
     VmaAllocatorCreateInfo createInfo{};
     createInfo.instance = instance;
     createInfo.physicalDevice = physicalDevice;
-    createInfo.device = m_device.getVkDevice();
+    createInfo.device = m_device->getVkDevice();
     createInfo.vulkanApiVersion = vulkanInstance.getInstanceInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 

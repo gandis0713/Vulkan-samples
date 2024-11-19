@@ -16,7 +16,7 @@ class VULKAN_EXPORT VulkanBindGroup : public BindGroup
 {
 public:
     VulkanBindGroup() = delete;
-    VulkanBindGroup(VulkanDevice& device, const BindGroupDescriptor& descriptor);
+    VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor& descriptor);
     ~VulkanBindGroup() override;
 
 public:
@@ -32,7 +32,7 @@ private:
     VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const BindGroupDescriptor m_descriptor;
 
 public:

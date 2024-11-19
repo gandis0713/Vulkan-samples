@@ -19,7 +19,7 @@ class VULKAN_EXPORT VulkanBuffer : public Buffer
 {
 public:
     VulkanBuffer() = delete;
-    VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descriptor) noexcept(false);
+    VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false);
     ~VulkanBuffer() override;
 
     void* map() override;
@@ -40,7 +40,7 @@ private:
     void* m_mappedPtr = nullptr;
 
 private:
-    Device& m_device;
+    VulkanDevice* m_device = nullptr;
     BufferDescriptor m_descriptor{};
 
 public:

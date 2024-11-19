@@ -54,8 +54,8 @@ class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;
-    VulkanSwapchain(VulkanDevice& device, const SwapchainDescriptor& descriptor) noexcept(false);
-    VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
     VulkanSwapchain(const Swapchain&) = delete;
@@ -78,7 +78,7 @@ private:
     void setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex);
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const VulkanSwapchainDescriptor m_descriptor;
 
     std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
@@ -93,6 +93,6 @@ private:
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Generate Helper
-VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice& device, const SwapchainDescriptor& descriptor);
+VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor);
 
 } // namespace jipu

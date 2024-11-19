@@ -20,8 +20,8 @@ namespace jipu
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
     : vkAPI(downcast(physicalDevice.getAdapter())->vkAPI)
     , m_physicalDevice(physicalDevice)
-    , m_renderPassCache(*this)
-    , m_frameBufferCache(*this)
+    , m_renderPassCache(this)
+    , m_frameBufferCache(this)
 {
     createDevice();
 
@@ -33,7 +33,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     }
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
-    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(*this, allocatorDescriptor);
+    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, allocatorDescriptor);
 
     m_inflightObjects = std::make_unique<VulkanInflightObjects>(this);
 
@@ -65,12 +65,12 @@ VulkanDevice::~VulkanDevice()
 
 std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBuffer>(*this, descriptor);
+    return std::make_unique<VulkanBuffer>(this, descriptor);
 }
 
 std::unique_ptr<BindGroup> VulkanDevice::createBindGroup(const BindGroupDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindGroup>(*this, descriptor);
+    return std::make_unique<VulkanBindGroup>(this, descriptor);
 }
 
 std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const BindGroupLayoutDescriptor& descriptor)
@@ -80,52 +80,52 @@ std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const BindG
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanPipelineLayout>(*this, descriptor);
+    return std::make_unique<VulkanPipelineLayout>(this, descriptor);
 }
 
 std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const ComputePipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanComputePipeline>(*this, descriptor);
+    return std::make_unique<VulkanComputePipeline>(this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
+    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
 }
 
 std::unique_ptr<QuerySet> VulkanDevice::createQuerySet(const QuerySetDescriptor& descriptor)
 {
-    return std::make_unique<VulkanQuerySet>(*this, descriptor);
+    return std::make_unique<VulkanQuerySet>(this, descriptor);
 }
 
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
 {
-    return std::make_unique<VulkanQueue>(*this, descriptor);
+    return std::make_unique<VulkanQueue>(this, descriptor);
 }
 
 std::unique_ptr<Sampler> VulkanDevice::createSampler(const SamplerDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSampler>(*this, descriptor);
+    return std::make_unique<VulkanSampler>(this, descriptor);
 }
 
 std::unique_ptr<ShaderModule> VulkanDevice::createShaderModule(const ShaderModuleDescriptor& descriptor)
 {
-    return std::make_unique<VulkanShaderModule>(*this, descriptor);
+    return std::make_unique<VulkanShaderModule>(this, descriptor);
 }
 
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapchain>(*this, descriptor);
+    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(*this, descriptor);
+    return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
+    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
 }
 
 std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor)
@@ -135,12 +135,12 @@ std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const Vulka
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(*this, descriptor);
+    return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapchain>(*this, descriptor);
+    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const CommandEncoderDescriptor& descriptor)

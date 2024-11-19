@@ -13,7 +13,7 @@ class VULKAN_EXPORT VulkanQuerySet : public QuerySet
 {
 public:
     VulkanQuerySet() = delete;
-    VulkanQuerySet(VulkanDevice& device, const QuerySetDescriptor& descriptor);
+    VulkanQuerySet(VulkanDevice* device, const QuerySetDescriptor& descriptor);
     ~VulkanQuerySet() override;
 
     QueryType getType() const override;
@@ -23,7 +23,7 @@ public:
     VkQueryPool getVkQueryPool() const;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const QuerySetDescriptor m_descriptor;
 
 private:

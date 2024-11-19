@@ -45,7 +45,7 @@ class VULKAN_EXPORT VulkanRenderPass
 {
 public:
     VulkanRenderPass() = delete;
-    VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassDescriptor& descriptor);
+    VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor);
     ~VulkanRenderPass();
 
 public:
@@ -55,7 +55,7 @@ public:
     VkRenderPass getVkRenderPass() const;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     VulkanRenderPassDescriptor m_descriptor{};
 
 private:
@@ -66,7 +66,7 @@ class VULKAN_EXPORT VulkanRenderPassCache final
 {
 
 public:
-    VulkanRenderPassCache(VulkanDevice& device);
+    VulkanRenderPassCache(VulkanDevice* device);
     ~VulkanRenderPassCache() = default;
 
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
@@ -74,7 +74,7 @@ public:
     void clear();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
 private:
     struct Functor

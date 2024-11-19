@@ -449,18 +449,18 @@ void VulkanRenderPassEncoder::end()
 void VulkanRenderPassEncoder::nextPass()
 {
     // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    // auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    // auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    // vulkanDevice.vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
+    // vulkanDevice->vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
     // ++m_passIndex;
 }
 
 void VulkanRenderPassEncoder::resetQuery()
 {
     // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    // auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    // auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    // const auto& vkAPI = vulkanDevice.vkAPI;
+    // const auto& vkAPI = vulkanDevice->vkAPI;
     // if (m_descriptor.timestampWrites.querySet)
     // {
     //     auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);

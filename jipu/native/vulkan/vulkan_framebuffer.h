@@ -35,7 +35,7 @@ class VULKAN_EXPORT VulkanFramebuffer
 {
 public:
     VulkanFramebuffer() = delete;
-    VulkanFramebuffer(VulkanDevice& device, const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
     ~VulkanFramebuffer();
 
 public:
@@ -47,7 +47,7 @@ public:
     VkFramebuffer getVkFrameBuffer() const;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const VulkanFramebufferDescriptor m_descriptor{};
 
 private:
@@ -58,7 +58,7 @@ class VULKAN_EXPORT VulkanFramebufferCache final
 {
 
 public:
-    VulkanFramebufferCache(VulkanDevice& device);
+    VulkanFramebufferCache(VulkanDevice* device);
     ~VulkanFramebufferCache() = default;
 
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
@@ -69,7 +69,7 @@ public:
     void clear();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
 private:
     struct Functor
