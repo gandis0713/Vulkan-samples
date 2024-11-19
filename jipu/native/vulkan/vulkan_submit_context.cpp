@@ -315,11 +315,6 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     context.m_submits.push_back(currentSubmit);
                     currentSubmit = {};
 
-                    // set submit type
-                    {
-                        currentSubmit.info.type = getSubmitType(result);
-                    }
-
                     // set signal semaphore
                     {
                         auto semaphore = device->getSemaphorePool()->create();
@@ -372,7 +367,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
                     // set wait semaphore and image index for swapchain image
                     {
-                        if (currentSubmit.info.type == SubmitType::kPresent)
+                        if (getSubmitType(result) == SubmitType::kPresent)
                         {
                             auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                             for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
@@ -400,6 +395,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                 // set signal semaphore for external resource
                 {
                     // TODO
+                }
+
+                // set submit type
+                {
+                    currentSubmit.info.type = getSubmitType(result);
                 }
             }
 

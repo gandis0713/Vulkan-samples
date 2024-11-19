@@ -18,7 +18,7 @@ struct VulkanInflightObject
     std::unordered_set<VkImage> images{};
     std::unordered_set<VkImageView> imageViews{};
     std::unordered_set<VkSemaphore> signalSemaphores{};
-    // std::unordered_set<VkSemaphore> waitSemaphores{}; // not used.
+    std::unordered_set<VkSemaphore> waitSemaphores{};
     std::unordered_set<VkSampler> samplers{};
     std::unordered_set<VkPipeline> pipelines{};
     std::unordered_set<VkPipelineLayout> pipelineLayouts{};

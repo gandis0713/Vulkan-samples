@@ -295,6 +295,7 @@ uint32_t VulkanSwapchain::acquireNextImageIndex()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     auto semaphore = m_device->getSemaphorePool()->create();
+
     uint32_t acquireImageIndex = 0;
     VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
     if (result != VK_SUCCESS)
@@ -317,7 +318,7 @@ void VulkanSwapchain::setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore
     auto texture = m_textures[imageIndex].get();
     if (texture->getAcquireSemaphore() != VK_NULL_HANDLE)
     {
-        m_device->getSemaphorePool()->release(texture->getAcquireSemaphore());
+        m_device->getObjectManager()->safeDestroy(texture->getAcquireSemaphore());
     }
 
     m_textures[imageIndex]->setAcquireSemaphore(semaphore);

@@ -33,7 +33,7 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
     {
         inflightObject.commandBuffers.insert(submit.info.commandBuffers.begin(), submit.info.commandBuffers.end());
         inflightObject.signalSemaphores.insert(submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
-        // do not need to wait for semaphores.
+        inflightObject.waitSemaphores.insert(submit.info.waitSemaphores.begin(), submit.info.waitSemaphores.end()); // for swapchain
 
         inflightObject.imageViews.insert(submit.object.imageViews.begin(), submit.object.imageViews.end());
         inflightObject.samplers.insert(submit.object.samplers.begin(), submit.object.samplers.end());
@@ -140,7 +140,7 @@ bool VulkanInflightObjects::isInflight(VkSemaphore semaphore) const
 {
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
-        if (inflightObject.signalSemaphores.contains(semaphore))
+        if (inflightObject.signalSemaphores.contains(semaphore) || inflightObject.waitSemaphores.contains(semaphore))
         {
             return true;
         }
