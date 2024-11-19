@@ -130,6 +130,11 @@ VulkanSwapchainTexture::VulkanSwapchainTexture(VulkanDevice* device, const Vulka
 {
 }
 
+uint32_t VulkanSwapchainTexture::getImageIndex() const
+{
+    return m_imageIndex;
+}
+
 void VulkanSwapchainTexture::setAcquireSemaphore(VkSemaphore semaphore)
 {
     m_semaphore = semaphore;
@@ -138,11 +143,6 @@ void VulkanSwapchainTexture::setAcquireSemaphore(VkSemaphore semaphore)
 VkSemaphore VulkanSwapchainTexture::getAcquireSemaphore() const
 {
     return m_semaphore;
-}
-
-uint32_t VulkanSwapchainTexture::getImageIndex() const
-{
-    return m_imageIndex;
 }
 
 VulkanSwapchainTextureView::VulkanSwapchainTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor)
@@ -155,14 +155,14 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor
 {
 }
 
-VkSemaphore VulkanSwapchainTextureView::getAcquireSemaphore() const
-{
-    return downcast(m_texture)->getAcquireSemaphore();
-}
-
 uint32_t VulkanSwapchainTextureView::getImageIndex() const
 {
     return downcast(m_texture)->getImageIndex();
+}
+
+VkSemaphore VulkanSwapchainTextureView::getAcquireSemaphore() const
+{
+    return downcast(m_texture)->getAcquireSemaphore();
 }
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false)

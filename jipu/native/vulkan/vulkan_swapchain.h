@@ -62,10 +62,11 @@ public:
     VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor&, const VulkanSwapchainTextureDescriptor&);
     ~VulkanSwapchainTexture() override = default;
 
-    void setAcquireSemaphore(VkSemaphore semaphore);
-
-    VkSemaphore getAcquireSemaphore() const;
+public:
     uint32_t getImageIndex() const;
+
+    void setAcquireSemaphore(VkSemaphore semaphore);
+    VkSemaphore getAcquireSemaphore() const;
 
 private:
     VkSemaphore m_semaphore{};
@@ -80,8 +81,9 @@ public:
     VulkanSwapchainTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor);
     ~VulkanSwapchainTextureView() override = default;
 
-    VkSemaphore getAcquireSemaphore() const;
+public:
     uint32_t getImageIndex() const;
+    VkSemaphore getAcquireSemaphore() const;
 };
 DOWN_CAST(VulkanSwapchainTextureView, VulkanTextureView);
 

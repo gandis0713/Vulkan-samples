@@ -314,6 +314,12 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     // because we need to wait for the previous submit by semaphore.
                     context.m_submits.push_back(currentSubmit);
                     currentSubmit = {};
+
+                    // set signal semaphore
+                    {
+                        auto semaphore = device->getSemaphorePool()->create();
+                        currentSubmit.addSignalSemaphore({ semaphore });
+                    }
                 }
 
                 // set command buffer
@@ -358,14 +364,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     currentSubmit.addWaitSemaphore(waitSemaphores, waitStages);
                 }
 
-                // set signal semaphore
+                // set signal semaphore for external resource
                 {
-                    // TODO: check src resource
-                    // TODO: multiple signal semaphore for external resource
-                    std::vector<VkSemaphore> signalSemaphores{};
-                    auto semaphore = device->getSemaphorePool()->create();
-                    signalSemaphores.push_back(semaphore);
-                    currentSubmit.addSignalSemaphore(signalSemaphores);
+                    // TODO
                 }
 
                 // set submit type
