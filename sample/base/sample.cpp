@@ -113,7 +113,7 @@ void Sample::init()
 
     if (m_imgui.has_value())
     {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+        m_imgui.value().init(m_device.get(), m_queue.get(), m_swapchain.get());
     }
 
     Window::init();
@@ -151,7 +151,7 @@ void Sample::windowImGui(const char* title, std::vector<std::function<void()>> u
     }
 }
 
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     if (m_imgui.has_value())
     {

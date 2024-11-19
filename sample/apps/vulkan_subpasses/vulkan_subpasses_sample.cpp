@@ -402,7 +402,7 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), *renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     if (m_useTimestamp)
     {

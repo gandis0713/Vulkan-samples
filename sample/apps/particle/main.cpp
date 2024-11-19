@@ -194,7 +194,7 @@ void ParticleSample::draw()
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(renderCommandEncoder.get(), *renderView);
+    drawImGui(renderCommandEncoder.get(), renderView);
     std::unique_ptr<CommandBuffer> renderCommandBuffer = renderCommandEncoder->finish(CommandBufferDescriptor{});
 
     if (separateCmdBuffer)

@@ -101,7 +101,7 @@ void ImGuiSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), renderView);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         m_queue->submit({ commandBuffer.get() });

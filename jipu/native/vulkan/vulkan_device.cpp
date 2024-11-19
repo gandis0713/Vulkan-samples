@@ -52,13 +52,14 @@ VulkanDevice::~VulkanDevice()
     m_semaphorePool.reset();
     m_fencePool.reset();
 
-    m_inflightObjects.reset(); // after queue wait idle.
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
     m_resourceAllocator.reset();
 
     m_objectManager.reset();
+
+    m_inflightObjects.reset(); // after queue wait idle.
 
     vkAPI.DestroyDevice(m_device, nullptr);
 }

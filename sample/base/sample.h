@@ -52,7 +52,7 @@ public:
 public:
     void recordImGui(std::vector<std::function<void()>> cmds);
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
-    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView* renderView);
 
 public:
     void onHPCListner(Values values);

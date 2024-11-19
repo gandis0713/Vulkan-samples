@@ -420,7 +420,7 @@ void DeferredSample::draw()
         renderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), *renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     CommandBufferDescriptor descriptor{};
     auto commandBuffer = commandEncoder->finish(descriptor);

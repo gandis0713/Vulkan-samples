@@ -265,7 +265,7 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commandEncoder.get(), *renderView);
+            drawImGui(commandEncoder.get(), renderView);
             auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
 
             m_queue->submit({ commandBuffer.get() });
@@ -287,7 +287,7 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            drawImGui(commandEncoder.get(), *renderView);
+            drawImGui(commandEncoder.get(), renderView);
 
             auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
             m_queue->submit({ commandBuffer.get() });

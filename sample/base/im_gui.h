@@ -29,10 +29,10 @@ public:
     void window(const char* title, std::vector<std::function<void()>> uis);
 
 public:
-    void init(Device* device, Queue* queue, Swapchain& swapchain);
+    void init(Device* device, Queue* queue, Swapchain* swapchain);
     void clear();
     void build();
-    void draw(CommandEncoder* commandEncoder, TextureView& renderView);
+    void draw(CommandEncoder* commandEncoder, TextureView* renderView);
 
 protected:
     struct Padding

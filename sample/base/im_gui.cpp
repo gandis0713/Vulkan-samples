@@ -77,7 +77,7 @@ void Im_Gui::record(std::vector<std::function<void()>> cmds)
     ImGui::Render();
 }
 
-void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
+void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 {
     m_device = device;
     m_queue = queue;
@@ -102,7 +102,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 #else
     io.FontGlobalScale = 1.0;
 #endif
-    io.DisplaySize = ImVec2(swapchain.getWidth(), swapchain.getHeight());
+    io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -348,7 +348,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
 
         FragmentStage::Target target{};
-        target.format = swapchain.getTextureFormat();
+        target.format = swapchain->getTextureFormat();
         target.blend = {
             .color = {
                 .srcFactor = BlendFactor::kSrcAlpha,
@@ -452,7 +452,7 @@ void Im_Gui::build()
     }
 }
 
-void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
+void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -461,7 +461,7 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         ImGuiIO& io = ImGui::GetIO();
 
         ColorAttachment colorAttachment{
-            .renderView = &renderView
+            .renderView = renderView
         };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
