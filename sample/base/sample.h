@@ -48,6 +48,7 @@ public:
 public:
     void init() override;
     void onUpdate() override;
+    void onResize(uint32_t width, uint32_t height) override;
 
 public:
     void recordImGui(std::vector<std::function<void()>> cmds);

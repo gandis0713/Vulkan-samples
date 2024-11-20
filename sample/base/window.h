@@ -33,6 +33,7 @@ public:
     virtual void init();
     virtual void onUpdate() = 0;
     virtual void onDraw() = 0;
+    virtual void onResize(uint32_t width, uint32_t height) = 0;
 
     int exec();
     void* getWindowHandle();

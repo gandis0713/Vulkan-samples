@@ -118,6 +118,11 @@ Swapchain* WebGPUDevice::getOrCreateSwapchain(const SwapchainDescriptor& descrip
         }
     }
 
+    if (m_swapchain.first)
+    {
+        m_swapchain.first.reset();
+    }
+
     m_swapchain = std::make_pair(m_device->createSwapchain(descriptor), descriptor);
 
     return m_swapchain.first.get();

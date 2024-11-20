@@ -103,6 +103,8 @@ public:
     uint32_t getHeight() const override;
 
     void present() override;
+    void resize(uint32_t width, uint32_t height) override;
+
     Texture* acquireNextTexture() override;
     TextureView* acquireNextTextureView() override;
 
@@ -110,16 +112,17 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
+    void createSwapchain(const VulkanSwapchainDescriptor& descriptor);
+
     uint32_t acquireNextImageIndex();
 
     void setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore semaphore);
-
     VkSemaphore getAcquireSemaphore(const uint32_t imageIndex) const;
     uint32_t getAcquireImageIndex() const;
 
 private:
     VulkanDevice* m_device = nullptr;
-    const VulkanSwapchainDescriptor m_descriptor;
+    VulkanSwapchainDescriptor m_descriptor;
 
     std::vector<std::unique_ptr<VulkanSwapchainTexture>> m_textures{};
     std::vector<std::unique_ptr<VulkanSwapchainTextureView>> m_textureViews{};

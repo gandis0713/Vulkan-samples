@@ -65,6 +65,11 @@ void WGPUSample::onUpdate()
 {
 }
 
+void WGPUSample::onResize(uint32_t width, uint32_t height)
+{
+    createSurfaceConfigure();
+}
+
 void WGPUSample::initializeContext()
 {
     createInstance();

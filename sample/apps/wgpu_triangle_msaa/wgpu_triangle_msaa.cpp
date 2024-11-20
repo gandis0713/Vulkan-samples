@@ -29,6 +29,17 @@ void WGPUTriangleSampleMSAA::onUpdate()
     WGPUSample::onUpdate();
 }
 
+void WGPUTriangleSampleMSAA::onResize(uint32_t width, uint32_t height)
+{
+    WGPUSample::onResize(width, height);
+
+    releaseRenderTextureView();
+    releaseRenderTexture();
+
+    createRenderTexture();
+    createRenderTextureView();
+}
+
 void WGPUTriangleSampleMSAA::onDraw()
 {
     WGPUSurfaceTexture surfaceTexture{};
@@ -84,17 +95,9 @@ void WGPUTriangleSampleMSAA::initializeContext()
 void WGPUTriangleSampleMSAA::finalizeContext()
 {
     // TODO: check ways release and destory.
-    if (m_renderTextureView)
-    {
-        wgpu.TextureViewRelease(m_renderTextureView);
-        m_renderTextureView = nullptr;
-    }
 
-    if (m_renderTexture)
-    {
-        wgpu.TextureRelease(m_renderTexture);
-        m_renderTexture = nullptr;
-    }
+    releaseRenderTextureView();
+    releaseRenderTexture();
 
     if (m_renderPipeline)
     {
@@ -125,6 +128,12 @@ void WGPUTriangleSampleMSAA::finalizeContext()
 
 void WGPUTriangleSampleMSAA::createRenderTexture()
 {
+    if (m_renderTexture)
+    {
+        wgpu.TextureRelease(m_renderTexture);
+        m_renderTexture = nullptr;
+    }
+
     WGPUTextureDescriptor descriptor{};
     descriptor.dimension = WGPUTextureDimension_2D;
     descriptor.size.width = m_width;
@@ -141,6 +150,12 @@ void WGPUTriangleSampleMSAA::createRenderTexture()
 
 void WGPUTriangleSampleMSAA::createRenderTextureView()
 {
+    if (m_renderTextureView)
+    {
+        wgpu.TextureViewRelease(m_renderTextureView);
+        m_renderTextureView = nullptr;
+    }
+
     WGPUTextureViewDescriptor descriptor{};
     descriptor.format = m_surfaceCapabilities.formats[0]; // TODO
     descriptor.dimension = WGPUTextureViewDimension_2D;
@@ -234,6 +249,24 @@ void WGPUTriangleSampleMSAA::createRenderPipeline()
     m_renderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
 
     assert(m_renderPipeline);
+}
+
+void WGPUTriangleSampleMSAA::releaseRenderTexture()
+{
+    if (m_renderTexture)
+    {
+        wgpu.TextureRelease(m_renderTexture);
+        m_renderTexture = nullptr;
+    }
+}
+
+void WGPUTriangleSampleMSAA::releaseRenderTextureView()
+{
+    if (m_renderTextureView)
+    {
+        wgpu.TextureViewRelease(m_renderTextureView);
+        m_renderTextureView = nullptr;
+    }
 }
 
 } // namespace jipu

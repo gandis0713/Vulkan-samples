@@ -27,6 +27,7 @@ public:
 public:
     void init() override;
     void onUpdate() override;
+    void onResize(uint32_t width, uint32_t height) override;
 
     virtual void initializeContext();
     virtual void finalizeContext();

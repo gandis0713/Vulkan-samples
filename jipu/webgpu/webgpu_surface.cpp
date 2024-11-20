@@ -139,6 +139,11 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
 
         m_swapchain = webgpuDevice->getOrCreateSwapchain(descriptor);
     }
+    else
+    {
+        // TODO: recreate or resize swapchain
+        m_swapchain->resize(config->width, config->height);
+    }
 
     m_configuration = *config;
 }

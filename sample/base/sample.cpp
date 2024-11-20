@@ -124,6 +124,12 @@ void Sample::onUpdate()
     m_fps.update();
 }
 
+void Sample::onResize(uint32_t width, uint32_t height)
+{
+    if (m_swapchain)
+        m_swapchain->resize(width, height);
+}
+
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
 {
     if (m_imgui.has_value())

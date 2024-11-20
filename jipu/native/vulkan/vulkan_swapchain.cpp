@@ -126,7 +126,6 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
 VulkanSwapchainTexture::VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor, const VulkanSwapchainTextureDescriptor& swapchainTextureDescriptor)
     : VulkanTexture(device, descriptor)
     , m_imageIndex(swapchainTextureDescriptor.imageIndex)
-
 {
 }
 
@@ -169,28 +168,101 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
     : m_device(device)
     , m_descriptor(descriptor)
 {
+    createSwapchain(descriptor);
+}
+
+VulkanSwapchain::~VulkanSwapchain()
+{
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    /* do not delete VkImages from swapchain. */
+
+    vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
+}
+
+TextureFormat VulkanSwapchain::getTextureFormat() const
+{
+    return ToTextureFormat(m_descriptor.imageFormat);
+}
+
+uint32_t VulkanSwapchain::getWidth() const
+{
+    return m_descriptor.imageExtent.width;
+}
+
+uint32_t VulkanSwapchain::getHeight() const
+{
+    return m_descriptor.imageExtent.height;
+}
+
+void VulkanSwapchain::present()
+{
+    VulkanDevice* vulkanDevice = downcast(m_device);
+    auto vulkanQueue = downcast(m_descriptor.queue);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VulkanPresentInfo presentInfo{};
+    presentInfo.signalSemaphore.push_back(downcast(m_textures[m_acquiredImageIndex].get())->getAcquireSemaphore());
+    presentInfo.swapchains = { m_swapchain };
+    presentInfo.imageIndices = { m_acquiredImageIndex };
+
+    vulkanQueue->present(presentInfo);
+}
+
+void VulkanSwapchain::resize(uint32_t width, uint32_t height)
+{
+    auto newDescriptor = m_descriptor;
+    newDescriptor.imageExtent = { width, height }; // TODO: check extent by surface capabilities.
+    newDescriptor.oldSwapchain = m_swapchain;
+
+    createSwapchain(newDescriptor);
+}
+
+Texture* VulkanSwapchain::acquireNextTexture()
+{
+    return m_textures[acquireNextImageIndex()].get();
+}
+
+TextureView* VulkanSwapchain::acquireNextTextureView()
+{
+    return m_textureViews[acquireNextImageIndex()].get();
+}
+
+void VulkanSwapchain::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
+{
+    m_descriptor = descriptor;
+
+    m_textureViews.clear();
+    m_textures.clear();
+
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = descriptor.surface->getVkSurface();
-    swapchainCreateInfo.minImageCount = descriptor.minImageCount;
-    swapchainCreateInfo.imageFormat = descriptor.imageFormat;
-    swapchainCreateInfo.imageColorSpace = descriptor.imageColorSpace;
-    swapchainCreateInfo.imageExtent = descriptor.imageExtent;
-    swapchainCreateInfo.imageArrayLayers = descriptor.imageArrayLayers;
-    swapchainCreateInfo.imageUsage = descriptor.imageUsage;
-    swapchainCreateInfo.imageSharingMode = descriptor.imageSharingMode;
+    swapchainCreateInfo.surface = m_descriptor.surface->getVkSurface();
+    swapchainCreateInfo.minImageCount = m_descriptor.minImageCount;
+    swapchainCreateInfo.imageFormat = m_descriptor.imageFormat;
+    swapchainCreateInfo.imageColorSpace = m_descriptor.imageColorSpace;
+    swapchainCreateInfo.imageExtent = m_descriptor.imageExtent;
+    swapchainCreateInfo.imageArrayLayers = m_descriptor.imageArrayLayers;
+    swapchainCreateInfo.imageUsage = m_descriptor.imageUsage;
+    swapchainCreateInfo.imageSharingMode = m_descriptor.imageSharingMode;
     swapchainCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(descriptor.queueFamilyIndices.size());
-    swapchainCreateInfo.pQueueFamilyIndices = descriptor.queueFamilyIndices.data();
-    swapchainCreateInfo.preTransform = descriptor.preTransform;
-    swapchainCreateInfo.compositeAlpha = descriptor.compositeAlpha;
-    swapchainCreateInfo.presentMode = descriptor.presentMode;
-    swapchainCreateInfo.clipped = descriptor.clipped;
-    swapchainCreateInfo.oldSwapchain = descriptor.oldSwapchain;
+    swapchainCreateInfo.pQueueFamilyIndices = m_descriptor.queueFamilyIndices.data();
+    swapchainCreateInfo.preTransform = m_descriptor.preTransform;
+    swapchainCreateInfo.compositeAlpha = m_descriptor.compositeAlpha;
+    swapchainCreateInfo.presentMode = m_descriptor.presentMode;
+    swapchainCreateInfo.clipped = m_descriptor.clipped;
+    swapchainCreateInfo.oldSwapchain = m_descriptor.oldSwapchain;
 
     const VulkanAPI& vkAPI = m_device->vkAPI;
     if (vkAPI.CreateSwapchainKHR(m_device->getVkDevice(), &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create swap chain");
+    }
+
+    if (m_descriptor.oldSwapchain)
+    {
+        vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_descriptor.oldSwapchain, nullptr);
     }
 
     // get swapchain image.
@@ -238,55 +310,6 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
         auto textureView = std::make_unique<VulkanSwapchainTextureView>(texture.get(), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
-}
-
-VulkanSwapchain::~VulkanSwapchain()
-{
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    /* do not delete VkImages from swapchain. */
-
-    vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
-}
-
-TextureFormat VulkanSwapchain::getTextureFormat() const
-{
-    return ToTextureFormat(m_descriptor.imageFormat);
-}
-
-uint32_t VulkanSwapchain::getWidth() const
-{
-    return m_descriptor.imageExtent.width;
-}
-
-uint32_t VulkanSwapchain::getHeight() const
-{
-    return m_descriptor.imageExtent.height;
-}
-
-void VulkanSwapchain::present()
-{
-    VulkanDevice* vulkanDevice = downcast(m_device);
-    auto vulkanQueue = downcast(m_descriptor.queue);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    VulkanPresentInfo presentInfo{};
-    presentInfo.signalSemaphore.push_back(downcast(m_textures[m_acquiredImageIndex].get())->getAcquireSemaphore());
-    presentInfo.swapchains = { m_swapchain };
-    presentInfo.imageIndices = { m_acquiredImageIndex };
-
-    vulkanQueue->present(presentInfo);
-}
-
-Texture* VulkanSwapchain::acquireNextTexture()
-{
-    return m_textures[acquireNextImageIndex()].get();
-}
-
-TextureView* VulkanSwapchain::acquireNextTextureView()
-{
-    return m_textureViews[acquireNextImageIndex()].get();
 }
 
 uint32_t VulkanSwapchain::acquireNextImageIndex()

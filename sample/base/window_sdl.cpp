@@ -72,6 +72,7 @@ int Window::exec()
                 {
                     m_width = event.window.data1;
                     m_height = event.window.data2;
+                    onResize(m_width, m_height);
                 }
                 break;
             default:
