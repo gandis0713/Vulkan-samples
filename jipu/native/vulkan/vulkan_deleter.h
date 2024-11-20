@@ -10,14 +10,14 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanObjectManager final
+class VulkanDeleter final
 {
 public:
-    static std::unique_ptr<VulkanObjectManager> create(VulkanDevice* device);
+    static std::unique_ptr<VulkanDeleter> create(VulkanDevice* device);
 
 public:
-    VulkanObjectManager() = delete;
-    ~VulkanObjectManager();
+    VulkanDeleter() = delete;
+    ~VulkanDeleter();
 
 public:
     void safeDestroy(VkBuffer buffer, VulkanMemory memory);
@@ -48,7 +48,7 @@ private:
     void destroy(VkRenderPass renderPass);
 
 private:
-    VulkanObjectManager(VulkanDevice* device);
+    VulkanDeleter(VulkanDevice* device);
 
 private:
     VulkanDevice* m_device = nullptr;

@@ -37,7 +37,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_inflightObjects = std::make_unique<VulkanInflightObjects>(this);
 
-    m_objectManager = VulkanObjectManager::create(this);
+    m_objectManager = VulkanDeleter::create(this);
 
     createPools();
 }
@@ -198,7 +198,7 @@ VulkanInflightObjects* VulkanDevice::getInflightObjects()
     return m_inflightObjects.get();
 }
 
-VulkanObjectManager* VulkanDevice::getObjectManager()
+VulkanDeleter* VulkanDevice::getObjectManager()
 {
     return m_objectManager.get();
 }

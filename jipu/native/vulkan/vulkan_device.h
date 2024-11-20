@@ -8,11 +8,11 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_pool.h"
+#include "vulkan_deleter.h"
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_inflight_objects.h"
-#include "vulkan_object_manager.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
@@ -73,7 +73,7 @@ public:
     VulkanFramebufferCache* getFramebufferCache();
     VulkanCommandPool* getCommandPool();
     VulkanInflightObjects* getInflightObjects();
-    VulkanObjectManager* getObjectManager();
+    VulkanDeleter* getObjectManager();
 
 public:
     VkDevice getVkDevice() const;
@@ -105,7 +105,7 @@ private:
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::unique_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 
-    std::unique_ptr<VulkanObjectManager> m_objectManager = nullptr;
+    std::unique_ptr<VulkanDeleter> m_objectManager = nullptr;
 
     std::vector<VkQueueFamilyProperties> m_queueFamilies{};
 };
