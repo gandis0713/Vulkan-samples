@@ -44,10 +44,7 @@ VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& desc
 
 VulkanSampler::~VulkanSampler()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    vkAPI.DestroySampler(vulkanDevice->getVkDevice(), m_sampler, nullptr);
+    m_device->getDeleter()->safeDestroy(m_sampler);
 }
 
 VkSampler VulkanSampler::getVkSampler() const

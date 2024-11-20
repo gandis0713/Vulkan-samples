@@ -40,6 +40,7 @@ public:
 
 public:
     const std::vector<FramebufferColorAttachment>& getColorAttachments() const;
+    VulkanTextureView* getDepthStencilAttachment() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
 

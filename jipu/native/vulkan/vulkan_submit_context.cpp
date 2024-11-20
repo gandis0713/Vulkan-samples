@@ -413,11 +413,41 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                 {
                     switch (command->type)
                     {
+                    case CommandType::kCopyBufferToBuffer: {
+                        auto cmd = reinterpret_cast<CopyBufferToBufferCommand*>(command.get());
+                        currentSubmit.addSrcBuffer(downcast(cmd->src.buffer)->getVulkanBufferResource());
+                        currentSubmit.addDstBuffer(downcast(cmd->dst.buffer)->getVulkanBufferResource());
+                    }
+                    break;
+                    case CommandType::kCopyBufferToTexture: {
+                        auto cmd = reinterpret_cast<CopyBufferToTextureCommand*>(command.get());
+                        currentSubmit.addSrcBuffer(downcast(cmd->buffer.buffer)->getVulkanBufferResource());
+                        currentSubmit.addDstImage(downcast(cmd->texture.texture)->getVulkanTextureResource());
+                    }
+                    break;
+                    case CommandType::kCopyTextureToBuffer: {
+                        auto cmd = reinterpret_cast<CopyTextureToBufferCommand*>(command.get());
+                        currentSubmit.addSrcImage(downcast(cmd->texture.texture)->getVulkanTextureResource());
+                        currentSubmit.addDstBuffer(downcast(cmd->buffer.buffer)->getVulkanBufferResource());
+                    }
+                    break;
+                    case CommandType::kCopyTextureToTexture: {
+                        auto cmd = reinterpret_cast<CopyTextureToTextureCommand*>(command.get());
+                        currentSubmit.addSrcImage(downcast(cmd->src.texture)->getVulkanTextureResource());
+                        currentSubmit.addDstImage(downcast(cmd->dst.texture)->getVulkanTextureResource());
+                    }
+                    break;
                     case CommandType::kBeginComputePass:
+                        // do nothing.
+                        break;
                     case CommandType::kEndComputePass:
+                        // do nothing.
+                        break;
                     case CommandType::kDispatch:
+                        // do nothing.
+                        break;
                     case CommandType::kDispatchIndirect:
-                    default:
+                        // do nothing.
                         break;
                     case CommandType::kSetComputePipeline: {
                         auto cmd = reinterpret_cast<SetComputePipelineCommand*>(command.get());
@@ -459,6 +489,13 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                                 currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
                             }
                         }
+                        auto depthStencilAttachment = cmd->framebuffer->getDepthStencilAttachment();
+                        if (depthStencilAttachment)
+                        {
+                            currentSubmit.addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
+                            currentSubmit.add(downcast(depthStencilAttachment)->getVkImageView());
+                        }
+
                         currentSubmit.add(cmd->framebuffer->getVkFrameBuffer());
                         currentSubmit.add(cmd->renderPass->getVkRenderPass());
                     }
@@ -501,6 +538,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVulkanBufferResource());
                     }
                     break;
+                    default:
+                        // do nothing.
+                        break;
                     }
                 }
             }

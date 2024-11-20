@@ -55,6 +55,11 @@ const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttach
     return m_descriptor.colorAttachments;
 }
 
+VulkanTextureView* VulkanFramebuffer::getDepthStencilAttachment() const
+{
+    return m_descriptor.depthStencilAttachment;
+}
+
 uint32_t VulkanFramebuffer::getWidth() const
 {
     return m_descriptor.width;
