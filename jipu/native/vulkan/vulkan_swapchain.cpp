@@ -254,11 +254,13 @@ void VulkanSwapchain::createSwapchain(const VulkanSwapchainDescriptor& descripto
     swapchainCreateInfo.clipped = m_descriptor.clipped;
     swapchainCreateInfo.oldSwapchain = m_descriptor.oldSwapchain;
 
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
     const VulkanAPI& vkAPI = m_device->vkAPI;
-    if (vkAPI.CreateSwapchainKHR(m_device->getVkDevice(), &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+    if (vkAPI.CreateSwapchainKHR(m_device->getVkDevice(), &swapchainCreateInfo, nullptr, &swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create swap chain");
     }
+    m_swapchain = swapchain;
 
     if (m_descriptor.oldSwapchain)
     {
