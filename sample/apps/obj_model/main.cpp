@@ -40,8 +40,8 @@ public:
     ~OBJModelSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -169,9 +169,9 @@ void OBJModelSample::init()
     createRenderPipeline();
 }
 
-void OBJModelSample::update()
+void OBJModelSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
     updateImGui();
@@ -184,7 +184,7 @@ void OBJModelSample::updateImGui()
     } });
 }
 
-void OBJModelSample::draw()
+void OBJModelSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 

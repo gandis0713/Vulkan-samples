@@ -47,8 +47,8 @@ public:
     ~VulkanPipelineBarrierSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();

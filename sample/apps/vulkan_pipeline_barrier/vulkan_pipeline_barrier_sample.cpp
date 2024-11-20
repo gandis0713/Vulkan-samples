@@ -358,16 +358,16 @@ void VulkanPipelineBarrierSample::updateOffscreenUniformBuffer()
     memcpy(pointer, &m_ubo, m_offscreen.uniformBuffer->getSize());
 }
 
-void VulkanPipelineBarrierSample::update()
+void VulkanPipelineBarrierSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateOffscreenUniformBuffer();
 
     updateImGui();
 }
 
-void VulkanPipelineBarrierSample::draw()
+void VulkanPipelineBarrierSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 

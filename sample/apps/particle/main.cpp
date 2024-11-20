@@ -40,8 +40,8 @@ public:
 
 public:
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -137,9 +137,9 @@ void ParticleSample::init()
     createRenderPipeline();
 }
 
-void ParticleSample::update()
+void ParticleSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
@@ -156,7 +156,7 @@ void ParticleSample::updateImGui()
     } });
 }
 
-void ParticleSample::draw()
+void ParticleSample::onDraw()
 {
     // encoder compute command
     std::unique_ptr<CommandEncoder> computeCommandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});

@@ -31,8 +31,8 @@ public:
     ~TriangleSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -147,16 +147,16 @@ void TriangleSample::updateUniformBuffer()
     memcpy(pointer, &m_ubo, m_uniformBuffer->getSize());
 }
 
-void TriangleSample::update()
+void TriangleSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
     updateImGui();
 }
 
-void TriangleSample::draw()
+void TriangleSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {

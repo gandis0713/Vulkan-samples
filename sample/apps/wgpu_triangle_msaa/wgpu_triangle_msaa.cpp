@@ -24,12 +24,12 @@ void WGPUTriangleSampleMSAA::init()
     // changeAPI(APIType::kDawn);
 }
 
-void WGPUTriangleSampleMSAA::update()
+void WGPUTriangleSampleMSAA::onUpdate()
 {
-    WGPUSample::update();
+    WGPUSample::onUpdate();
 }
 
-void WGPUTriangleSampleMSAA::draw()
+void WGPUTriangleSampleMSAA::onDraw()
 {
     WGPUSurfaceTexture surfaceTexture{};
     wgpu.SurfaceGetCurrentTexture(m_surface, &surfaceTexture);

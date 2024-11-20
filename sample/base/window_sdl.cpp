@@ -22,7 +22,7 @@ Window::Window(const WindowDescriptor& descriptor)
                                           SDL_WINDOWPOS_UNDEFINED,
                                           descriptor.width,
                                           descriptor.height,
-                                          SDL_WINDOW_SHOWN); // | SDL_WINDOW_RESIZABLE
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE); // | SDL_WINDOW_RESIZABLE
     if (!window)
     {
         SDL_Quit();
@@ -67,6 +67,13 @@ int Window::exec()
                     m_leftMouseButton = m_rightMouseButton = m_middleMouseButton = false;
                 }
                 break;
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                {
+                    m_width = event.window.data1;
+                    m_height = event.window.data2;
+                }
+                break;
             default:
                 // do nothing.
                 break;
@@ -78,8 +85,8 @@ int Window::exec()
             // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
-        update();
-        draw();
+        onUpdate();
+        onDraw();
     }
 
     return 0;

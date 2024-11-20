@@ -24,12 +24,12 @@ void WGPURotatingCube::init()
     changeAPI(APIType::kDawn);
 }
 
-void WGPURotatingCube::update()
+void WGPURotatingCube::onUpdate()
 {
-    WGPUSample::update();
+    WGPUSample::onUpdate();
 }
 
-void WGPURotatingCube::draw()
+void WGPURotatingCube::onDraw()
 {
     WGPUSurfaceTexture surfaceTexture{};
     wgpu.SurfaceGetCurrentTexture(m_surface, &surfaceTexture);

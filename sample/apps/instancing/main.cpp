@@ -36,8 +36,8 @@ public:
     ~InstancingSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -226,16 +226,16 @@ void InstancingSample::updateUniformBuffer()
     memcpy(pointer, &ubo, sizeof(UBO));
 }
 
-void InstancingSample::update()
+void InstancingSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
     updateImGui();
 }
 
-void InstancingSample::draw()
+void InstancingSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {

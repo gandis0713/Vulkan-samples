@@ -26,7 +26,7 @@ public:
 
 public:
     void init() override;
-    void update() override;
+    void onUpdate() override;
 
     virtual void initializeContext();
     virtual void finalizeContext();

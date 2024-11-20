@@ -119,7 +119,7 @@ void Sample::init()
     Window::init();
 }
 
-void Sample::update()
+void Sample::onUpdate()
 {
     m_fps.update();
 }

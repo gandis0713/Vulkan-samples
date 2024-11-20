@@ -77,9 +77,9 @@ void VulkanNBufferingSample::init()
     createRenderPipeline();
 }
 
-void VulkanNBufferingSample::update()
+void VulkanNBufferingSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
@@ -129,7 +129,7 @@ void VulkanNBufferingSample::updateImGui()
     } });
 }
 
-void VulkanNBufferingSample::draw()
+void VulkanNBufferingSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 

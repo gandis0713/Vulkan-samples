@@ -17,8 +17,8 @@ public:
     ~ImGuiSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -67,14 +67,14 @@ void ImGuiSample::init()
     createRenderPipeline();
 }
 
-void ImGuiSample::update()
+void ImGuiSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateImGui();
 }
 
-void ImGuiSample::draw()
+void ImGuiSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {

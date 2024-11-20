@@ -47,14 +47,14 @@ void BlendSample::init()
     m_renderPipeline2 = createRenderPipeline(BlendState{}); // default blend state.
 }
 
-void BlendSample::update()
+void BlendSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateImGui();
 }
 
-void BlendSample::draw()
+void BlendSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {

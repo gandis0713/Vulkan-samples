@@ -61,7 +61,7 @@ void WGPUSample::init()
     Window::init();
 }
 
-void WGPUSample::update()
+void WGPUSample::onUpdate()
 {
 }
 

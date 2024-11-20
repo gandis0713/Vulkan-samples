@@ -47,7 +47,7 @@ public:
 
 public:
     void init() override;
-    void update() override;
+    void onUpdate() override;
 
 public:
     void recordImGui(std::vector<std::function<void()>> cmds);

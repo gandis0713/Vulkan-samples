@@ -150,9 +150,9 @@ void VulkanSubpassesSample::init()
     createCompositionPipeline();
 }
 
-void VulkanSubpassesSample::update()
+void VulkanSubpassesSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
@@ -237,7 +237,7 @@ void VulkanSubpassesSample::updateImGui()
     } });
 }
 
-void VulkanSubpassesSample::draw()
+void VulkanSubpassesSample::onDraw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);

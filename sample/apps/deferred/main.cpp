@@ -38,8 +38,8 @@ public:
 
 public:
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -252,9 +252,9 @@ void DeferredSample::init()
     createCompositionPipeline();
 }
 
-void DeferredSample::update()
+void DeferredSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
@@ -337,7 +337,7 @@ void DeferredSample::updateImGui()
     } });
 }
 
-void DeferredSample::draw()
+void DeferredSample::onDraw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);

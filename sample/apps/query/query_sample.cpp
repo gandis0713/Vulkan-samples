@@ -67,16 +67,16 @@ void QuerySample::updateUniformBuffer()
     memcpy(pointer, &m_ubo, m_uniformBuffer->getSize());
 }
 
-void QuerySample::update()
+void QuerySample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
     updateImGui();
 }
 
-void QuerySample::draw()
+void QuerySample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {

@@ -86,16 +86,16 @@ void OffscreenSample::updateOffscreenUniformBuffer()
     memcpy(pointer, &m_ubo, m_offscreen.uniformBuffer->getSize());
 }
 
-void OffscreenSample::update()
+void OffscreenSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateOffscreenUniformBuffer();
 
     updateImGui();
 }
 
-void OffscreenSample::draw()
+void OffscreenSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 
