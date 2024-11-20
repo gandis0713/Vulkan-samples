@@ -69,7 +69,7 @@ void VulkanFencePool::release(VkFence fence)
         return;
     }
 
-    spdlog::error("thre fence is released. {}", reinterpret_cast<void*>(fence));
+    // spdlog::trace("The fence is released. {}", reinterpret_cast<void*>(fence));
     m_fences[fence] = false;
 }
 

@@ -408,7 +408,6 @@ void VulkanDeleter::destroy(VkDescriptorSetLayout descriptorSetLayout)
 
 void VulkanDeleter::destroy(VkFramebuffer framebuffer)
 {
-    spdlog::trace("framebuffer is destroyed {}", reinterpret_cast<void*>(framebuffer));
     m_device->vkAPI.DestroyFramebuffer(m_device->getVkDevice(), framebuffer, nullptr);
 }
 
