@@ -199,6 +199,7 @@ void VulkanDeleter::safeDestroy(VkBuffer buffer, VulkanMemory memory)
     }
     else
     {
+        m_buffers.erase(buffer);
         destroy(buffer, memory);
     }
 }
