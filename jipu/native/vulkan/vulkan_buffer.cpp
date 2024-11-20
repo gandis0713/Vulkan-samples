@@ -39,7 +39,7 @@ VulkanBuffer::~VulkanBuffer()
 {
     unmap();
 
-    m_device->getObjectManager()->safeDestroy(m_resource.buffer, m_resource.memory);
+    m_device->getDeleter()->safeDestroy(m_resource.buffer, m_resource.memory);
 }
 
 void* VulkanBuffer::map()

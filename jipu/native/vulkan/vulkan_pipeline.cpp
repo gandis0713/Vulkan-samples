@@ -22,7 +22,7 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const Compute
 
 VulkanComputePipeline::~VulkanComputePipeline()
 {
-    m_device->getObjectManager()->safeDestroy(m_pipeline);
+    m_device->getDeleter()->safeDestroy(m_pipeline);
 }
 
 PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
@@ -428,7 +428,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRen
 
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
-    m_device->getObjectManager()->safeDestroy(m_pipeline);
+    m_device->getDeleter()->safeDestroy(m_pipeline);
 }
 
 PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const

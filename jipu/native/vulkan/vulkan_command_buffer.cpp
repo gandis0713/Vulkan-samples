@@ -64,7 +64,7 @@ void VulkanCommandBuffer::releaseVkCommandBuffer()
 {
     if (m_commandBuffer)
     {
-        getDevice()->getObjectManager()->safeDestroy(m_commandBuffer);
+        getDevice()->getDeleter()->safeDestroy(m_commandBuffer);
         m_commandBuffer = VK_NULL_HANDLE;
     }
 }

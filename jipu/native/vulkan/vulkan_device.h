@@ -73,7 +73,7 @@ public:
     VulkanFramebufferCache* getFramebufferCache();
     VulkanCommandPool* getCommandPool();
     VulkanInflightObjects* getInflightObjects();
-    VulkanDeleter* getObjectManager();
+    VulkanDeleter* getDeleter();
 
 public:
     VkDevice getVkDevice() const;
@@ -105,7 +105,7 @@ private:
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::unique_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 
-    std::unique_ptr<VulkanDeleter> m_objectManager = nullptr;
+    std::unique_ptr<VulkanDeleter> m_deleter = nullptr;
 
     std::vector<VkQueueFamilyProperties> m_queueFamilies{};
 };

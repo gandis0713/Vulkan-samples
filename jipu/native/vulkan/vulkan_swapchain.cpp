@@ -318,7 +318,7 @@ void VulkanSwapchain::setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore
     auto texture = m_textures[imageIndex].get();
     if (texture->getAcquireSemaphore() != VK_NULL_HANDLE)
     {
-        m_device->getObjectManager()->safeDestroy(texture->getAcquireSemaphore());
+        m_device->getDeleter()->safeDestroy(texture->getAcquireSemaphore());
     }
 
     m_textures[imageIndex]->setAcquireSemaphore(semaphore);

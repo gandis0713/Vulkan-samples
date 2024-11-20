@@ -168,7 +168,7 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
 
 VulkanBindGroup::~VulkanBindGroup()
 {
-    m_device->getObjectManager()->safeDestroy(m_descriptorSet);
+    m_device->getDeleter()->safeDestroy(m_descriptorSet);
 }
 
 BindGroupLayout* VulkanBindGroup::getLayout() const

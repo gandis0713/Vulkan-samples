@@ -42,7 +42,7 @@ VulkanTextureView::~VulkanTextureView()
     auto framebufferCache = vulkanDevice->getFramebufferCache();
     framebufferCache->invalidate(this);
 
-    vulkanDevice->getObjectManager()->safeDestroy(m_imageView);
+    vulkanDevice->getDeleter()->safeDestroy(m_imageView);
 }
 
 TextureViewDimension VulkanTextureView::getDimension() const
