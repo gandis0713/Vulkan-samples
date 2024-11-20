@@ -96,8 +96,6 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
 void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
 {
     submitAsync(fence, submits).get();
-
-    m_device->getInflightObjects()->clear(fence);
 }
 
 void VulkanSubmitter::present(VulkanPresentInfo presentInfo)
