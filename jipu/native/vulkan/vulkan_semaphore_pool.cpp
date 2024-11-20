@@ -18,7 +18,7 @@ VulkanSemaphorePool::~VulkanSemaphorePool()
     {
         if (semaphore.second)
         {
-            spdlog::warn("Semaphore is not released in this semaphore pool.");
+            spdlog::warn("The semaphore might be in-flight on device. {}", reinterpret_cast<void*>(semaphore.first));
         }
 
         m_device->vkAPI.DestroySemaphore(m_device->getVkDevice(), semaphore.first, nullptr);
@@ -46,6 +46,8 @@ VkSemaphore VulkanSemaphorePool::create()
     {
         throw std::runtime_error("Failed to create semaphore in queue.");
     }
+
+    // spdlog::trace("The semaphore is created {}.", reinterpret_cast<void*>(semaphore));
 
     m_semaphores.insert(std::make_pair(semaphore, true));
 

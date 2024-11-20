@@ -22,7 +22,7 @@ VulkanInflightObjects::VulkanInflightObjects(VulkanDevice* device)
 
 VulkanInflightObjects::~VulkanInflightObjects()
 {
-    m_inflightObjects.clear();
+    clearAll();
 }
 
 void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& submits)
@@ -92,6 +92,7 @@ bool VulkanInflightObjects::clear(VkFence fence)
 
 void VulkanInflightObjects::clearAll()
 {
+    m_inflightObjects.clear();
 }
 
 void VulkanInflightObjects::subscribe(void* ptr, Subscribe sub)
@@ -258,6 +259,11 @@ bool VulkanInflightObjects::isInflight(VkRenderPass renderPass) const
     }
 
     return false;
+}
+
+bool VulkanInflightObjects::isInflight(VkFence fence) const
+{
+    return m_inflightObjects.contains(fence);
 }
 
 } // namespace jipu

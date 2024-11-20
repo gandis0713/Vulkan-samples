@@ -63,6 +63,7 @@ public:
     bool isInflight(VkDescriptorSetLayout descriptorSetLayout) const;
     bool isInflight(VkFramebuffer framebuffer) const;
     bool isInflight(VkRenderPass renderPass) const;
+    bool isInflight(VkFence fence) const;
 
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;
