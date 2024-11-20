@@ -32,6 +32,7 @@ public:
     void safeDestroy(VkDescriptorSetLayout descriptorSetLayout);
     void safeDestroy(VkFramebuffer framebuffer);
     void safeDestroy(VkRenderPass renderPass);
+    void safeDestroy(VkFence fence);
 
 private:
     void destroy(VkBuffer buffer, VulkanMemory memory);
@@ -46,6 +47,7 @@ private:
     void destroy(VkDescriptorSetLayout descriptorSetLayout);
     void destroy(VkFramebuffer framebuffer);
     void destroy(VkRenderPass renderPass);
+    void destroy(VkFence fence);
 
 private:
     VulkanDeleter(VulkanDevice* device);
@@ -66,6 +68,7 @@ private:
     std::unordered_set<VkDescriptorSetLayout> m_descriptorSetLayouts{};
     std::unordered_set<VkFramebuffer> m_framebuffers{};
     std::unordered_set<VkRenderPass> m_renderPasses{};
+    std::unordered_set<VkFence> m_fences{};
 };
 
 } // namespace jipu

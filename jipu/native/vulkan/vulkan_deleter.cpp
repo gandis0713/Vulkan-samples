@@ -18,7 +18,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
     : m_device(device)
 {
     m_device->getInflightObjects()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
-        for (auto& commandBuffer : object.commandBuffers)
+        for (auto commandBuffer : object.commandBuffers)
         {
             if (m_commandBuffers.contains(commandBuffer))
             {
@@ -26,7 +26,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& [buffer, memory] : object.buffers)
+        for (auto [buffer, memory] : object.buffers)
         {
             if (m_buffers.contains(buffer))
             {
@@ -34,7 +34,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& [image, memory] : object.images)
+        for (auto [image, memory] : object.images)
         {
             if (m_images.contains(image))
             {
@@ -42,7 +42,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& imageView : object.imageViews)
+        for (auto imageView : object.imageViews)
         {
             if (m_imageViews.contains(imageView))
             {
@@ -50,7 +50,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& semaphore : object.signalSemaphores)
+        for (auto semaphore : object.signalSemaphores)
         {
             if (m_semaphores.contains(semaphore))
             {
@@ -58,7 +58,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& sampler : object.samplers)
+        for (auto sampler : object.samplers)
         {
             if (m_samplers.contains(sampler))
             {
@@ -66,7 +66,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& pipeline : object.pipelines)
+        for (auto pipeline : object.pipelines)
         {
             if (m_pipelines.contains(pipeline))
             {
@@ -74,7 +74,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& pipelineLayout : object.pipelineLayouts)
+        for (auto pipelineLayout : object.pipelineLayouts)
         {
             if (m_pipelineLayouts.contains(pipelineLayout))
             {
@@ -82,7 +82,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& descriptorSet : object.descriptorSet)
+        for (auto descriptorSet : object.descriptorSet)
         {
             if (m_descriptorSets.contains(descriptorSet))
             {
@@ -90,7 +90,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& descriptorSetLayout : object.descriptorSetLayouts)
+        for (auto descriptorSetLayout : object.descriptorSetLayouts)
         {
             if (m_descriptorSetLayouts.contains(descriptorSetLayout))
             {
@@ -98,7 +98,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& framebuffer : object.framebuffers)
+        for (auto framebuffer : object.framebuffers)
         {
             if (m_framebuffers.contains(framebuffer))
             {
@@ -106,12 +106,17 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto& renderPass : object.renderPasses)
+        for (auto renderPass : object.renderPasses)
         {
             if (m_renderPasses.contains(renderPass))
             {
                 safeDestroy(renderPass);
             }
+        }
+
+        if (m_fences.contains(fence))
+        {
+            safeDestroy(fence);
         }
     });
 }
@@ -178,6 +183,11 @@ VulkanDeleter::~VulkanDeleter()
     for (auto renderPass : m_renderPasses)
     {
         m_device->vkAPI.DestroyRenderPass(m_device->getVkDevice(), renderPass, nullptr);
+    }
+
+    for (auto fence : m_fences)
+    {
+        m_device->getFencePool()->release(fence);
     }
 }
 
@@ -334,6 +344,19 @@ void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
     }
 }
 
+void VulkanDeleter::safeDestroy(VkFence fence)
+{
+    if (m_device->getInflightObjects()->isInflight(fence))
+    {
+        m_fences.insert(fence);
+    }
+    else
+    {
+        m_fences.erase(fence);
+        destroy(fence);
+    }
+}
+
 void VulkanDeleter::destroy(VkBuffer buffer, VulkanMemory memory)
 {
     m_device->getResourceAllocator().destroyBufferResource({ buffer, memory });
@@ -391,6 +414,11 @@ void VulkanDeleter::destroy(VkFramebuffer framebuffer)
 void VulkanDeleter::destroy(VkRenderPass renderPass)
 {
     m_device->vkAPI.DestroyRenderPass(m_device->getVkDevice(), renderPass, nullptr);
+}
+
+void VulkanDeleter::destroy(VkFence fence)
+{
+    m_device->getFencePool()->release(fence);
 }
 
 } // namespace jipu
