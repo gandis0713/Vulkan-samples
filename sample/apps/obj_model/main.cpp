@@ -107,7 +107,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    uint32_t m_sampleCount = 4;
+    uint32_t m_sampleCount = 1;
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
