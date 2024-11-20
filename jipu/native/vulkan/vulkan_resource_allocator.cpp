@@ -235,13 +235,13 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const Vul
 {
 #if defined(USE_VMA)
     auto& vulkanPhysicalDevice = downcast(m_device->getPhysicalDevice());
-    auto& vulkanInstance = downcast(vulkanPhysicalDevice->getInstance());
+    auto vulkanAdapter = downcast(vulkanPhysicalDevice.getAdapter());
 
-    auto physicalDevice = vulkanPhysicalDevice->getVkPhysicalDevice();
-    auto instance = vulkanInstance.getVkInstance();
+    auto physicalDevice = vulkanPhysicalDevice.getVkPhysicalDevice();
+    auto instance = vulkanAdapter->getVkInstance();
 
 #if defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
-    m_vmaFunctions.vkGetInstanceProcAddr = vulkanInstance.vkAPI.GetInstanceProcAddr;
+    m_vmaFunctions.vkGetInstanceProcAddr = vulkanAdapter->vkAPI.GetInstanceProcAddr;
     m_vmaFunctions.vkGetDeviceProcAddr = m_device->vkAPI.GetDeviceProcAddr;
 #else
     // TODO: set functions
@@ -251,7 +251,7 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const Vul
     createInfo.instance = instance;
     createInfo.physicalDevice = physicalDevice;
     createInfo.device = m_device->getVkDevice();
-    createInfo.vulkanApiVersion = vulkanInstance.getInstanceInfo().apiVersion;
+    createInfo.vulkanApiVersion = vulkanAdapter->getInstanceInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 
 #if defined(DISABLE)
