@@ -89,8 +89,7 @@ VulkanTexture::~VulkanTexture()
 {
     if (m_owner == VulkanTextureOwner::kSelf)
     {
-        auto& vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
-        vulkanResourceAllocator.destroyTextureResource(m_resource);
+        m_device->getObjectManager()->safeDestroy(m_resource.image, m_resource.memory);
     }
 }
 
