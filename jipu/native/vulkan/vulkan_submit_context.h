@@ -12,7 +12,7 @@ namespace jipu
 enum class SubmitType
 {
     kNone,
-    kRender,
+    kGraphics,
     kCompute,
     kTransfer,
     kPresent,

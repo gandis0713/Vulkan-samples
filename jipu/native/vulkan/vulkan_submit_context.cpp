@@ -273,7 +273,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         return SubmitType::kPresent;
                     case VulkanTextureOwner::kSelf:
                     default:
-                        return SubmitType::kRender;
+                        return SubmitType::kGraphics;
                     }
                 }
                 if (textureUsageInfo.stageFlags & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)

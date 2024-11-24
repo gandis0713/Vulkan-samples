@@ -48,7 +48,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
             switch (submit.info.type)
             {
             case SubmitType::kCompute:
-            case SubmitType::kRender:
+            case SubmitType::kGraphics:
             case SubmitType::kTransfer:
                 break;
             case SubmitType::kPresent:
