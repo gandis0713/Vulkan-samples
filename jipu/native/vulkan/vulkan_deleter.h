@@ -50,6 +50,48 @@ private:
     void destroy(VkRenderPass renderPass);
     void destroy(VkFence fence);
 
+    void insert(VkBuffer buffer, VulkanMemory memory);
+    void insert(VkImage image, VulkanMemory memory);
+    void insert(VkCommandBuffer commandBuffer);
+    void insert(VkImageView imageView);
+    void insert(VkSemaphore semaphore);
+    void insert(VkSampler sampler);
+    void insert(VkPipeline pipeline);
+    void insert(VkPipelineLayout pipelineLayout);
+    void insert(VkDescriptorSet descriptorSet);
+    void insert(VkDescriptorSetLayout descriptorSetLayout);
+    void insert(VkFramebuffer framebuffer);
+    void insert(VkRenderPass renderPass);
+    void insert(VkFence fence);
+
+    void erase(VkBuffer buffer);
+    void erase(VkImage image);
+    void erase(VkCommandBuffer commandBuffer);
+    void erase(VkImageView imageView);
+    void erase(VkSemaphore semaphore);
+    void erase(VkSampler sampler);
+    void erase(VkPipeline pipeline);
+    void erase(VkPipelineLayout pipelineLayout);
+    void erase(VkDescriptorSet descriptorSet);
+    void erase(VkDescriptorSetLayout descriptorSetLayout);
+    void erase(VkFramebuffer framebuffer);
+    void erase(VkRenderPass renderPass);
+    void erase(VkFence fence);
+
+    bool contains(VkBuffer buffer) const;
+    bool contains(VkImage image) const;
+    bool contains(VkCommandBuffer commandBuffer) const;
+    bool contains(VkImageView imageView) const;
+    bool contains(VkSemaphore semaphore) const;
+    bool contains(VkSampler sampler) const;
+    bool contains(VkPipeline pipeline) const;
+    bool contains(VkPipelineLayout pipelineLayout) const;
+    bool contains(VkDescriptorSet descriptorSet) const;
+    bool contains(VkDescriptorSetLayout descriptorSetLayout) const;
+    bool contains(VkFramebuffer framebuffer) const;
+    bool contains(VkRenderPass renderPass) const;
+    bool contains(VkFence fence) const;
+
 private:
     VulkanDeleter(VulkanDevice* device);
 
@@ -71,7 +113,7 @@ private:
     std::unordered_set<VkRenderPass> m_renderPasses{};
     std::unordered_set<VkFence> m_fences{};
 
-    std::mutex m_mutex{};
+    mutable std::mutex m_mutex{};
 };
 
 } // namespace jipu

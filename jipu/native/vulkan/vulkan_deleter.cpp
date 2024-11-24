@@ -17,10 +17,10 @@ std::unique_ptr<VulkanDeleter> VulkanDeleter::create(VulkanDevice* device)
 VulkanDeleter::VulkanDeleter(VulkanDevice* device)
     : m_device(device)
 {
-    m_device->getInflightObjects()->subscribe(this, [&](VkFence fence, VulkanInflightObject object) {
+    m_device->getInflightObjects()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
         for (auto commandBuffer : object.commandBuffers)
         {
-            if (m_commandBuffers.contains(commandBuffer))
+            if (contains(commandBuffer))
             {
                 safeDestroy(commandBuffer);
             }
@@ -28,7 +28,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto [buffer, memory] : object.buffers)
         {
-            if (m_buffers.contains(buffer))
+            if (contains(buffer))
             {
                 safeDestroy(buffer, memory);
             }
@@ -36,7 +36,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto [image, memory] : object.images)
         {
-            if (m_images.contains(image))
+            if (contains(image))
             {
                 safeDestroy(image, memory);
             }
@@ -44,7 +44,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto imageView : object.imageViews)
         {
-            if (m_imageViews.contains(imageView))
+            if (contains(imageView))
             {
                 safeDestroy(imageView);
             }
@@ -52,7 +52,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto semaphore : object.signalSemaphores)
         {
-            if (m_semaphores.contains(semaphore))
+            if (contains(semaphore))
             {
                 safeDestroy(semaphore);
             }
@@ -60,7 +60,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto sampler : object.samplers)
         {
-            if (m_samplers.contains(sampler))
+            if (contains(sampler))
             {
                 safeDestroy(sampler);
             }
@@ -68,7 +68,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto pipeline : object.pipelines)
         {
-            if (m_pipelines.contains(pipeline))
+            if (contains(pipeline))
             {
                 safeDestroy(pipeline);
             }
@@ -76,7 +76,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto pipelineLayout : object.pipelineLayouts)
         {
-            if (m_pipelineLayouts.contains(pipelineLayout))
+            if (contains(pipelineLayout))
             {
                 safeDestroy(pipelineLayout);
             }
@@ -84,7 +84,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto descriptorSet : object.descriptorSet)
         {
-            if (m_descriptorSets.contains(descriptorSet))
+            if (contains(descriptorSet))
             {
                 safeDestroy(descriptorSet);
             }
@@ -92,7 +92,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto descriptorSetLayout : object.descriptorSetLayouts)
         {
-            if (m_descriptorSetLayouts.contains(descriptorSetLayout))
+            if (contains(descriptorSetLayout))
             {
                 safeDestroy(descriptorSetLayout);
             }
@@ -100,7 +100,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto framebuffer : object.framebuffers)
         {
-            if (m_framebuffers.contains(framebuffer))
+            if (contains(framebuffer))
             {
                 safeDestroy(framebuffer);
             }
@@ -108,13 +108,13 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
 
         for (auto renderPass : object.renderPasses)
         {
-            if (m_renderPasses.contains(renderPass))
+            if (contains(renderPass))
             {
                 safeDestroy(renderPass);
             }
         }
 
-        if (m_fences.contains(fence))
+        if (contains(fence))
         {
             safeDestroy(fence);
         }
@@ -125,261 +125,279 @@ VulkanDeleter::~VulkanDeleter()
 {
     m_device->getInflightObjects()->unsubscribe(this);
 
-    for (auto [buffer, memory] : m_buffers)
+    std::unordered_map<VkBuffer, VulkanMemory> buffers{};
+    std::unordered_map<VkImage, VulkanMemory> images{};
+    std::unordered_set<VkCommandBuffer> commandBuffers{};
+    std::unordered_set<VkImageView> imageViews{};
+    std::unordered_set<VkSemaphore> semaphores{};
+    std::unordered_set<VkSampler> samplers{};
+    std::unordered_set<VkPipeline> pipelines{};
+    std::unordered_set<VkPipelineLayout> pipelineLayouts{};
+    std::unordered_set<VkDescriptorSet> descriptorSets{};
+    std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
+    std::unordered_set<VkFramebuffer> framebuffers{};
+    std::unordered_set<VkRenderPass> renderPasses{};
+    std::unordered_set<VkFence> fences{};
+
     {
-        m_device->getResourceAllocator().destroyBufferResource({ buffer, memory });
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        buffers = std::move(m_buffers);
+        images = std::move(m_images);
+        commandBuffers = std::move(m_commandBuffers);
+        imageViews = std::move(m_imageViews);
+        semaphores = std::move(m_semaphores);
+        samplers = std::move(m_samplers);
+        pipelines = std::move(m_pipelines);
+        pipelineLayouts = std::move(m_pipelineLayouts);
+        descriptorSets = std::move(m_descriptorSets);
+        descriptorSetLayouts = std::move(m_descriptorSetLayouts);
+        framebuffers = std::move(m_framebuffers);
+        renderPasses = std::move(m_renderPasses);
+        fences = std::move(m_fences);
     }
 
-    for (auto [image, memory] : m_images)
+    for (auto [buffer, memory] : buffers)
     {
-        m_device->getResourceAllocator().destroyTextureResource({ image, memory });
+        destroy(buffer, memory);
     }
 
-    for (auto commandBuffer : m_commandBuffers)
+    for (auto [image, memory] : images)
     {
-        m_device->getCommandPool()->release(commandBuffer);
+        destroy(image, memory);
     }
 
-    for (auto imageView : m_imageViews)
+    for (auto commandBuffer : commandBuffers)
     {
-        m_device->vkAPI.DestroyImageView(m_device->getVkDevice(), imageView, nullptr);
+        destroy(commandBuffer);
     }
 
-    for (auto semaphore : m_semaphores)
+    for (auto imageView : imageViews)
     {
-        m_device->getSemaphorePool()->release(semaphore);
+        destroy(imageView);
     }
 
-    for (auto sampler : m_samplers)
+    for (auto semaphore : semaphores)
     {
-        m_device->vkAPI.DestroySampler(m_device->getVkDevice(), sampler, nullptr);
+        destroy(semaphore);
     }
 
-    for (auto pipeline : m_pipelines)
+    for (auto sampler : samplers)
     {
-        m_device->vkAPI.DestroyPipeline(m_device->getVkDevice(), pipeline, nullptr);
+        destroy(sampler);
     }
 
-    for (auto pipelineLayout : m_pipelineLayouts)
+    for (auto pipeline : pipelines)
     {
-        m_device->vkAPI.DestroyPipelineLayout(m_device->getVkDevice(), pipelineLayout, nullptr);
+        destroy(pipeline);
     }
 
-    for (auto descriptorSet : m_descriptorSets)
+    for (auto pipelineLayout : pipelineLayouts)
     {
-        m_device->vkAPI.FreeDescriptorSets(m_device->getVkDevice(), m_device->getVkDescriptorPool(), 1, &descriptorSet);
+        destroy(pipelineLayout);
     }
 
-    for (auto descriptorSetLayout : m_descriptorSetLayouts)
+    for (auto descriptorSet : descriptorSets)
     {
-        m_device->vkAPI.DestroyDescriptorSetLayout(m_device->getVkDevice(), descriptorSetLayout, nullptr);
+        destroy(descriptorSet);
     }
 
-    for (auto framebuffer : m_framebuffers)
+    for (auto descriptorSetLayout : descriptorSetLayouts)
     {
-        m_device->vkAPI.DestroyFramebuffer(m_device->getVkDevice(), framebuffer, nullptr);
+        destroy(descriptorSetLayout);
     }
 
-    for (auto renderPass : m_renderPasses)
+    for (auto framebuffer : framebuffers)
     {
-        m_device->vkAPI.DestroyRenderPass(m_device->getVkDevice(), renderPass, nullptr);
+        destroy(framebuffer);
     }
 
-    for (auto fence : m_fences)
+    for (auto renderPass : renderPasses)
     {
-        m_device->getFencePool()->release(fence);
+        destroy(renderPass);
+    }
+
+    for (auto fence : fences)
+    {
+        destroy(fence);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkBuffer buffer, VulkanMemory memory)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     if (m_device->getInflightObjects()->isInflight(buffer))
     {
-        m_buffers.insert({ buffer, memory });
+        insert(buffer, memory);
     }
     else
     {
-        m_buffers.erase(buffer);
+        erase(buffer);
         destroy(buffer, memory);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkImage image, VulkanMemory memory)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(image))
     {
-        m_images.insert({ image, memory });
+        insert(image, memory);
     }
     else
     {
-        m_images.erase(image);
+        erase(image);
         destroy(image, memory);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkCommandBuffer commandBuffer)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(commandBuffer))
     {
-        m_commandBuffers.insert(commandBuffer);
+        insert(commandBuffer);
     }
     else
     {
-        m_commandBuffers.erase(commandBuffer);
+        erase(commandBuffer);
         destroy(commandBuffer);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkImageView imageView)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(imageView))
     {
-        m_imageViews.insert(imageView);
+        insert(imageView);
     }
     else
     {
-        m_imageViews.erase(imageView);
+        erase(imageView);
         destroy(imageView);
     }
 }
 void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(semaphore))
     {
-        m_semaphores.insert(semaphore);
+        insert(semaphore);
     }
     else
     {
-        m_semaphores.erase(semaphore);
+        erase(semaphore);
         destroy(semaphore);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkSampler sampler)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(sampler))
     {
-        m_samplers.insert(sampler);
+        insert(sampler);
     }
     else
     {
-        m_samplers.erase(sampler);
+        erase(sampler);
         destroy(sampler);
     }
 }
 void VulkanDeleter::safeDestroy(VkPipeline pipeline)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(pipeline))
     {
-        m_pipelines.insert(pipeline);
+        insert(pipeline);
     }
     else
     {
-        m_pipelines.erase(pipeline);
+        erase(pipeline);
         destroy(pipeline);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkPipelineLayout pipelineLayout)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(pipelineLayout))
     {
-        m_pipelineLayouts.insert(pipelineLayout);
+        insert(pipelineLayout);
     }
     else
     {
-        m_pipelineLayouts.erase(pipelineLayout);
+        erase(pipelineLayout);
         destroy(pipelineLayout);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(descriptorSet))
     {
-        m_descriptorSets.insert(descriptorSet);
+        insert(descriptorSet);
     }
     else
     {
-        m_descriptorSets.erase(descriptorSet);
+        erase(descriptorSet);
         destroy(descriptorSet);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(descriptorSetLayout))
     {
-        m_descriptorSetLayouts.insert(descriptorSetLayout);
+        insert(descriptorSetLayout);
     }
     else
     {
-        m_descriptorSetLayouts.erase(descriptorSetLayout);
+        erase(descriptorSetLayout);
         destroy(descriptorSetLayout);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkFramebuffer framebuffer)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(framebuffer))
     {
-        m_framebuffers.insert(framebuffer);
+        insert(framebuffer);
     }
     else
     {
-        m_framebuffers.erase(framebuffer);
+        erase(framebuffer);
         destroy(framebuffer);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(renderPass))
     {
-        m_renderPasses.insert(renderPass);
+        insert(renderPass);
     }
     else
     {
-        m_renderPasses.erase(renderPass);
+        erase(renderPass);
         destroy(renderPass);
     }
 }
 
 void VulkanDeleter::safeDestroy(VkFence fence)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_device->getInflightObjects()->isInflight(fence))
     {
-        m_fences.insert(fence);
+        insert(fence);
     }
     else
     {
-        m_fences.erase(fence);
+        erase(fence);
         destroy(fence);
     }
 }
@@ -445,6 +463,279 @@ void VulkanDeleter::destroy(VkRenderPass renderPass)
 void VulkanDeleter::destroy(VkFence fence)
 {
     m_device->getFencePool()->release(fence);
+}
+
+void VulkanDeleter::insert(VkBuffer buffer, VulkanMemory memory)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_buffers.insert({ buffer, memory });
+}
+
+void VulkanDeleter::insert(VkImage image, VulkanMemory memory)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_images.insert({ image, memory });
+}
+
+void VulkanDeleter::insert(VkCommandBuffer commandBuffer)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_commandBuffers.insert(commandBuffer);
+}
+
+void VulkanDeleter::insert(VkImageView imageView)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_imageViews.insert(imageView);
+}
+
+void VulkanDeleter::insert(VkSemaphore semaphore)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_semaphores.insert(semaphore);
+}
+
+void VulkanDeleter::insert(VkSampler sampler)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_samplers.insert(sampler);
+}
+
+void VulkanDeleter::insert(VkPipeline pipeline)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_pipelines.insert(pipeline);
+}
+
+void VulkanDeleter::insert(VkPipelineLayout pipelineLayout)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_pipelineLayouts.insert(pipelineLayout);
+}
+
+void VulkanDeleter::insert(VkDescriptorSet descriptorSet)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_descriptorSets.insert(descriptorSet);
+}
+
+void VulkanDeleter::insert(VkDescriptorSetLayout descriptorSetLayout)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_descriptorSetLayouts.insert(descriptorSetLayout);
+}
+
+void VulkanDeleter::insert(VkFramebuffer framebuffer)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_framebuffers.insert(framebuffer);
+}
+
+void VulkanDeleter::insert(VkRenderPass renderPass)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_renderPasses.insert(renderPass);
+}
+
+void VulkanDeleter::insert(VkFence fence)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_fences.insert(fence);
+}
+
+void VulkanDeleter::erase(VkBuffer buffer)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_buffers.erase(buffer);
+}
+
+void VulkanDeleter::erase(VkImage image)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_images.erase(image);
+}
+
+void VulkanDeleter::erase(VkCommandBuffer commandBuffer)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_commandBuffers.erase(commandBuffer);
+}
+
+void VulkanDeleter::erase(VkImageView imageView)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_imageViews.erase(imageView);
+}
+
+void VulkanDeleter::erase(VkSemaphore semaphore)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_semaphores.erase(semaphore);
+}
+
+void VulkanDeleter::erase(VkSampler sampler)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_samplers.erase(sampler);
+}
+
+void VulkanDeleter::erase(VkPipeline pipeline)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_pipelines.erase(pipeline);
+}
+
+void VulkanDeleter::erase(VkPipelineLayout pipelineLayout)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_pipelineLayouts.erase(pipelineLayout);
+}
+
+void VulkanDeleter::erase(VkDescriptorSet descriptorSet)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_descriptorSets.erase(descriptorSet);
+}
+
+void VulkanDeleter::erase(VkDescriptorSetLayout descriptorSetLayout)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_descriptorSetLayouts.erase(descriptorSetLayout);
+}
+
+void VulkanDeleter::erase(VkFramebuffer framebuffer)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_framebuffers.erase(framebuffer);
+}
+
+void VulkanDeleter::erase(VkRenderPass renderPass)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_renderPasses.erase(renderPass);
+}
+
+void VulkanDeleter::erase(VkFence fence)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_fences.erase(fence);
+}
+
+bool VulkanDeleter::contains(VkBuffer buffer) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_buffers.contains(buffer);
+}
+
+bool VulkanDeleter::contains(VkImage image) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_images.contains(image);
+}
+
+bool VulkanDeleter::contains(VkCommandBuffer commandBuffer) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_commandBuffers.contains(commandBuffer);
+}
+
+bool VulkanDeleter::contains(VkImageView imageView) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_imageViews.contains(imageView);
+}
+
+bool VulkanDeleter::contains(VkSemaphore semaphore) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_semaphores.contains(semaphore);
+}
+
+bool VulkanDeleter::contains(VkSampler sampler) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_samplers.contains(sampler);
+}
+
+bool VulkanDeleter::contains(VkPipeline pipeline) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_pipelines.contains(pipeline);
+}
+
+bool VulkanDeleter::contains(VkPipelineLayout pipelineLayout) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_pipelineLayouts.contains(pipelineLayout);
+}
+
+bool VulkanDeleter::contains(VkDescriptorSet descriptorSet) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_descriptorSets.contains(descriptorSet);
+}
+
+bool VulkanDeleter::contains(VkDescriptorSetLayout descriptorSetLayout) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_descriptorSetLayouts.contains(descriptorSetLayout);
+}
+
+bool VulkanDeleter::contains(VkFramebuffer framebuffer) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_framebuffers.contains(framebuffer);
+}
+
+bool VulkanDeleter::contains(VkRenderPass renderPass) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_renderPasses.contains(renderPass);
+}
+
+bool VulkanDeleter::contains(VkFence fence) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_fences.contains(fence);
 }
 
 } // namespace jipu
