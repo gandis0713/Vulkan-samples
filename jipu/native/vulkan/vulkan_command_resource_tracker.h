@@ -83,7 +83,7 @@ public:
 
 private:
     std::vector<PassResourceInfo> m_passResourceInfos;
-    PassResourceInfo m_ongoingPassResourceInfo;
+    PassResourceInfo m_currentPassResourceInfo;
 };
 
 } // namespace jipu

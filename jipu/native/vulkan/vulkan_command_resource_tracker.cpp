@@ -29,7 +29,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_ongoingPassResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_currentPassResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
             };
@@ -38,7 +38,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_ongoingPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_currentPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -51,7 +51,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_ongoingPassResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_currentPassResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
             };
@@ -60,7 +60,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_ongoingPassResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_currentPassResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -81,8 +81,8 @@ void VulkanCommandResourceTracker::dispatchIndirect(DispatchIndirectCommand* com
 
 void VulkanCommandResourceTracker::endComputePass(EndComputePassCommand* command)
 {
-    m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
-    m_ongoingPassResourceInfo = {};
+    m_passResourceInfos.push_back(std::move(m_currentPassResourceInfo));
+    m_currentPassResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
@@ -100,32 +100,30 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             const auto& framebufferColorAttachment = framebufferColorAttachments[i];
             const auto& renderPassColorAttachment = renderPassColorAttachments[i];
 
+            m_currentPassResourceInfo.dst.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                .accessFlags = VK_ACCESS_NONE,
+                .layout = renderPassColorAttachment.renderAttachment.initialLayout,
+            };
+
+            m_currentPassResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                .layout = renderPassColorAttachment.renderAttachment.finalLayout,
+            };
+
             if (framebufferColorAttachment.resolveView)
             {
-                m_ongoingPassResourceInfo.dst.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                m_currentPassResourceInfo.dst.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     .accessFlags = VK_ACCESS_NONE,
                     .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
                 };
 
-                m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                m_currentPassResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                     .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
-                };
-            }
-            else
-            {
-                m_ongoingPassResourceInfo.dst.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
-                    .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                    .accessFlags = VK_ACCESS_NONE,
-                    .layout = renderPassColorAttachment.renderAttachment.initialLayout,
-                };
-
-                m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
-                    .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                    .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                    .layout = renderPassColorAttachment.renderAttachment.finalLayout,
                 };
             }
         }
@@ -141,7 +139,7 @@ void VulkanCommandResourceTracker::setVertexBuffer(SetVertexBufferCommand* comma
 {
     // dst
     {
-        m_ongoingPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
+        m_currentPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
         };
@@ -152,7 +150,7 @@ void VulkanCommandResourceTracker::setIndexBuffer(SetIndexBufferCommand* command
 {
     // dst
     {
-        m_ongoingPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
+        m_currentPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_INDEX_READ_BIT,
         };
@@ -196,8 +194,8 @@ void VulkanCommandResourceTracker::endOcclusionQuery(EndOcclusionQueryCommand* c
 
 void VulkanCommandResourceTracker::endRenderPass(EndRenderPassCommand* command)
 {
-    m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
-    m_ongoingPassResourceInfo = {};
+    m_passResourceInfos.push_back(std::move(m_currentPassResourceInfo));
+    m_currentPassResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* command)
@@ -245,6 +243,8 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
                 bufferUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
                 break;
             }
+
+            m_currentPassResourceInfo.dst.buffers[bufferBinding.buffer] = bufferUsageInfo;
         }
 
         auto textureBindings = bindGroup->getTextureBindings();
@@ -272,6 +272,8 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
             }
             textureUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             textureUsageInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            m_currentPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = textureUsageInfo;
         }
     }
 
