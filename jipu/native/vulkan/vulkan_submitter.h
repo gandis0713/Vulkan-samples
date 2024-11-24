@@ -53,7 +53,6 @@ private:
     QueueFamily m_queueFamily{};
 
     ThreadPool m_threadPool{ 10 };
-    std::mutex m_queueMutex{};
 };
 
 // Convert Helper

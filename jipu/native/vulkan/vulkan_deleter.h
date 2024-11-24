@@ -4,6 +4,7 @@
 #include "vulkan_resource.h"
 
 #include <memory>
+#include <mutex>
 #include <unordered_set>
 
 namespace jipu
@@ -69,6 +70,8 @@ private:
     std::unordered_set<VkFramebuffer> m_framebuffers{};
     std::unordered_set<VkRenderPass> m_renderPasses{};
     std::unordered_set<VkFence> m_fences{};
+
+    std::mutex m_mutex{};
 };
 
 } // namespace jipu

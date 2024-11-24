@@ -120,8 +120,6 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
     }
 
     auto submitTask = [this, fence = fence, submits = submits]() -> void {
-        std::lock_guard<std::mutex> lock(m_queueMutex);
-
         const VulkanAPI& vkAPI = m_device->vkAPI;
         VkResult result = vkAPI.WaitForFences(m_device->getVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
         if (result != VK_SUCCESS)

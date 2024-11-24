@@ -17,7 +17,7 @@ std::unique_ptr<VulkanDeleter> VulkanDeleter::create(VulkanDevice* device)
 VulkanDeleter::VulkanDeleter(VulkanDevice* device)
     : m_device(device)
 {
-    m_device->getInflightObjects()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
+    m_device->getInflightObjects()->subscribe(this, [&](VkFence fence, VulkanInflightObject object) {
         for (auto commandBuffer : object.commandBuffers)
         {
             if (m_commandBuffers.contains(commandBuffer))
@@ -193,6 +193,8 @@ VulkanDeleter::~VulkanDeleter()
 
 void VulkanDeleter::safeDestroy(VkBuffer buffer, VulkanMemory memory)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(buffer))
     {
         m_buffers.insert({ buffer, memory });
@@ -206,6 +208,8 @@ void VulkanDeleter::safeDestroy(VkBuffer buffer, VulkanMemory memory)
 
 void VulkanDeleter::safeDestroy(VkImage image, VulkanMemory memory)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(image))
     {
         m_images.insert({ image, memory });
@@ -219,6 +223,8 @@ void VulkanDeleter::safeDestroy(VkImage image, VulkanMemory memory)
 
 void VulkanDeleter::safeDestroy(VkCommandBuffer commandBuffer)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(commandBuffer))
     {
         m_commandBuffers.insert(commandBuffer);
@@ -232,6 +238,8 @@ void VulkanDeleter::safeDestroy(VkCommandBuffer commandBuffer)
 
 void VulkanDeleter::safeDestroy(VkImageView imageView)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(imageView))
     {
         m_imageViews.insert(imageView);
@@ -244,6 +252,8 @@ void VulkanDeleter::safeDestroy(VkImageView imageView)
 }
 void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(semaphore))
     {
         m_semaphores.insert(semaphore);
@@ -257,6 +267,8 @@ void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
 
 void VulkanDeleter::safeDestroy(VkSampler sampler)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(sampler))
     {
         m_samplers.insert(sampler);
@@ -269,6 +281,8 @@ void VulkanDeleter::safeDestroy(VkSampler sampler)
 }
 void VulkanDeleter::safeDestroy(VkPipeline pipeline)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(pipeline))
     {
         m_pipelines.insert(pipeline);
@@ -282,6 +296,8 @@ void VulkanDeleter::safeDestroy(VkPipeline pipeline)
 
 void VulkanDeleter::safeDestroy(VkPipelineLayout pipelineLayout)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(pipelineLayout))
     {
         m_pipelineLayouts.insert(pipelineLayout);
@@ -295,6 +311,8 @@ void VulkanDeleter::safeDestroy(VkPipelineLayout pipelineLayout)
 
 void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(descriptorSet))
     {
         m_descriptorSets.insert(descriptorSet);
@@ -308,6 +326,8 @@ void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
 
 void VulkanDeleter::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(descriptorSetLayout))
     {
         m_descriptorSetLayouts.insert(descriptorSetLayout);
@@ -321,6 +341,8 @@ void VulkanDeleter::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 
 void VulkanDeleter::safeDestroy(VkFramebuffer framebuffer)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(framebuffer))
     {
         m_framebuffers.insert(framebuffer);
@@ -334,6 +356,8 @@ void VulkanDeleter::safeDestroy(VkFramebuffer framebuffer)
 
 void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(renderPass))
     {
         m_renderPasses.insert(renderPass);
@@ -347,6 +371,8 @@ void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
 
 void VulkanDeleter::safeDestroy(VkFence fence)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_device->getInflightObjects()->isInflight(fence))
     {
         m_fences.insert(fence);

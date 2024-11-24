@@ -5,6 +5,7 @@
 #include "vulkan_submit_context.h"
 
 #include <functional>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -71,6 +72,8 @@ private:
 private:
     std::unordered_map<VkFence, VulkanInflightObject> m_inflightObjects{};
     std::unordered_map<void*, Subscribe> m_subs{};
+
+    mutable std::mutex m_mutex{};
 };
 
 } // namespace jipu
