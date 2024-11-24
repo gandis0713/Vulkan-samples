@@ -12,6 +12,8 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
+#include <spdlog/spdlog.h>
+
 namespace jipu
 {
 
@@ -76,25 +78,33 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
 
 bool VulkanInflightObjects::clear(VkFence fence)
 {
-    bool result = false;
-    VulkanInflightObject inflightObject{};
+    std::optional<VulkanInflightObject> inflightObject{ std::nullopt };
+
     {
         std::lock_guard<std::mutex> lock(m_objectMutex);
         if (m_inflightObjects.contains(fence))
         {
             inflightObject = m_inflightObjects[fence];
             m_inflightObjects.erase(fence); // erase before calling subscribers.
-
-            result = true;
+        }
+        else
+        {
+            spdlog::error("Failed to clear inflight object. The fence is not found.");
         }
     }
 
-    for (const auto& [_, sub] : m_subs)
+    if (inflightObject.has_value() == false)
     {
-        sub(fence, inflightObject);
+        std::lock_guard<std::mutex> lock(m_subscribeMutex);
+        for (const auto& [_, sub] : m_subs)
+        {
+            sub(fence, inflightObject.value());
+        }
+
+        return true;
     }
 
-    return result;
+    return false;
 }
 
 void VulkanInflightObjects::clearAll()
@@ -106,10 +116,14 @@ void VulkanInflightObjects::clearAll()
 
 void VulkanInflightObjects::subscribe(void* ptr, Subscribe sub)
 {
+    std::lock_guard<std::mutex> lock(m_subscribeMutex);
+
     m_subs[ptr] = sub;
 }
 void VulkanInflightObjects::unsubscribe(void* ptr)
 {
+    std::lock_guard<std::mutex> lock(m_subscribeMutex);
+
     if (m_subs.contains(ptr))
         m_subs.erase(ptr);
 }
