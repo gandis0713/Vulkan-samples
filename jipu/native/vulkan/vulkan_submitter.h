@@ -34,6 +34,8 @@ public:
     void present(VulkanPresentInfo presentInfo);
 
 private:
+    // we use only one queue family to avoid ownership transfer between queue families.
+    // because ownership transfer is not supported in currently.
     struct QueueFamily
     {
         std::vector<VkQueue> graphicsQueues{};  // include compute queue
