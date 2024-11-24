@@ -29,7 +29,14 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     bufferCreateInfo.size = descriptor.size;
     bufferCreateInfo.flags = 0;
     bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    // The buffer belongs to only one queue family. If the queue family needs to change, ownership must be changed.
+    {
+        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBufferCreateInfo.html
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // do not use VK_SHARING_MODE_CONCURRENT
+        bufferCreateInfo.queueFamilyIndexCount = 0;
+        bufferCreateInfo.pQueueFamilyIndices = nullptr;
+    }
 
     auto& vulkanResourceAllocator = device->getResourceAllocator();
     m_resource = vulkanResourceAllocator.createBufferResource(bufferCreateInfo);
