@@ -2,34 +2,76 @@
 
 #include "vulkan_device.h"
 
+#include <spdlog/spdlog.h>
+
 namespace jipu
 {
 
 VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
     : m_device(device)
 {
-    const auto& queueFamilies = m_device->getActivatedQueueFamilies();
-    if (queueFamilies.size() <= 0)
+    const auto& activatedQueueFamilies = m_device->getActivatedQueueFamilies();
+    if (activatedQueueFamilies.size() <= 0)
     {
         throw std::runtime_error("There is no activated queue familys.");
     }
 
     // collect all queues.
-    for (auto queueFamilyIndex = 0; queueFamilyIndex < queueFamilies.size(); ++queueFamilyIndex)
+    QueueFamily queueFamilyCandidate{};
+    for (auto activatedQueueFamilyIndex = 0; activatedQueueFamilyIndex < activatedQueueFamilies.size(); ++activatedQueueFamilyIndex)
     {
-        auto& queueFamily = queueFamilies[queueFamilyIndex];
+        auto& activatedQueueFamily = activatedQueueFamilies[activatedQueueFamilyIndex];
+        auto queueFlags = activatedQueueFamily.queueFlags;
 
-        QueueGroup queueGroup = { .flags = ToQueueFlags(queueFamily.queueFlags), .queues = {} };
-        for (auto queueIndex = 0; queueIndex < queueFamily.queueCount; ++queueIndex)
+        // currently, only use one queue family.
+        if ((queueFlags & VK_QUEUE_COMPUTE_BIT) &&
+            (queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
+            (queueFlags & VK_QUEUE_TRANSFER_BIT))
         {
-            VkQueue queue{ VK_NULL_HANDLE };
-            m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), queueFamilyIndex, queueIndex, &queue);
+            auto queueFamily = QueueFamily{ .graphicsQueues = {}, .transferQueue = VK_NULL_HANDLE };
 
-            queueGroup.queues.push_back(queue);
+            if (activatedQueueFamily.queueCount == 1)
+            {
+                VkQueue queue{ VK_NULL_HANDLE };
+                m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), activatedQueueFamilyIndex, 0, &queue);
+
+                queueFamily.graphicsQueues.push_back(queue);
+                queueFamily.transferQueue = queue;
+            }
+            else
+            {
+                // collect graphics and compute queue. (include transfer queue)
+                for (auto queueIndex = 0; queueIndex < activatedQueueFamily.queueCount - 1; ++queueIndex)
+                {
+                    VkQueue queue{ VK_NULL_HANDLE };
+                    m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), activatedQueueFamilyIndex, queueIndex, &queue);
+
+                    queueFamily.graphicsQueues.push_back(queue);
+                }
+
+                // set only one transfer queue.
+                {
+                    VkQueue queue{ VK_NULL_HANDLE };
+                    m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), activatedQueueFamilyIndex, activatedQueueFamily.queueCount - 1, &queue);
+
+                    queueFamily.transferQueue = queue;
+                }
+            }
+
+            if (queueFamily.graphicsQueues.size() > queueFamilyCandidate.graphicsQueues.size())
+            {
+                queueFamilyCandidate = queueFamily;
+                break;
+            }
         }
-
-        m_queueGroups.push_back(queueGroup);
     }
+
+    if (queueFamilyCandidate.graphicsQueues.empty())
+    {
+        throw std::runtime_error("There is no graphics queue.");
+    }
+
+    m_queueFamily = queueFamilyCandidate;
 }
 
 VulkanSubmitter::~VulkanSubmitter()
@@ -38,9 +80,9 @@ VulkanSubmitter::~VulkanSubmitter()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     // wait idle state before destroy semaphore.
-    for (auto& queueGroup : m_queueGroups)
-        for (auto queue : queueGroup.queues)
-            vkAPI.QueueWaitIdle(queue);
+    for (auto queue : m_queueFamily.graphicsQueues)
+        vkAPI.QueueWaitIdle(queue);
+    vkAPI.QueueWaitIdle(m_queueFamily.transferQueue);
 
     // Doesn't need to destroy VkQueue.
 }
@@ -70,7 +112,7 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
+    auto queue = getVkQueue(SubmitType::kGraphics);
     VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), fence);
     if (result != VK_SUCCESS)
     {
@@ -112,21 +154,27 @@ void VulkanSubmitter::present(VulkanPresentInfo presentInfo)
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    auto queue = getVkQueue(VulkanQueueFlagBits::kAll); // TODO: get by queue flags
+    auto queue = getVkQueue(SubmitType::kPresent);
     vkAPI.QueuePresentKHR(queue, &info);
 }
 
-VkQueue VulkanSubmitter::getVkQueue(VulkanQueueFlags flags) const
+VkQueue VulkanSubmitter::getVkQueue(SubmitType type) const
 {
-    for (const auto& queueGroup : m_queueGroups)
+    switch (type)
     {
-        if (queueGroup.flags & flags)
-        {
-            return queueGroup.queues[0];
-        }
+    case SubmitType::kCompute:
+    case SubmitType::kGraphics:
+    case SubmitType::kPresent:
+        return m_queueFamily.graphicsQueues[0]; // TODO: scheduling
+        break;
+    case SubmitType::kTransfer:
+        return m_queueFamily.transferQueue;
+    case SubmitType::kNone:
+    default:
+        throw std::runtime_error("There is no queue family properties.");
+        break;
     }
 
-    throw std::runtime_error("There is no queue family properties.");
     return VK_NULL_HANDLE;
 }
 

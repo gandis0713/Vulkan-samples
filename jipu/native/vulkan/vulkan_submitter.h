@@ -34,21 +34,23 @@ public:
     void present(VulkanPresentInfo presentInfo);
 
 private:
-    struct QueueGroup
+    struct QueueFamily
     {
-        VulkanQueueFlags flags;
-        std::vector<VkQueue> queues{};
+        std::vector<VkQueue> graphicsQueues{};  // include compute queue
+        VkQueue transferQueue = VK_NULL_HANDLE; // only one transfer queue
+        // TODO: consider use dedicated sparse queue
     };
 
 private:
-    VkQueue getVkQueue(VulkanQueueFlags flags = VulkanQueueFlagBits::kAll) const;
+    VkQueue getVkQueue(SubmitType type) const;
 
 private:
     VulkanDevice* m_device = nullptr;
-    std::vector<QueueGroup> m_queueGroups{};
+
+    // we use only one queue family to avoid ownership transfer between queue families.
+    QueueFamily m_queueFamily{};
 
     ThreadPool m_threadPool{ 10 };
-
     std::mutex m_queueMutex{};
 };
 
