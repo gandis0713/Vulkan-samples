@@ -27,7 +27,7 @@ VulkanInflightObjects::~VulkanInflightObjects()
 
 void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& submits)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     auto& inflightObject = m_inflightObjects[fence];
 
@@ -76,11 +76,10 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
 
 bool VulkanInflightObjects::clear(VkFence fence)
 {
-
     bool result = false;
     VulkanInflightObject inflightObject{};
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_objectMutex);
         if (m_inflightObjects.contains(fence))
         {
             inflightObject = m_inflightObjects[fence];
@@ -90,7 +89,7 @@ bool VulkanInflightObjects::clear(VkFence fence)
         }
     }
 
-    for (const auto& [ptr, sub] : m_subs)
+    for (const auto& [_, sub] : m_subs)
     {
         sub(fence, inflightObject);
     }
@@ -100,7 +99,7 @@ bool VulkanInflightObjects::clear(VkFence fence)
 
 void VulkanInflightObjects::clearAll()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     m_inflightObjects.clear();
 }
@@ -117,7 +116,7 @@ void VulkanInflightObjects::unsubscribe(void* ptr)
 
 bool VulkanInflightObjects::isInflight(VkCommandBuffer commandBuffer) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -132,7 +131,7 @@ bool VulkanInflightObjects::isInflight(VkCommandBuffer commandBuffer) const
 
 bool VulkanInflightObjects::isInflight(VkBuffer buffer) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -147,7 +146,7 @@ bool VulkanInflightObjects::isInflight(VkBuffer buffer) const
 
 bool VulkanInflightObjects::isInflight(VkImage image) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -162,7 +161,7 @@ bool VulkanInflightObjects::isInflight(VkImage image) const
 
 bool VulkanInflightObjects::isInflight(VkImageView imageView) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -177,7 +176,7 @@ bool VulkanInflightObjects::isInflight(VkImageView imageView) const
 
 bool VulkanInflightObjects::isInflight(VkSemaphore semaphore) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -192,7 +191,7 @@ bool VulkanInflightObjects::isInflight(VkSemaphore semaphore) const
 
 bool VulkanInflightObjects::isInflight(VkSampler sampler) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -207,7 +206,7 @@ bool VulkanInflightObjects::isInflight(VkSampler sampler) const
 
 bool VulkanInflightObjects::isInflight(VkPipeline pipeline) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -222,7 +221,7 @@ bool VulkanInflightObjects::isInflight(VkPipeline pipeline) const
 
 bool VulkanInflightObjects::isInflight(VkPipelineLayout pipelineLayout) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -237,7 +236,7 @@ bool VulkanInflightObjects::isInflight(VkPipelineLayout pipelineLayout) const
 
 bool VulkanInflightObjects::isInflight(VkDescriptorSet descriptorSet) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -252,7 +251,7 @@ bool VulkanInflightObjects::isInflight(VkDescriptorSet descriptorSet) const
 
 bool VulkanInflightObjects::isInflight(VkDescriptorSetLayout descriptorSetLayout) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -267,7 +266,7 @@ bool VulkanInflightObjects::isInflight(VkDescriptorSetLayout descriptorSetLayout
 
 bool VulkanInflightObjects::isInflight(VkFramebuffer framebuffer) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -282,7 +281,7 @@ bool VulkanInflightObjects::isInflight(VkFramebuffer framebuffer) const
 
 bool VulkanInflightObjects::isInflight(VkRenderPass renderPass) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
@@ -297,7 +296,7 @@ bool VulkanInflightObjects::isInflight(VkRenderPass renderPass) const
 
 bool VulkanInflightObjects::isInflight(VkFence fence) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_objectMutex);
 
     return m_inflightObjects.contains(fence);
 }

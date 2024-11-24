@@ -73,7 +73,7 @@ private:
     std::unordered_map<VkFence, VulkanInflightObject> m_inflightObjects{};
     std::unordered_map<void*, Subscribe> m_subs{};
 
-    mutable std::mutex m_mutex{};
+    mutable std::mutex m_objectMutex{};
 };
 
 } // namespace jipu
