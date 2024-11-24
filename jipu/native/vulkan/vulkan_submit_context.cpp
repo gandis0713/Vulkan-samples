@@ -302,7 +302,19 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             return SubmitType::kNone;
         };
 
-        VulkanSubmit currentSubmit{};
+        auto getDefaultSubmit = [&]() {
+            VulkanSubmit submit = {};
+
+            // set signal semaphore
+            {
+                auto semaphore = device->getSemaphorePool()->create();
+                submit.addSignalSemaphore({ semaphore });
+            }
+
+            return submit;
+        };
+
+        VulkanSubmit currentSubmit = getDefaultSubmit();
         std::vector<VulkanCommandRecordResult> submittedRecordResults{};
         for (const auto& result : results)
         {
@@ -315,13 +327,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     // prepare next submit info.
                     // because we need to wait for the previous submit by semaphore.
                     context.m_submits.push_back(currentSubmit);
-                    currentSubmit = {};
-
-                    // set signal semaphore
-                    {
-                        auto semaphore = device->getSemaphorePool()->create();
-                        currentSubmit.addSignalSemaphore({ semaphore });
-                    }
+                    currentSubmit = getDefaultSubmit();
                 }
 
                 // set command buffer
