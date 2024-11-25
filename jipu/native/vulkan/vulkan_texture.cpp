@@ -73,8 +73,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         createInfo.samples = m_descriptor.samples;
         createInfo.flags = m_descriptor.flags;
 
-        auto& vulkanResourceAllocator = device->getResourceAllocator();
-        m_resource = vulkanResourceAllocator.createTextureResource(createInfo);
+        auto vulkanResourceAllocator = device->getResourceAllocator();
+        m_resource = vulkanResourceAllocator->createTextureResource(createInfo);
 
         m_owner = m_descriptor.owner;
     }

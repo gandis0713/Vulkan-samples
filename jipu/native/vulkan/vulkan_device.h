@@ -63,17 +63,17 @@ public:
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
-    VulkanResourceAllocator& getResourceAllocator();
+    VulkanPhysicalDevice& getPhysicalDevice() const;
 
 public:
-    VulkanPhysicalDevice& getPhysicalDevice() const;
-    VulkanSemaphorePool* getSemaphorePool();
-    VulkanFencePool* getFencePool();
-    VulkanRenderPassCache* getRenderPassCache();
-    VulkanFramebufferCache* getFramebufferCache();
-    VulkanCommandPool* getCommandPool();
-    VulkanInflightObjects* getInflightObjects();
-    VulkanDeleter* getDeleter();
+    std::shared_ptr<VulkanResourceAllocator> getResourceAllocator();
+    std::shared_ptr<VulkanSemaphorePool> getSemaphorePool();
+    std::shared_ptr<VulkanFencePool> getFencePool();
+    std::shared_ptr<VulkanRenderPassCache> getRenderPassCache();
+    std::shared_ptr<VulkanFramebufferCache> getFramebufferCache();
+    std::shared_ptr<VulkanCommandPool> getCommandPool();
+    std::shared_ptr<VulkanInflightObjects> getInflightObjects();
+    std::shared_ptr<VulkanDeleter> getDeleter();
 
 public:
     VkDevice getVkDevice() const;
@@ -96,16 +96,16 @@ private:
     VkDevice m_device = VK_NULL_HANDLE;
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
 
-    std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
-    std::unique_ptr<VulkanFencePool> m_fencePool = nullptr;
-    std::unique_ptr<VulkanCommandPool> m_commandBufferPool = nullptr;
+    std::shared_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
+    std::shared_ptr<VulkanFencePool> m_fencePool = nullptr;
+    std::shared_ptr<VulkanCommandPool> m_commandBufferPool = nullptr;
 
-    VulkanRenderPassCache m_renderPassCache;
-    VulkanFramebufferCache m_frameBufferCache;
-    std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
-    std::unique_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
+    std::shared_ptr<VulkanRenderPassCache> m_renderPassCache = nullptr;
+    std::shared_ptr<VulkanFramebufferCache> m_frameBufferCache = nullptr;
+    std::shared_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
+    std::shared_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 
-    std::unique_ptr<VulkanDeleter> m_deleter = nullptr;
+    std::shared_ptr<VulkanDeleter> m_deleter = nullptr;
 
     std::vector<VkQueueFamilyProperties> m_queueFamilies{};
 };

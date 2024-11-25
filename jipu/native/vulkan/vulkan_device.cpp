@@ -20,8 +20,6 @@ namespace jipu
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
     : vkAPI(downcast(physicalDevice.getAdapter())->vkAPI)
     , m_physicalDevice(physicalDevice)
-    , m_renderPassCache(this)
-    , m_frameBufferCache(this)
 {
     createDevice();
 
@@ -31,6 +29,9 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     {
         throw std::runtime_error("Failed to load device procs.");
     }
+
+    m_renderPassCache = std::make_shared<VulkanRenderPassCache>(this);
+    m_frameBufferCache = std::make_shared<VulkanFramebufferCache>(this);
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, allocatorDescriptor);
@@ -46,8 +47,8 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
-    m_frameBufferCache.clear();
-    m_renderPassCache.clear();
+    m_frameBufferCache->clear();
+    m_renderPassCache->clear();
 
     m_deleter.reset();
 
@@ -150,17 +151,12 @@ std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const Command
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
-    return m_renderPassCache.getRenderPass(descriptor);
+    return m_renderPassCache->getRenderPass(descriptor);
 }
 
 VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
-    return m_frameBufferCache.getFrameBuffer(descriptor);
-}
-
-VulkanResourceAllocator& VulkanDevice::getResourceAllocator()
-{
-    return *m_resourceAllocator;
+    return m_frameBufferCache->getFrameBuffer(descriptor);
 }
 
 VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
@@ -168,39 +164,44 @@ VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
     return m_physicalDevice;
 }
 
-VulkanSemaphorePool* VulkanDevice::getSemaphorePool()
+std::shared_ptr<VulkanResourceAllocator> VulkanDevice::getResourceAllocator()
 {
-    return m_semaphorePool.get();
+    return m_resourceAllocator;
 }
 
-VulkanFencePool* VulkanDevice::getFencePool()
+std::shared_ptr<VulkanSemaphorePool> VulkanDevice::getSemaphorePool()
 {
-    return m_fencePool.get();
+    return m_semaphorePool;
 }
 
-VulkanRenderPassCache* VulkanDevice::getRenderPassCache()
+std::shared_ptr<VulkanFencePool> VulkanDevice::getFencePool()
 {
-    return &m_renderPassCache;
+    return m_fencePool;
 }
 
-VulkanFramebufferCache* VulkanDevice::getFramebufferCache()
+std::shared_ptr<VulkanRenderPassCache> VulkanDevice::getRenderPassCache()
 {
-    return &m_frameBufferCache;
+    return m_renderPassCache;
 }
 
-VulkanCommandPool* VulkanDevice::getCommandPool()
+std::shared_ptr<VulkanFramebufferCache> VulkanDevice::getFramebufferCache()
 {
-    return m_commandBufferPool.get();
+    return m_frameBufferCache;
 }
 
-VulkanInflightObjects* VulkanDevice::getInflightObjects()
+std::shared_ptr<VulkanCommandPool> VulkanDevice::getCommandPool()
 {
-    return m_inflightObjects.get();
+    return m_commandBufferPool;
 }
 
-VulkanDeleter* VulkanDevice::getDeleter()
+std::shared_ptr<VulkanInflightObjects> VulkanDevice::getInflightObjects()
 {
-    return m_deleter.get();
+    return m_inflightObjects;
+}
+
+std::shared_ptr<VulkanDeleter> VulkanDevice::getDeleter()
+{
+    return m_deleter;
 }
 
 VkDevice VulkanDevice::getVkDevice() const

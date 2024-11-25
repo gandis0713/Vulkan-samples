@@ -404,12 +404,12 @@ void VulkanDeleter::safeDestroy(VkFence fence)
 
 void VulkanDeleter::destroy(VkBuffer buffer, VulkanMemory memory)
 {
-    m_device->getResourceAllocator().destroyBufferResource({ buffer, memory });
+    m_device->getResourceAllocator()->destroyBufferResource({ buffer, memory });
 }
 
 void VulkanDeleter::destroy(VkImage image, VulkanMemory memory)
 {
-    m_device->getResourceAllocator().destroyTextureResource({ image, memory });
+    m_device->getResourceAllocator()->destroyTextureResource({ image, memory });
 }
 
 void VulkanDeleter::destroy(VkCommandBuffer commandBuffer)

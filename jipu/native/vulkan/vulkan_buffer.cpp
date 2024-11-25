@@ -38,8 +38,8 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
         bufferCreateInfo.pQueueFamilyIndices = nullptr;
     }
 
-    auto& vulkanResourceAllocator = device->getResourceAllocator();
-    m_resource = vulkanResourceAllocator.createBufferResource(bufferCreateInfo);
+    auto vulkanResourceAllocator = device->getResourceAllocator();
+    m_resource = vulkanResourceAllocator->createBufferResource(bufferCreateInfo);
 }
 
 VulkanBuffer::~VulkanBuffer()
@@ -53,8 +53,8 @@ void* VulkanBuffer::map()
 {
     if (m_mappedPtr == nullptr)
     {
-        auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
-        m_mappedPtr = resourceAllocator.map(m_resource.memory);
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        m_mappedPtr = resourceAllocator->map(m_resource.memory);
     }
 
     return m_mappedPtr;
@@ -63,8 +63,8 @@ void VulkanBuffer::unmap()
 {
     if (m_mappedPtr)
     {
-        auto& resourceAllocator = downcast(m_device)->getResourceAllocator();
-        resourceAllocator.unmap(m_resource.memory);
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        resourceAllocator->unmap(m_resource.memory);
 
         m_mappedPtr = nullptr;
     }
