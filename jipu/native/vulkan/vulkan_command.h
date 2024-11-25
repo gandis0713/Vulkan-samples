@@ -70,8 +70,8 @@ struct EndComputePassCommand : public Command
 
 struct BeginRenderPassCommand : public Command
 {
-    VulkanRenderPass* renderPass = nullptr;
-    VulkanFramebuffer* framebuffer = nullptr;
+    std::weak_ptr<VulkanRenderPass> renderPass{};
+    std::weak_ptr<VulkanFramebuffer> framebuffer{};
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
 

@@ -405,7 +405,7 @@ VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevi
         .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
         .dynamicState = generateDynamicStateCreateInfo(descriptor),
         .layout = downcast(descriptor.layout),
-        .renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor)),
+        .renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor))->getVkRenderPass(),
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE, // Optional
         .basePipelineIndex = -1,              // Optional
@@ -481,7 +481,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
     pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
-    pipelineInfo.renderPass = descriptor.renderPass->getVkRenderPass();
+    pipelineInfo.renderPass = descriptor.renderPass;
     pipelineInfo.subpass = descriptor.subpass;
     pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;
     pipelineInfo.basePipelineIndex = descriptor.basePipelineIndex;

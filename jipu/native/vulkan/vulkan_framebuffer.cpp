@@ -32,7 +32,7 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebuff
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                                                    .pNext = descriptor.next,
                                                    .flags = descriptor.flags,
-                                                   .renderPass = descriptor.renderPass->getVkRenderPass(),
+                                                   .renderPass = descriptor.renderPass,
                                                    .attachmentCount = static_cast<uint32_t>(attachments.size()),
                                                    .pAttachments = attachments.data(),
                                                    .width = descriptor.width,
@@ -125,21 +125,19 @@ VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice* device)
     // TODO
 }
 
-VulkanFramebuffer* VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+std::shared_ptr<VulkanFramebuffer> VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return it->second.get();
+        return it->second;
     }
 
-    auto framebuffer = std::make_unique<VulkanFramebuffer>(m_device, descriptor);
+    auto framebuffer = std::make_shared<VulkanFramebuffer>(m_device, descriptor);
 
-    // get raw pointer before moving.
-    VulkanFramebuffer* framebufferPtr = framebuffer.get();
-    m_cache.emplace(descriptor, std::move(framebuffer));
+    m_cache.emplace(descriptor, framebuffer);
 
-    return framebufferPtr;
+    return framebuffer;
 }
 
 bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
@@ -165,7 +163,7 @@ bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
     return false;
 }
 
-bool VulkanFramebufferCache::invalidate(VulkanRenderPass* renderPass)
+bool VulkanFramebufferCache::invalidate(VkRenderPass renderPass)
 {
     for (auto& [descriptor, _] : m_cache)
     {

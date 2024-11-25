@@ -149,19 +149,19 @@ std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const Command
     return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
-VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
+{
+    return m_physicalDevice;
+}
+
+std::shared_ptr<VulkanRenderPass> VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache->getRenderPass(descriptor);
 }
 
-VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+std::shared_ptr<VulkanFramebuffer> VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache->getFrameBuffer(descriptor);
-}
-
-VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
-{
-    return m_physicalDevice;
 }
 
 std::shared_ptr<VulkanResourceAllocator> VulkanDevice::getResourceAllocator()

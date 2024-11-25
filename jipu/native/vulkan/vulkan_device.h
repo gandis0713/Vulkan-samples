@@ -61,9 +61,11 @@ public:
     std::unique_ptr<Swapchain> createSwapchain(const VulkanSwapchainDescriptor& descriptor);
 
 public:
-    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
-    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
     VulkanPhysicalDevice* getPhysicalDevice() const;
+
+public:
+    std::shared_ptr<VulkanRenderPass> getRenderPass(const VulkanRenderPassDescriptor& descriptor);
+    std::shared_ptr<VulkanFramebuffer> getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
 public:
     std::shared_ptr<VulkanResourceAllocator> getResourceAllocator();

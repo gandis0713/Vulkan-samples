@@ -21,8 +21,8 @@ class VulkanCommandEncoder;
 struct VulkanRenderPassEncoderDescriptor
 {
     const void* next = nullptr;
-    VulkanRenderPass* renderPass = nullptr;
-    VulkanFramebuffer* framebuffer = nullptr;
+    std::weak_ptr<VulkanRenderPass> renderPass{};
+    std::weak_ptr<VulkanFramebuffer> framebuffer{};
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
 
@@ -89,7 +89,7 @@ DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
 // Generate Helper
 VulkanRenderPassDescriptor VULKAN_EXPORT generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
-VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(VulkanRenderPass& renderPass, const RenderPassEncoderDescriptor& descriptor);
+VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(std::shared_ptr<VulkanRenderPass> renderPass, const RenderPassEncoderDescriptor& descriptor);
 VulkanRenderPassEncoderDescriptor VULKAN_EXPORT generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor);
 
 // Convert Helper

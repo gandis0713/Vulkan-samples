@@ -89,7 +89,7 @@ struct VulkanRenderPipelineDescriptor
     VulkanPipelineColorBlendStateCreateInfo colorBlendState{};
     VulkanPipelineDynamicStateCreateInfo dynamicState{};
     VulkanPipelineLayout* layout = nullptr;
-    VulkanRenderPass* renderPass = nullptr;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
     uint32_t subpass = 0;
     VkPipeline basePipelineHandle = VK_NULL_HANDLE;
     int32_t basePipelineIndex = -1;

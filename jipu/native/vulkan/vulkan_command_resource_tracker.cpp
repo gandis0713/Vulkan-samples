@@ -89,8 +89,13 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
 {
     // src
     {
-        auto& framebuffer = command->framebuffer;
-        auto& renderPass = command->renderPass;
+        auto renderPass = command->renderPass.lock();
+        if (!renderPass)
+            throw std::runtime_error("The render pass is null for tracking begin render pass command.");
+
+        auto framebuffer = command->framebuffer.lock();
+        if (!framebuffer)
+            throw std::runtime_error("The framebuffer is null for tracking begin render pass command.");
 
         const auto& framebufferColorAttachments = framebuffer->getColorAttachments();
         const auto& renderPassColorAttachments = renderPass->getColorAttachments();

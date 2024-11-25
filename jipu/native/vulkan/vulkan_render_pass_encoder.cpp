@@ -195,7 +195,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     return vkdescriptor;
 }
 
-VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass* renderPass, const RenderPassEncoderDescriptor& descriptor)
+VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(std::shared_ptr<VulkanRenderPass> renderPass, const RenderPassEncoderDescriptor& descriptor)
 {
     if (descriptor.colorAttachments.empty())
         throw std::runtime_error("The attachments for color is empty to create frame buffer descriptor.");
@@ -206,7 +206,7 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     vkdescriptor.width = texture->getWidth();
     vkdescriptor.height = texture->getHeight();
     vkdescriptor.layers = 1;
-    vkdescriptor.renderPass = renderPass;
+    vkdescriptor.renderPass = renderPass->getVkRenderPass();
 
     for (const auto attachment : descriptor.colorAttachments)
     {

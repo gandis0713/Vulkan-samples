@@ -63,7 +63,7 @@ VulkanRenderPass::~VulkanRenderPass()
     auto vulkanDevice = downcast(m_device);
 
     auto framebufferCache = vulkanDevice->getFramebufferCache();
-    framebufferCache->invalidate(this);
+    framebufferCache->invalidate(m_renderPass);
 
     vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
 }
@@ -216,22 +216,20 @@ VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
 {
 }
 
-VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+std::shared_ptr<VulkanRenderPass> VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return it->second.get();
+        return it->second;
     }
 
     // create new renderpass
-    std::unique_ptr<VulkanRenderPass> renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
+    std::shared_ptr<VulkanRenderPass> renderPass = std::make_shared<VulkanRenderPass>(m_device, descriptor);
 
-    // get raw pointer before moving.
-    VulkanRenderPass* renderPassPtr = renderPass.get();
-    auto result = m_cache.emplace(descriptor, std::move(renderPass));
+    auto result = m_cache.emplace(descriptor, renderPass);
 
-    return renderPassPtr;
+    return renderPass;
 }
 
 void VulkanRenderPassCache::clear()

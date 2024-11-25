@@ -485,25 +485,34 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     break;
                     case CommandType::kBeginRenderPass: {
                         auto cmd = reinterpret_cast<BeginRenderPassCommand*>(command.get());
-                        for (auto& colorAttachment : cmd->framebuffer->getColorAttachments())
+                        auto framebuffer = cmd->framebuffer.lock();
+                        if (framebuffer)
                         {
-                            currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
-                            currentSubmit.add(downcast(colorAttachment.renderView)->getVkImageView());
-                            if (colorAttachment.resolveView)
+                            for (auto& colorAttachment : framebuffer->getColorAttachments())
                             {
-                                currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
-                                currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
+                                currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
+                                currentSubmit.add(downcast(colorAttachment.renderView)->getVkImageView());
+                                if (colorAttachment.resolveView)
+                                {
+                                    currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
+                                    currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
+                                }
                             }
-                        }
-                        auto depthStencilAttachment = cmd->framebuffer->getDepthStencilAttachment();
-                        if (depthStencilAttachment)
-                        {
-                            currentSubmit.addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
-                            currentSubmit.add(downcast(depthStencilAttachment)->getVkImageView());
+
+                            auto depthStencilAttachment = framebuffer->getDepthStencilAttachment();
+                            if (depthStencilAttachment)
+                            {
+                                currentSubmit.addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
+                                currentSubmit.add(downcast(depthStencilAttachment)->getVkImageView());
+                            }
+                            currentSubmit.add(framebuffer->getVkFrameBuffer());
                         }
 
-                        currentSubmit.add(cmd->framebuffer->getVkFrameBuffer());
-                        currentSubmit.add(cmd->renderPass->getVkRenderPass());
+                        auto renderPass = cmd->renderPass.lock();
+                        if (renderPass)
+                        {
+                            currentSubmit.add(renderPass->getVkRenderPass());
+                        }
                     }
                     break;
                     case CommandType::kSetRenderPipeline: {
