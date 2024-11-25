@@ -82,6 +82,14 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
+        for (auto shaderModule : object.shaderModules)
+        {
+            if (contains(shaderModule))
+            {
+                safeDestroy(shaderModule);
+            }
+        }
+
         for (auto descriptorSet : object.descriptorSet)
         {
             if (contains(descriptorSet))

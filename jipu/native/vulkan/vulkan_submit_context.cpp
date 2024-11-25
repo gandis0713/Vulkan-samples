@@ -66,6 +66,11 @@ void VulkanSubmit::add(VkPipelineLayout pipelineLayout)
     object.pipelineLayouts.insert(pipelineLayout);
 }
 
+void VulkanSubmit::add(const std::vector<VkShaderModule> shaderModules)
+{
+    object.shaderModules.insert(shaderModules.begin(), shaderModules.end());
+}
+
 void VulkanSubmit::add(VkDescriptorSet descriptorSet)
 {
     object.descriptorSet.insert(descriptorSet);
@@ -459,6 +464,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         auto cmd = reinterpret_cast<SetComputePipelineCommand*>(command.get());
                         currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
                         currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                        currentSubmit.add({ downcast(cmd->pipeline)->getShaderModule() });
                     }
                     break;
                     case CommandType::kSetComputeBindGroup: {
@@ -519,6 +525,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         auto cmd = reinterpret_cast<SetRenderPipelineCommand*>(command.get());
                         currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
                         currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                        currentSubmit.add(downcast(cmd->pipeline)->getShaderModules());
                     }
                     break;
                     case CommandType::kSetRenderBindGroup: {

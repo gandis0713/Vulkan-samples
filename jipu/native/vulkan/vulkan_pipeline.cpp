@@ -35,6 +35,11 @@ VkPipeline VulkanComputePipeline::getVkPipeline() const
     return m_pipeline;
 }
 
+VkShaderModule VulkanComputePipeline::getShaderModule() const
+{
+    return downcast(m_descriptor.compute.shaderModule)->getVkShaderModule();
+}
+
 void VulkanComputePipeline::initialize()
 {
     auto computeShaderModule = downcast(m_descriptor.compute.shaderModule)->getVkShaderModule();
@@ -434,6 +439,18 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
 PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
 {
     return m_descriptor.layout;
+}
+
+std::vector<VkShaderModule> VulkanRenderPipeline::getShaderModules() const
+{
+    std::vector<VkShaderModule> shaderModules{};
+
+    for (const auto& stage : m_descriptor.stages)
+    {
+        shaderModules.push_back(stage.module);
+    }
+
+    return shaderModules;
 }
 
 VkPipeline VulkanRenderPipeline::getVkPipeline() const

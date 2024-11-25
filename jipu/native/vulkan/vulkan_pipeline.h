@@ -30,6 +30,7 @@ public:
 
 public:
     VkPipeline getVkPipeline() const;
+    VkShaderModule getShaderModule() const;
 
 private:
     void initialize();
@@ -112,6 +113,7 @@ public:
 
 public:
     VkPipeline getVkPipeline() const;
+    std::vector<VkShaderModule> getShaderModules() const;
 
 private:
     void initialize();
