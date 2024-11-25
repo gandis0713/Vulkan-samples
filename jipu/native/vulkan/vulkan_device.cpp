@@ -17,13 +17,13 @@
 namespace jipu
 {
 
-VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
-    : vkAPI(downcast(physicalDevice.getAdapter())->vkAPI)
+VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor)
+    : vkAPI(downcast(physicalDevice->getAdapter())->vkAPI)
     , m_physicalDevice(physicalDevice)
 {
     createDevice();
 
-    const VulkanPhysicalDeviceInfo& info = physicalDevice.getVulkanPhysicalDeviceInfo();
+    const VulkanPhysicalDeviceInfo& info = physicalDevice->getVulkanPhysicalDeviceInfo();
     const VulkanDeviceKnobs& deviceKnobs = static_cast<const VulkanDeviceKnobs&>(info);
     if (!vkAPI.loadDeviceProcs(m_device, deviceKnobs))
     {
@@ -159,7 +159,7 @@ VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
     return m_frameBufferCache->getFrameBuffer(descriptor);
 }
 
-VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
+VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
 {
     return m_physicalDevice;
 }
@@ -211,9 +211,7 @@ VkDevice VulkanDevice::getVkDevice() const
 
 VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
-    VulkanPhysicalDevice& vulkanPhysicalDevice = downcast(m_physicalDevice);
-
-    return vulkanPhysicalDevice.getVkPhysicalDevice();
+    return m_physicalDevice->getVkPhysicalDevice();
 }
 
 VkDescriptorPool VulkanDevice::getVkDescriptorPool()
@@ -231,8 +229,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
                                                    .poolSizeCount = descriptorPoolCount,
                                                    .pPoolSizes = poolSizes.data() };
 
-        auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
-        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo();
+        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = m_physicalDevice->getVulkanPhysicalDeviceInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
         uint32_t kDescriptorSetUniformBufferCount = 32;
@@ -289,7 +286,7 @@ const std::vector<VkQueueFamilyProperties>& VulkanDevice::getActivatedQueueFamil
 
 void VulkanDevice::createDevice()
 {
-    const VulkanPhysicalDeviceInfo& info = m_physicalDevice.getVulkanPhysicalDeviceInfo();
+    const VulkanPhysicalDeviceInfo& info = m_physicalDevice->getVulkanPhysicalDeviceInfo();
 
     // Currently, only check GRAPHICS and COMPUTE. Because they imply TRANSFER. consider queue that has only TRANSFER.
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
@@ -323,21 +320,19 @@ void VulkanDevice::createDevice()
         deviceQueueCreateInfo.pQueuePriorities = queuePriorities[index].data();
     }
 
-    auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
-
     // do not use layer for device. because it is deprecated.
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &m_physicalDevice->getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtensions();
 
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 
-    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice).getVkPhysicalDevice();
+    VkPhysicalDevice physicalDevice = m_physicalDevice->getVkPhysicalDevice();
     VkResult result = vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device);
     if (result != VK_SUCCESS)
     {
@@ -352,8 +347,7 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
     requiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
     // TODO: check extension supported.
-    auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
-    if (vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo().portabilitySubset)
+    if (m_physicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
     {
         // TODO: define "VK_KHR_portability_subset"
         requiredDeviceExtensions.push_back("VK_KHR_portability_subset");

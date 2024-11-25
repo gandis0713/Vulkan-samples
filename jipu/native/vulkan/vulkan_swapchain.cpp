@@ -42,8 +42,8 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
 {
     VulkanSurface* surface = downcast(descriptor.surface);
 
-    auto& vulkanPhysicalDevice = device->getPhysicalDevice();
-    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice.gatherSurfaceInfo(surface);
+    auto vulkanPhysicalDevice = device->getPhysicalDevice();
+    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice->gatherSurfaceInfo(surface);
 
     // Check surface formats supports.
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),

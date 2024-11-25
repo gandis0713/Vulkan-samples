@@ -26,7 +26,7 @@ VulkanPhysicalDevice::~VulkanPhysicalDevice()
 
 std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescriptor& descriptor)
 {
-    return std::make_unique<VulkanDevice>(*this, descriptor);
+    return std::make_unique<VulkanDevice>(this, descriptor);
 }
 
 PhysicalDeviceInfo VulkanPhysicalDevice::getPhysicalDeviceInfo() const

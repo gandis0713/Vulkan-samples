@@ -33,7 +33,7 @@ class VULKAN_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
-    VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor);
+    VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor);
     ~VulkanDevice() override;
 
     VulkanDevice(const VulkanDevice&) = delete;
@@ -63,7 +63,7 @@ public:
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
-    VulkanPhysicalDevice& getPhysicalDevice() const;
+    VulkanPhysicalDevice* getPhysicalDevice() const;
 
 public:
     std::shared_ptr<VulkanResourceAllocator> getResourceAllocator();
@@ -90,7 +90,7 @@ private:
     void createPools();
 
 private:
-    VulkanPhysicalDevice& m_physicalDevice;
+    VulkanPhysicalDevice* m_physicalDevice = nullptr;
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;

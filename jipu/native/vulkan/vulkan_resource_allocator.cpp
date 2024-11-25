@@ -234,10 +234,10 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const Vul
     : m_device(device)
 {
 #if defined(USE_VMA)
-    auto& vulkanPhysicalDevice = downcast(m_device->getPhysicalDevice());
-    auto vulkanAdapter = downcast(vulkanPhysicalDevice.getAdapter());
+    auto vulkanPhysicalDevice = m_device->getPhysicalDevice();
+    auto vulkanAdapter = downcast(vulkanPhysicalDevice->getAdapter());
 
-    auto physicalDevice = vulkanPhysicalDevice.getVkPhysicalDevice();
+    auto physicalDevice = vulkanPhysicalDevice->getVkPhysicalDevice();
     auto instance = vulkanAdapter->getVkInstance();
 
 #if defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
