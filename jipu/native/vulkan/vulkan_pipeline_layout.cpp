@@ -30,8 +30,7 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineL
 
 VulkanPipelineLayout::~VulkanPipelineLayout()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
+    m_device->getDeleter()->safeDestroy(m_pipelineLayout);
 }
 
 VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const

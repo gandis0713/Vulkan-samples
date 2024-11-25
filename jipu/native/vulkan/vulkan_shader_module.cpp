@@ -26,8 +26,7 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleD
 
 VulkanShaderModule::~VulkanShaderModule()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_shaderModule, nullptr);
+    m_device->getDeleter()->safeDestroy(m_shaderModule);
 }
 
 VkShaderModule VulkanShaderModule::getVkShaderModule() const

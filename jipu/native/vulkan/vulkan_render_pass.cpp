@@ -60,12 +60,10 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto vulkanDevice = downcast(m_device);
-
-    auto framebufferCache = vulkanDevice->getFramebufferCache();
+    auto framebufferCache = m_device->getFramebufferCache();
     framebufferCache->invalidate(m_renderPass);
 
-    vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
+    m_device->getDeleter()->safeDestroy(m_renderPass);
 }
 
 const std::vector<RenderPassColorAttachment>& VulkanRenderPass::getColorAttachments() const

@@ -25,6 +25,7 @@ VulkanQuerySet::VulkanQuerySet(VulkanDevice* device, const QuerySetDescriptor& d
 
 VulkanQuerySet::~VulkanQuerySet()
 {
+    // TODO: delete by deleter.
     auto& vkAPI = m_device->vkAPI;
     vkAPI.DestroyQueryPool(m_device->getVkDevice(), m_queryPool, nullptr);
 }

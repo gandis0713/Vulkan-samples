@@ -18,10 +18,6 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 {
 }
 
-VulkanQueue::~VulkanQueue()
-{
-}
-
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     // record VulkanCommandBuffer to VkCommandBuffer.

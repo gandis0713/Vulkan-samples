@@ -22,7 +22,7 @@ class VULKAN_EXPORT VulkanQueue : public Queue
 public:
     VulkanQueue() = delete;
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
-    ~VulkanQueue() override;
+    ~VulkanQueue() override = default;
 
 public:
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
