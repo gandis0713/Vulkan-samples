@@ -87,7 +87,7 @@ VulkanSubmitter::~VulkanSubmitter()
     // Doesn't need to destroy VkQueue.
 }
 
-std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit>& submits)
+std::future<void> VulkanSubmitter::submitAsync(const std::vector<VulkanSubmit>& submits)
 {
     auto submitSize = submits.size();
 
@@ -108,6 +108,10 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
 
         submitInfos[i] = submitInfo;
     }
+
+    auto fence = m_device->getFencePool()->create();
+    m_device->getInflightObjects()->add(fence, submits);
+    m_device->getDeleter()->safeDestroy(fence); // delete fence after submit.
 
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
@@ -133,9 +137,9 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
     return m_threadPool.enqueue(submitTask);
 }
 
-void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit>& submits)
+void VulkanSubmitter::submit(const std::vector<VulkanSubmit>& submits)
 {
-    submitAsync(fence, submits).get();
+    submitAsync(submits).get();
 }
 
 void VulkanSubmitter::present(VulkanPresentInfo presentInfo)

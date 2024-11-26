@@ -28,13 +28,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     // submit
     auto submits = submitContext.getSubmits();
-    auto submitInfos = submitContext.getSubmitInfos();
-
-    auto fence = m_device->getFencePool()->create();
-    m_device->getInflightObjects()->add(fence, submits);
-
-    auto future = m_submitter->submitAsync(fence, submits);
-    m_device->getDeleter()->safeDestroy(fence); // delete fence after submit.
+    auto future = m_submitter->submitAsync(submits);
 
     // set present semaphores.
     {
