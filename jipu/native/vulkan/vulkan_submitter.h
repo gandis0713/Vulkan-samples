@@ -28,8 +28,8 @@ public:
     ~VulkanSubmitter();
 
 public:
-    void submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
-    std::future<void> submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits);
+    void submit(VkFence fence, const std::vector<VulkanSubmit>& submits);
+    std::future<void> submitAsync(VkFence fence, const std::vector<VulkanSubmit>& submits);
 
     void present(VulkanPresentInfo presentInfo);
 

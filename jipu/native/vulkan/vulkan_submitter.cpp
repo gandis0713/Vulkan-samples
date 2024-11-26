@@ -87,24 +87,24 @@ VulkanSubmitter::~VulkanSubmitter()
     // Doesn't need to destroy VkQueue.
 }
 
-std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
+std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<VulkanSubmit>& submits)
 {
-    auto submitInfoSize = submits.size();
+    auto submitSize = submits.size();
 
     std::vector<VkSubmitInfo> submitInfos{};
-    submitInfos.resize(submitInfoSize);
+    submitInfos.resize(submitSize);
 
-    for (auto i = 0; i < submitInfoSize; ++i)
+    for (auto i = 0; i < submitSize; ++i)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = static_cast<uint32_t>(submits[i].commandBuffers.size());
-        submitInfo.pCommandBuffers = submits[i].commandBuffers.data();
-        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].signalSemaphores.size());
-        submitInfo.pSignalSemaphores = submits[i].signalSemaphores.data();
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].waitSemaphores.size());
-        submitInfo.pWaitSemaphores = submits[i].waitSemaphores.data();
-        submitInfo.pWaitDstStageMask = submits[i].waitStages.data();
+        submitInfo.commandBufferCount = static_cast<uint32_t>(submits[i].info.commandBuffers.size());
+        submitInfo.pCommandBuffers = submits[i].info.commandBuffers.data();
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].info.signalSemaphores.size());
+        submitInfo.pSignalSemaphores = submits[i].info.signalSemaphores.data();
+        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].info.waitSemaphores.size());
+        submitInfo.pWaitSemaphores = submits[i].info.waitSemaphores.data();
+        submitInfo.pWaitDstStageMask = submits[i].info.waitStages.data();
 
         submitInfos[i] = submitInfo;
     }
@@ -133,7 +133,7 @@ std::future<void> VulkanSubmitter::submitAsync(VkFence fence, const std::vector<
     return m_threadPool.enqueue(submitTask);
 }
 
-void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit::Info>& submits)
+void VulkanSubmitter::submit(VkFence fence, const std::vector<VulkanSubmit>& submits)
 {
     submitAsync(fence, submits).get();
 }
