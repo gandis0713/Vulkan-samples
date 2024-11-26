@@ -25,7 +25,6 @@ ThreadPool::ThreadPool(size_t numberOfThreads)
                     m_tasks.pop();
                 }
 
-                // 작업 실행
                 task();
             }
         });
