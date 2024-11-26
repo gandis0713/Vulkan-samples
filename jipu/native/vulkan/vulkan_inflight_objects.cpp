@@ -93,7 +93,7 @@ bool VulkanInflightObjects::clear(VkFence fence)
         }
     }
 
-    if (inflightObject.has_value() == false)
+    if (inflightObject.has_value())
     {
         std::lock_guard<std::mutex> lock(m_subscribeMutex);
         for (const auto& [_, sub] : m_subs)
