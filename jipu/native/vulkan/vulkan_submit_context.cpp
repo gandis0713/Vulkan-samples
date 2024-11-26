@@ -385,9 +385,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                             auto& notSynedPassResourceInfos = result.commandResourceSyncResult.notSyncedPassResourceInfos;
                             for (const auto& notSynedPassResourceInfo : notSynedPassResourceInfos)
                             {
-                                for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedPassResourceInfo.dst.textures)
+                                for (const auto& [srcTexture, _] : notSynedPassResourceInfo.src.textures)
                                 {
-                                    VulkanTexture* vulkanTexture = downcast(dstTexture);
+                                    VulkanTexture* vulkanTexture = downcast(srcTexture);
                                     if (vulkanTexture->getOwner() == VulkanTextureOwner::kSwapchain)
                                     {
                                         VulkanSwapchainTexture* vulkanSwapchainTexture = downcast(vulkanTexture);
