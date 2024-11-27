@@ -40,7 +40,7 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
             }
             else
             {
-                // collect graphics and compute queue. (include transfer queue)
+                // collect graphics and compute queue. (exclude transfer queue)
                 for (auto queueIndex = 0; queueIndex < activatedQueueFamily.queueCount - 1; ++queueIndex)
                 {
                     VkQueue queue{ VK_NULL_HANDLE };
@@ -49,7 +49,7 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
                     queueFamily.graphicsQueues.push_back(queue);
                 }
 
-                // set only one transfer queue.
+                // set only one dedicated transfer queue.
                 {
                     VkQueue queue{ VK_NULL_HANDLE };
                     m_device->vkAPI.GetDeviceQueue(m_device->getVkDevice(), activatedQueueFamilyIndex, activatedQueueFamily.queueCount - 1, &queue);
@@ -66,9 +66,9 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
         }
     }
 
-    if (queueFamilyCandidate.graphicsQueues.empty())
+    if (queueFamilyCandidate.graphicsQueues.empty() || queueFamilyCandidate.transferQueue == VK_NULL_HANDLE)
     {
-        throw std::runtime_error("There is no graphics queue.");
+        throw std::runtime_error("There is no graphics queues or a transfer queue.");
     }
 
     m_queueFamily = queueFamilyCandidate;
