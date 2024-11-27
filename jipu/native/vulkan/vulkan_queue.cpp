@@ -20,21 +20,6 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
 VulkanQueue::~VulkanQueue()
 {
-    for (auto& task : m_transferTasks)
-    {
-        task.get();
-    }
-
-    for (auto& task : m_computeTasks)
-    {
-        task.get();
-    }
-
-    for (auto& task : m_graphicsTasks)
-    {
-        task.get();
-    }
-
     for (auto& [_, task] : m_presentTasks)
     {
         task.get();
@@ -61,29 +46,28 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
             switch (submit.info.type)
             {
             case SubmitType::kCompute:
-                m_computeTasks.push_back(std::move(future));
-                break;
             case SubmitType::kGraphics:
-                m_graphicsTasks.push_back(std::move(future));
-                break;
             case SubmitType::kTransfer:
-                m_transferTasks.push_back(std::move(future));
                 break;
-            case SubmitType::kPresent: {
-                auto& index = submit.info.swapchainIndex;
-
-                if (m_presentTasks.contains(index))
-                    m_presentTasks[index].get(); // wait previous present task.
-
-                m_presentTasks[index] = std::move(future);
-                m_presentSignalSemaphores[index] = submit.info.signalSemaphores;
-            }
-            break;
+            case SubmitType::kPresent:
+                presentSubmitInfos.push_back(submit.info);
+                break;
             case SubmitType::kNone:
             default:
                 spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
                 break;
             }
+        }
+
+        for (auto presentSubmitInfo : presentSubmitInfos)
+        {
+            auto& index = presentSubmitInfo.swapchainIndex;
+
+            if (m_presentTasks.contains(index))
+                m_presentTasks[index].get(); // wait previous present task.
+
+            m_presentTasks[index] = std::move(future);
+            m_presentSignalSemaphores[index].insert(m_presentSignalSemaphores[index].end(), presentSubmitInfo.signalSemaphores.begin(), presentSubmitInfo.signalSemaphores.end());
         }
     }
 }

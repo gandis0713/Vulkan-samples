@@ -40,9 +40,6 @@ private:
 private:
     std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSignalSemaphores{};
     std::unordered_map<uint32_t, std::future<void>> m_presentTasks{};
-    std::vector<std::future<void>> m_computeTasks{};
-    std::vector<std::future<void>> m_transferTasks{};
-    std::vector<std::future<void>> m_graphicsTasks{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);
