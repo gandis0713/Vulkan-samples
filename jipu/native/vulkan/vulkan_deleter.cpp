@@ -296,12 +296,10 @@ void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
 {
     if (m_device->getInflightObjects()->isInflight(semaphore))
     {
-        spdlog::error("The semaphore is in-flight. {}", reinterpret_cast<void*>(semaphore));
         insert(semaphore);
     }
     else
     {
-        spdlog::error("The semaphore is deleted. {}", reinterpret_cast<void*>(semaphore));
         erase(semaphore);
         destroy(semaphore);
     }
