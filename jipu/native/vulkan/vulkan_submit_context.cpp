@@ -285,7 +285,7 @@ SubmitType getSubmitType(const VulkanCommandRecordResult& result)
 
     if (src.buffers.empty() && src.textures.empty())
     {
-        spdlog::error("There is no output resource.");
+        spdlog::error("There is no output resource. return kNone submit type.");
         return SubmitType::kNone;
     }
 
@@ -326,6 +326,8 @@ SubmitType getSubmitType(const VulkanCommandRecordResult& result)
             return SubmitType::kTransfer;
         }
     }
+
+    spdlog::error("Return kNone submit type.");
 
     return SubmitType::kNone;
 };
