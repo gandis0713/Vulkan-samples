@@ -18,6 +18,29 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 {
 }
 
+VulkanQueue::~VulkanQueue()
+{
+    for (auto& task : m_transferTasks)
+    {
+        task.get();
+    }
+
+    for (auto& task : m_computeTasks)
+    {
+        task.get();
+    }
+
+    for (auto& task : m_graphicsTasks)
+    {
+        task.get();
+    }
+
+    for (auto& [_, task] : m_presentTasks)
+    {
+        task.get();
+    }
+}
+
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     // record VulkanCommandBuffer to VkCommandBuffer.
@@ -38,45 +61,44 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
             switch (submit.info.type)
             {
             case SubmitType::kCompute:
+                m_computeTasks.push_back(std::move(future));
+                break;
             case SubmitType::kGraphics:
+                m_graphicsTasks.push_back(std::move(future));
+                break;
             case SubmitType::kTransfer:
+                m_transferTasks.push_back(std::move(future));
                 break;
-            case SubmitType::kPresent:
-                presentSubmitInfos.push_back(submit.info);
-                break;
+            case SubmitType::kPresent: {
+                auto& index = submit.info.swapchainIndex;
+
+                if (m_presentTasks.contains(index))
+                    m_presentTasks[index].get(); // wait previous present task.
+
+                m_presentTasks[index] = std::move(future);
+                m_presentSignalSemaphores[index] = submit.info.signalSemaphores;
+            }
+            break;
             case SubmitType::kNone:
             default:
                 spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
                 break;
             }
         }
-
-        for (auto& presentSubmitInfo : presentSubmitInfos)
-        {
-            auto& index = presentSubmitInfo.swapchainIndex;
-
-            if (m_presentTasks.contains(index))
-                m_presentTasks[index].get(); // wait previous present task.
-
-            m_presentTasks[index] = std::move(future);
-            m_presentSemaphores[index] = presentSubmitInfo.signalSemaphores;
-        }
     }
-
-    // future.get();
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
     for (auto imageIndex : presentInfo.imageIndices)
     {
-        if (m_presentSemaphores.contains(imageIndex))
+        if (m_presentSignalSemaphores.contains(imageIndex))
         {
             presentInfo.waitSemaphores.insert(presentInfo.waitSemaphores.end(),
-                                              m_presentSemaphores[imageIndex].begin(),
-                                              m_presentSemaphores[imageIndex].end());
+                                              m_presentSignalSemaphores[imageIndex].begin(),
+                                              m_presentSignalSemaphores[imageIndex].end());
 
-            m_presentSemaphores.erase(imageIndex);
+            m_presentSignalSemaphores.erase(imageIndex);
         }
     }
 

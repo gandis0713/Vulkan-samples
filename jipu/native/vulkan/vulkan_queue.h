@@ -22,7 +22,7 @@ class VULKAN_EXPORT VulkanQueue : public Queue
 public:
     VulkanQueue() = delete;
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
-    ~VulkanQueue() override = default;
+    ~VulkanQueue() override;
 
 public:
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
@@ -38,8 +38,11 @@ private:
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 
 private:
-    std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSemaphores{};
+    std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSignalSemaphores{};
     std::unordered_map<uint32_t, std::future<void>> m_presentTasks{};
+    std::vector<std::future<void>> m_computeTasks{};
+    std::vector<std::future<void>> m_transferTasks{};
+    std::vector<std::future<void>> m_graphicsTasks{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);
