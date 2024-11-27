@@ -329,7 +329,8 @@ uint32_t VulkanSwapchain::acquireNextImageIndex()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     auto semaphore = m_device->getSemaphorePool()->create();
-    spdlog::error("semaphore created in swapchain: [{}]", reinterpret_cast<void*>(semaphore));
+    m_device->getInflightObjects()->standby(semaphore);
+    m_device->getDeleter()->safeDestroy(semaphore);
 
     uint32_t acquireImageIndex = 0;
     VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
@@ -350,15 +351,7 @@ void VulkanSwapchain::setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore
         throw std::runtime_error("Failed to set acquire image semaphore. Invalid image index.");
     }
 
-    auto texture = m_textures[imageIndex].get();
-    if (texture->getAcquireSemaphore() != VK_NULL_HANDLE)
-    {
-        spdlog::error("semaphore safe destroy in swapchain: [{}]", reinterpret_cast<void*>(texture->getAcquireSemaphore()));
-        m_device->getDeleter()->safeDestroy(texture->getAcquireSemaphore());
-    }
-
     m_textures[imageIndex]->setAcquireSemaphore(semaphore);
-
     m_acquiredImageIndex = imageIndex;
 }
 
