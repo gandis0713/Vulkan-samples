@@ -129,6 +129,15 @@ VulkanSwapchainTexture::VulkanSwapchainTexture(VulkanDevice* device, const Vulka
 {
 }
 
+VulkanSwapchainTexture::~VulkanSwapchainTexture()
+{
+    if (m_semaphore != VK_NULL_HANDLE)
+    {
+        auto vulkanDevice = downcast(m_device);
+        vulkanDevice->getDeleter()->safeDestroy(m_semaphore);
+    }
+}
+
 uint32_t VulkanSwapchainTexture::getImageIndex() const
 {
     return m_imageIndex;
@@ -320,6 +329,7 @@ uint32_t VulkanSwapchain::acquireNextImageIndex()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     auto semaphore = m_device->getSemaphorePool()->create();
+    spdlog::error("semaphore created in swapchain: [{}]", reinterpret_cast<void*>(semaphore));
 
     uint32_t acquireImageIndex = 0;
     VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
@@ -343,6 +353,7 @@ void VulkanSwapchain::setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore
     auto texture = m_textures[imageIndex].get();
     if (texture->getAcquireSemaphore() != VK_NULL_HANDLE)
     {
+        spdlog::error("semaphore safe destroy in swapchain: [{}]", reinterpret_cast<void*>(texture->getAcquireSemaphore()));
         m_device->getDeleter()->safeDestroy(texture->getAcquireSemaphore());
     }
 

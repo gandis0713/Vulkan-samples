@@ -60,7 +60,7 @@ class VULKAN_EXPORT VulkanSwapchainTexture : public VulkanTexture
 public:
     VulkanSwapchainTexture() = delete;
     VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor&, const VulkanSwapchainTextureDescriptor&);
-    ~VulkanSwapchainTexture() override = default;
+    ~VulkanSwapchainTexture() override;
 
 public:
     uint32_t getImageIndex() const;
