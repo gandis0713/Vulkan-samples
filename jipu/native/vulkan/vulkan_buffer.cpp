@@ -101,6 +101,11 @@ void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageF
     m_stageFlags = flags;
 }
 
+VulkanDevice* VulkanBuffer::getDevice() const
+{
+    return m_device;
+}
+
 VkBuffer VulkanBuffer::getVkBuffer() const
 {
     return m_resource.buffer;

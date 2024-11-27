@@ -31,6 +31,7 @@ public:
 public:
     void setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags);
 
+    VulkanDevice* getDevice() const;
     VkBuffer getVkBuffer() const;
     VulkanMemory getVulkanMemory() const;
     VulkanBufferResource getVulkanBufferResource() const;
