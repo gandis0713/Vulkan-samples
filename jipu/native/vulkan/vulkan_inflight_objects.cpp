@@ -36,8 +36,23 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
     for (const auto& submit : submits)
     {
         inflightObject.commandBuffers.insert(submit.info.commandBuffers.begin(), submit.info.commandBuffers.end());
-        inflightObject.signalSemaphores.insert(submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
-        inflightObject.waitSemaphores.insert(submit.info.waitSemaphores.begin(), submit.info.waitSemaphores.end()); // for swapchain
+        for (const auto& semaphore : submit.info.signalSemaphores)
+        {
+            inflightObject.semaphores.insert(semaphore);
+            if (m_standByObject.semaphores.contains(semaphore))
+            {
+                m_standByObject.semaphores.erase(semaphore);
+            }
+        }
+
+        for (const auto& semaphore : submit.info.waitSemaphores)
+        {
+            inflightObject.semaphores.insert(semaphore);
+            if (m_standByObject.semaphores.contains(semaphore))
+            {
+                m_standByObject.semaphores.erase(semaphore);
+            }
+        }
 
         inflightObject.imageViews.insert(submit.object.imageViews.begin(), submit.object.imageViews.end());
         inflightObject.samplers.insert(submit.object.samplers.begin(), submit.object.samplers.end());
@@ -140,6 +155,11 @@ bool VulkanInflightObjects::isInflight(VkCommandBuffer commandBuffer) const
         }
     }
 
+    if (m_standByObject.commandBuffers.contains(commandBuffer))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -153,6 +173,11 @@ bool VulkanInflightObjects::isInflight(VkBuffer buffer) const
         {
             return true;
         }
+    }
+
+    if (m_standByObject.buffers.contains(buffer))
+    {
+        return true;
     }
 
     return false;
@@ -170,6 +195,11 @@ bool VulkanInflightObjects::isInflight(VkImage image) const
         }
     }
 
+    if (m_standByObject.images.contains(image))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -185,6 +215,11 @@ bool VulkanInflightObjects::isInflight(VkImageView imageView) const
         }
     }
 
+    if (m_standByObject.imageViews.contains(imageView))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -194,10 +229,15 @@ bool VulkanInflightObjects::isInflight(VkSemaphore semaphore) const
 
     for (const auto& [_, inflightObject] : m_inflightObjects)
     {
-        if (inflightObject.signalSemaphores.contains(semaphore) || inflightObject.waitSemaphores.contains(semaphore))
+        if (inflightObject.semaphores.contains(semaphore))
         {
             return true;
         }
+    }
+
+    if (m_standByObject.semaphores.contains(semaphore))
+    {
+        return true;
     }
 
     return false;
@@ -215,6 +255,11 @@ bool VulkanInflightObjects::isInflight(VkSampler sampler) const
         }
     }
 
+    if (m_standByObject.samplers.contains(sampler))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -228,6 +273,11 @@ bool VulkanInflightObjects::isInflight(VkPipeline pipeline) const
         {
             return true;
         }
+    }
+
+    if (m_standByObject.pipelines.contains(pipeline))
+    {
+        return true;
     }
 
     return false;
@@ -245,6 +295,11 @@ bool VulkanInflightObjects::isInflight(VkPipelineLayout pipelineLayout) const
         }
     }
 
+    if (m_standByObject.pipelineLayouts.contains(pipelineLayout))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -258,6 +313,11 @@ bool VulkanInflightObjects::isInflight(VkShaderModule shaderModule) const
         {
             return true;
         }
+    }
+
+    if (m_standByObject.shaderModules.contains(shaderModule))
+    {
+        return true;
     }
 
     return false;
@@ -275,6 +335,11 @@ bool VulkanInflightObjects::isInflight(VkDescriptorSet descriptorSet) const
         }
     }
 
+    if (m_standByObject.descriptorSet.contains(descriptorSet))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -288,6 +353,11 @@ bool VulkanInflightObjects::isInflight(VkDescriptorSetLayout descriptorSetLayout
         {
             return true;
         }
+    }
+
+    if (m_standByObject.descriptorSetLayouts.contains(descriptorSetLayout))
+    {
+        return true;
     }
 
     return false;
@@ -305,6 +375,11 @@ bool VulkanInflightObjects::isInflight(VkFramebuffer framebuffer) const
         }
     }
 
+    if (m_standByObject.framebuffers.contains(framebuffer))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -320,6 +395,11 @@ bool VulkanInflightObjects::isInflight(VkRenderPass renderPass) const
         }
     }
 
+    if (m_standByObject.renderPasses.contains(renderPass))
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -328,6 +408,11 @@ bool VulkanInflightObjects::isInflight(VkFence fence) const
     std::lock_guard<std::mutex> lock(m_objectMutex);
 
     return m_inflightObjects.contains(fence);
+}
+
+void VulkanInflightObjects::standby(VkSemaphore semaphore)
+{
+    m_standByObject.semaphores.insert(semaphore);
 }
 
 } // namespace jipu

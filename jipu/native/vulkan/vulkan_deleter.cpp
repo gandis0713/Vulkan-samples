@@ -50,15 +50,7 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto semaphore : object.signalSemaphores)
-        {
-            if (contains(semaphore))
-            {
-                safeDestroy(semaphore);
-            }
-        }
-
-        for (auto semaphore : object.waitSemaphores)
+        for (auto semaphore : object.semaphores)
         {
             if (contains(semaphore))
             {
@@ -309,6 +301,7 @@ void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
     }
     else
     {
+        spdlog::error("The semaphore is deleted. {}", reinterpret_cast<void*>(semaphore));
         erase(semaphore);
         destroy(semaphore);
     }

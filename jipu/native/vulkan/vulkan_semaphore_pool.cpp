@@ -31,6 +31,7 @@ VkSemaphore VulkanSemaphorePool::create()
     {
         if (semaphore.second == false)
         {
+            // spdlog::trace("The semaphore is reused {}.", reinterpret_cast<void*>(semaphore.first));
             semaphore.second = true;
             return semaphore.first;
         }
@@ -62,6 +63,7 @@ void VulkanSemaphorePool::release(VkSemaphore semaphore)
         return;
     }
 
+    // spdlog::trace("The semaphore is released {}.", reinterpret_cast<void*>(semaphore));
     m_semaphores[semaphore] = false;
 }
 

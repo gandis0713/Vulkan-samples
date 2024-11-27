@@ -228,10 +228,19 @@ ResourceInfo getSrcResourceUsageInfo(const std::vector<VulkanCommandRecordResult
 std::vector<VkSemaphore> getSrcBufferSemaphores(std::vector<VulkanSubmit>& submits, Buffer* buffer)
 {
     std::vector<VkSemaphore> semaphores{};
-    for (const auto& submit : submits)
+    for (auto& submit : submits)
     {
         if (submit.object.srcResource.buffers.contains(downcast(buffer)->getVkBuffer()))
         {
+            if (submit.info.signalSemaphores.empty())
+            {
+                auto device = downcast(buffer)->getDevice();
+                auto semaphore = device->getSemaphorePool()->create();
+                submit.addSignalSemaphore({ semaphore });
+
+                device->getInflightObjects()->standby(semaphore);
+                device->getDeleter()->safeDestroy(semaphore);
+            }
             semaphores.insert(semaphores.end(), submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
         }
     }
@@ -242,10 +251,19 @@ std::vector<VkSemaphore> getSrcBufferSemaphores(std::vector<VulkanSubmit>& submi
 std::vector<VkSemaphore> getSrcTextureSemaphores(std::vector<VulkanSubmit>& submits, Texture* texture)
 {
     std::vector<VkSemaphore> semaphores{};
-    for (const auto& submit : submits)
+    for (auto& submit : submits)
     {
         if (submit.object.srcResource.images.contains(downcast(texture)->getVkImage()))
         {
+            if (submit.info.signalSemaphores.empty())
+            {
+                auto device = downcast(texture)->getDevice();
+                auto semaphore = device->getSemaphorePool()->create();
+                submit.addSignalSemaphore({ semaphore });
+
+                device->getInflightObjects()->standby(semaphore);
+                device->getDeleter()->safeDestroy(semaphore);
+            }
             semaphores.insert(semaphores.end(), submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
         }
     }
@@ -314,15 +332,7 @@ SubmitType getSubmitType(const VulkanCommandRecordResult& result)
 
 VulkanSubmit getDefaultSubmit(VulkanDevice* device)
 {
-    VulkanSubmit submit = {};
-
-    // set signal semaphore
-    {
-        auto semaphore = device->getSemaphorePool()->create();
-        submit.addSignalSemaphore({ semaphore });
-    }
-
-    return submit;
+    return VulkanSubmit{};
 };
 
 VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results)

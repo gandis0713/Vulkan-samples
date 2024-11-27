@@ -19,8 +19,7 @@ struct VulkanInflightObject
     std::unordered_map<VkBuffer, VulkanMemory> buffers{};
     std::unordered_map<VkImage, VulkanMemory> images{};
     std::unordered_set<VkImageView> imageViews{};
-    std::unordered_set<VkSemaphore> signalSemaphores{};
-    std::unordered_set<VkSemaphore> waitSemaphores{};
+    std::unordered_set<VkSemaphore> semaphores{};
     std::unordered_set<VkSampler> samplers{};
     std::unordered_set<VkPipeline> pipelines{};
     std::unordered_set<VkPipelineLayout> pipelineLayouts{};
@@ -68,11 +67,16 @@ public:
     bool isInflight(VkRenderPass renderPass) const;
     bool isInflight(VkFence fence) const;
 
+public:
+    void standby(VkSemaphore semaphore);
+
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;
 
 private:
     std::unordered_map<VkFence, VulkanInflightObject> m_inflightObjects{};
+    VulkanInflightObject m_standByObject{};
+
     std::unordered_map<void*, Subscribe> m_subs{};
 
     mutable std::mutex m_subscribeMutex{};
