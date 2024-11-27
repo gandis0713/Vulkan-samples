@@ -140,19 +140,19 @@ std::shared_ptr<VulkanFramebuffer> VulkanFramebufferCache::getFrameBuffer(const 
     return framebuffer;
 }
 
-bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
+bool VulkanFramebufferCache::invalidate(VkImageView imageView)
 {
     for (auto& [descriptor, _] : m_cache)
     {
         for (auto& attachment : descriptor.colorAttachments)
         {
-            if (attachment.renderView == textureView)
+            if (attachment.renderView->getVkImageView() == imageView)
             {
                 m_cache.erase(descriptor);
                 return true;
             }
 
-            if (attachment.resolveView != nullptr && attachment.resolveView == textureView)
+            if (attachment.resolveView != nullptr && attachment.resolveView->getVkImageView() == imageView)
             {
                 m_cache.erase(descriptor);
                 return true;

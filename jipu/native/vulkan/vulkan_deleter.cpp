@@ -253,7 +253,6 @@ void VulkanDeleter::safeDestroy(VkBuffer buffer, VulkanMemory memory)
 
 void VulkanDeleter::safeDestroy(VkImage image, VulkanMemory memory)
 {
-
     if (m_device->getInflightObjects()->isInflight(image))
     {
         insert(image, memory);
@@ -267,7 +266,6 @@ void VulkanDeleter::safeDestroy(VkImage image, VulkanMemory memory)
 
 void VulkanDeleter::safeDestroy(VkCommandBuffer commandBuffer)
 {
-
     if (m_device->getInflightObjects()->isInflight(commandBuffer))
     {
         insert(commandBuffer);
@@ -281,7 +279,6 @@ void VulkanDeleter::safeDestroy(VkCommandBuffer commandBuffer)
 
 void VulkanDeleter::safeDestroy(VkImageView imageView)
 {
-
     if (m_device->getInflightObjects()->isInflight(imageView))
     {
         insert(imageView);
@@ -290,6 +287,12 @@ void VulkanDeleter::safeDestroy(VkImageView imageView)
     {
         erase(imageView);
         destroy(imageView);
+    }
+
+    // invalidate framebuffer cache
+    {
+        auto framebufferCache = m_device->getFramebufferCache();
+        framebufferCache->invalidate(imageView);
     }
 }
 void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
@@ -307,7 +310,6 @@ void VulkanDeleter::safeDestroy(VkSemaphore semaphore)
 
 void VulkanDeleter::safeDestroy(VkSampler sampler)
 {
-
     if (m_device->getInflightObjects()->isInflight(sampler))
     {
         insert(sampler);
@@ -320,7 +322,6 @@ void VulkanDeleter::safeDestroy(VkSampler sampler)
 }
 void VulkanDeleter::safeDestroy(VkPipeline pipeline)
 {
-
     if (m_device->getInflightObjects()->isInflight(pipeline))
     {
         insert(pipeline);
@@ -334,7 +335,6 @@ void VulkanDeleter::safeDestroy(VkPipeline pipeline)
 
 void VulkanDeleter::safeDestroy(VkPipelineLayout pipelineLayout)
 {
-
     if (m_device->getInflightObjects()->isInflight(pipelineLayout))
     {
         insert(pipelineLayout);
@@ -361,7 +361,6 @@ void VulkanDeleter::safeDestroy(VkShaderModule shaderModule)
 
 void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
 {
-
     if (m_device->getInflightObjects()->isInflight(descriptorSet))
     {
         insert(descriptorSet);
@@ -375,7 +374,6 @@ void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
 
 void VulkanDeleter::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 {
-
     if (m_device->getInflightObjects()->isInflight(descriptorSetLayout))
     {
         insert(descriptorSetLayout);
@@ -389,7 +387,6 @@ void VulkanDeleter::safeDestroy(VkDescriptorSetLayout descriptorSetLayout)
 
 void VulkanDeleter::safeDestroy(VkFramebuffer framebuffer)
 {
-
     if (m_device->getInflightObjects()->isInflight(framebuffer))
     {
         insert(framebuffer);
@@ -403,7 +400,6 @@ void VulkanDeleter::safeDestroy(VkFramebuffer framebuffer)
 
 void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
 {
-
     if (m_device->getInflightObjects()->isInflight(renderPass))
     {
         insert(renderPass);
@@ -413,11 +409,16 @@ void VulkanDeleter::safeDestroy(VkRenderPass renderPass)
         erase(renderPass);
         destroy(renderPass);
     }
+
+    // invalidate framebuffer cache
+    {
+        auto framebufferCache = m_device->getFramebufferCache();
+        framebufferCache->invalidate(renderPass);
+    }
 }
 
 void VulkanDeleter::safeDestroy(VkFence fence)
 {
-
     if (m_device->getInflightObjects()->isInflight(fence))
     {
         insert(fence);

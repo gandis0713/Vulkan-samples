@@ -64,7 +64,7 @@ public:
 
     std::shared_ptr<VulkanFramebuffer> getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
-    bool invalidate(VulkanTextureView* textureView);
+    bool invalidate(VkImageView imageView);
     bool invalidate(VkRenderPass renderPass);
 
     void clear();

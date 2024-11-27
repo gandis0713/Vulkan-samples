@@ -60,9 +60,6 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto framebufferCache = m_device->getFramebufferCache();
-    framebufferCache->invalidate(m_renderPass);
-
     m_device->getDeleter()->safeDestroy(m_renderPass);
 }
 
