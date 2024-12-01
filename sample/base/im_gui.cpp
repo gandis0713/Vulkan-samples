@@ -392,9 +392,16 @@ void Im_Gui::build()
 {
     // update transfrom buffer
     {
-        m_uiTransform.scale =
-            glm::vec2(2.0f / ImGui::GetIO().DisplaySize.x, 2.0f / ImGui::GetIO().DisplaySize.y);
-        m_uiTransform.translate = glm::vec2(-1.0f);
+        float L = ImGui::GetDrawData()->DisplayPos.x;
+        float R = ImGui::GetDrawData()->DisplayPos.x + ImGui::GetDrawData()->DisplaySize.x;
+        float T = ImGui::GetDrawData()->DisplayPos.y;
+        float B = ImGui::GetDrawData()->DisplayPos.y + ImGui::GetDrawData()->DisplaySize.y;
+
+        m_uiTransform.scale[0] = 2.0f / (R - L);
+        m_uiTransform.scale[1] = 2.0f / (T - B);
+
+        m_uiTransform.translate[0] = -(R + L) / (R - L);
+        m_uiTransform.translate[1] = -(T + B) / (T - B);
 
         void* pointer = m_uniformBuffer->map();
         memcpy(pointer, &m_uiTransform, sizeof(UITransform));
