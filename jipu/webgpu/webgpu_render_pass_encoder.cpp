@@ -82,8 +82,8 @@ void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
     // TODO: default viewport
     {
         auto textureView = reinterpret_cast<WebGPUTextureView*>(m_descriptor.colorAttachments[0].view)->getTextureView();
-        auto width = textureView->getWidth();
-        auto height = textureView->getHeight();
+        float width = static_cast<float>(textureView->getWidth());
+        float height = static_cast<float>(textureView->getHeight());
         m_renderPassEncoder->setViewport(0, 0, width, height, 0, 1);
     }
 

@@ -111,8 +111,8 @@ int Window::exec()
                 }
                 android_app_clear_motion_events(inputBuffer);
             }
-            update();
-            draw();
+            onUpdate();
+            onDraw();
         }
 
     } while (app->destroyRequested == 0);
