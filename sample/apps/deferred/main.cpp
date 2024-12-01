@@ -150,12 +150,12 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
         std::vector<CompositionVertex> vertices{
-            { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
-            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-            { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+            { { -1.0, 1.0, 0.0 }, { 0.0, 0.0 } },
+            { { -1.0, -1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, 1.0, 0.0 }, { 1.0, 0.0 } },
+            { { 1.0, 1.0, 0.0 }, { 1.0, 0.0 } },
+            { { -1.0, -1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, -1.0, 0.0 }, { 1.0, 1.0 } },
         };
     } m_composition;
 
@@ -645,7 +645,7 @@ void DeferredSample::createOffscreenCamera()
                                                              m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
                                                              0.1f,
                                                              1000.0f);
-    m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void DeferredSample::createOffscreenUniformBuffer()

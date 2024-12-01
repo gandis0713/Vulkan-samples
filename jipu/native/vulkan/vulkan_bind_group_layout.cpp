@@ -238,17 +238,17 @@ BindingStageFlags ToBindingStageFlags(VkShaderStageFlags vkFlags)
 {
     BindingStageFlags flags = 0u;
 
-    if (flags & VK_SHADER_STAGE_VERTEX_BIT)
+    if (vkFlags & VK_SHADER_STAGE_VERTEX_BIT)
     {
-        vkFlags |= BindingStageFlagBits::kVertexStage;
+        flags |= BindingStageFlagBits::kVertexStage;
     }
-    if (flags & VK_SHADER_STAGE_FRAGMENT_BIT)
+    if (vkFlags & VK_SHADER_STAGE_FRAGMENT_BIT)
     {
-        vkFlags |= BindingStageFlagBits::kFragmentStage;
+        flags |= BindingStageFlagBits::kFragmentStage;
     }
-    if (flags & VK_SHADER_STAGE_COMPUTE_BIT)
+    if (vkFlags & VK_SHADER_STAGE_COMPUTE_BIT)
     {
-        vkFlags |= BindingStageFlagBits::kComputeStage;
+        flags |= BindingStageFlagBits::kComputeStage;
     }
 
     return flags;
