@@ -45,6 +45,9 @@ class JIPU_EXPORT CommandEncoder
 public:
     virtual ~CommandEncoder() = default;
 
+    CommandEncoder(const CommandEncoder&) = delete;
+    CommandEncoder& operator=(const CommandEncoder&) = delete;
+
     virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
 
@@ -67,6 +70,9 @@ public:
                                  uint64_t destinationOffset) = 0;
 
     virtual std::unique_ptr<CommandBuffer> finish(const CommandBufferDescriptor& descriptor) = 0;
+
+protected:
+    CommandEncoder() = default;
 };
 
 } // namespace jipu

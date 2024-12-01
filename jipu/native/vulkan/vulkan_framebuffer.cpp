@@ -12,7 +12,7 @@
 namespace jipu
 {
 
-VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -32,14 +32,14 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                                                    .pNext = descriptor.next,
                                                    .flags = descriptor.flags,
-                                                   .renderPass = descriptor.renderPass->getVkRenderPass(),
+                                                   .renderPass = descriptor.renderPass,
                                                    .attachmentCount = static_cast<uint32_t>(attachments.size()),
                                                    .pAttachments = attachments.data(),
                                                    .width = descriptor.width,
                                                    .height = descriptor.height,
                                                    .layers = descriptor.layers };
 
-    if (m_device.vkAPI.CreateFramebuffer(device.getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
+    if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create framebuffer!");
     }
@@ -47,12 +47,17 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
 
 VulkanFramebuffer::~VulkanFramebuffer()
 {
-    m_device.vkAPI.DestroyFramebuffer(m_device.getVkDevice(), m_framebuffer, nullptr);
+    m_device->getDeleter()->safeDestroy(m_framebuffer);
 }
 
 const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttachments() const
 {
     return m_descriptor.colorAttachments;
+}
+
+VulkanTextureView* VulkanFramebuffer::getDepthStencilAttachment() const
+{
+    return m_descriptor.depthStencilAttachment;
 }
 
 uint32_t VulkanFramebuffer::getWidth() const
@@ -114,42 +119,40 @@ bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescript
     return false;
 }
 
-VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice& device)
+VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice* device)
     : m_device(device)
 {
     // TODO
 }
 
-VulkanFramebuffer* VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+std::shared_ptr<VulkanFramebuffer> VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return it->second.get();
+        return it->second;
     }
 
-    auto framebuffer = std::make_unique<VulkanFramebuffer>(m_device, descriptor);
+    auto framebuffer = std::make_shared<VulkanFramebuffer>(m_device, descriptor);
 
-    // get raw pointer before moving.
-    VulkanFramebuffer* framebufferPtr = framebuffer.get();
-    m_cache.emplace(descriptor, std::move(framebuffer));
+    m_cache.emplace(descriptor, framebuffer);
 
-    return framebufferPtr;
+    return framebuffer;
 }
 
-bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
+bool VulkanFramebufferCache::invalidate(VkImageView imageView)
 {
     for (auto& [descriptor, _] : m_cache)
     {
         for (auto& attachment : descriptor.colorAttachments)
         {
-            if (attachment.renderView == textureView)
+            if (attachment.renderView->getVkImageView() == imageView)
             {
                 m_cache.erase(descriptor);
                 return true;
             }
 
-            if (attachment.resolveView != nullptr && attachment.resolveView == textureView)
+            if (attachment.resolveView != nullptr && attachment.resolveView->getVkImageView() == imageView)
             {
                 m_cache.erase(descriptor);
                 return true;
@@ -160,7 +163,7 @@ bool VulkanFramebufferCache::invalidate(VulkanTextureView* textureView)
     return false;
 }
 
-bool VulkanFramebufferCache::invalidate(VulkanRenderPass* renderPass)
+bool VulkanFramebufferCache::invalidate(VkRenderPass renderPass)
 {
     for (auto& [descriptor, _] : m_cache)
     {

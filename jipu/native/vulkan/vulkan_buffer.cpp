@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-VulkanBuffer::VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descriptor) noexcept(false)
+VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -29,26 +29,32 @@ VulkanBuffer::VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descrip
     bufferCreateInfo.size = descriptor.size;
     bufferCreateInfo.flags = 0;
     bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    auto& vulkanResourceAllocator = device.getResourceAllocator();
-    m_resource = vulkanResourceAllocator.createBuffer(bufferCreateInfo);
+    // The buffer belongs to only one queue family. If the queue family needs to change, ownership must be changed.
+    {
+        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBufferCreateInfo.html
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // do not use VK_SHARING_MODE_CONCURRENT
+        bufferCreateInfo.queueFamilyIndexCount = 0;
+        bufferCreateInfo.pQueueFamilyIndices = nullptr;
+    }
+
+    auto vulkanResourceAllocator = device->getResourceAllocator();
+    m_resource = vulkanResourceAllocator->createBufferResource(bufferCreateInfo);
 }
 
 VulkanBuffer::~VulkanBuffer()
 {
     unmap();
 
-    auto& vulkanResourceAllocator = downcast(m_device).getResourceAllocator();
-    vulkanResourceAllocator.destroyBuffer(m_resource);
+    m_device->getDeleter()->safeDestroy(m_resource.buffer, m_resource.memory);
 }
 
 void* VulkanBuffer::map()
 {
     if (m_mappedPtr == nullptr)
     {
-        auto& resourceAllocator = downcast(m_device).getResourceAllocator();
-        m_mappedPtr = resourceAllocator.map(m_resource.allocation);
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        m_mappedPtr = resourceAllocator->map(m_resource.memory);
     }
 
     return m_mappedPtr;
@@ -57,8 +63,8 @@ void VulkanBuffer::unmap()
 {
     if (m_mappedPtr)
     {
-        auto& resourceAllocator = downcast(m_device).getResourceAllocator();
-        resourceAllocator.unmap(m_resource.allocation);
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        resourceAllocator->unmap(m_resource.memory);
 
         m_mappedPtr = nullptr;
     }
@@ -76,8 +82,8 @@ uint64_t VulkanBuffer::getSize() const
 
 void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags)
 {
-    auto& vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkBufferMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -95,9 +101,24 @@ void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageF
     m_stageFlags = flags;
 }
 
+VulkanDevice* VulkanBuffer::getDevice() const
+{
+    return m_device;
+}
+
 VkBuffer VulkanBuffer::getVkBuffer() const
 {
     return m_resource.buffer;
+}
+
+VulkanMemory VulkanBuffer::getVulkanMemory() const
+{
+    return m_resource.memory;
+}
+
+VulkanBufferResource VulkanBuffer::getVulkanBufferResource() const
+{
+    return m_resource;
 }
 
 // Convert Helper

@@ -42,6 +42,11 @@ struct VulkanSwapchainDescriptor
     VulkanQueue* queue = nullptr;
 };
 
+struct VulkanSwapchainTextureDescriptor
+{
+    uint32_t imageIndex = 0;
+};
+
 struct VulkanPresentInfo
 {
     std::vector<VkSemaphore> signalSemaphore{};
@@ -50,12 +55,44 @@ struct VulkanPresentInfo
     std::vector<uint32_t> imageIndices{};
 };
 
+class VULKAN_EXPORT VulkanSwapchainTexture : public VulkanTexture
+{
+public:
+    VulkanSwapchainTexture() = delete;
+    VulkanSwapchainTexture(VulkanDevice* device, const VulkanTextureDescriptor&, const VulkanSwapchainTextureDescriptor&);
+    ~VulkanSwapchainTexture() override;
+
+public:
+    uint32_t getImageIndex() const;
+
+    void setAcquireSemaphore(VkSemaphore semaphore);
+    VkSemaphore getAcquireSemaphore() const;
+
+private:
+    VkSemaphore m_semaphore = VK_NULL_HANDLE;
+    uint32_t m_imageIndex = 0u;
+};
+DOWN_CAST(VulkanSwapchainTexture, VulkanTexture);
+
+class VULKAN_EXPORT VulkanSwapchainTextureView : public VulkanTextureView
+{
+public:
+    VulkanSwapchainTextureView() = delete;
+    VulkanSwapchainTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor);
+    ~VulkanSwapchainTextureView() override = default;
+
+public:
+    uint32_t getImageIndex() const;
+    VkSemaphore getAcquireSemaphore() const;
+};
+DOWN_CAST(VulkanSwapchainTextureView, VulkanTextureView);
+
 class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;
-    VulkanSwapchain(VulkanDevice& device, const SwapchainDescriptor& descriptor) noexcept(false);
-    VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
     VulkanSwapchain(const Swapchain&) = delete;
@@ -66,6 +103,8 @@ public:
     uint32_t getHeight() const override;
 
     void present() override;
+    void resize(uint32_t width, uint32_t height) override;
+
     Texture* acquireNextTexture() override;
     TextureView* acquireNextTextureView() override;
 
@@ -73,26 +112,29 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
-    void setAcquireImageIndex(const uint32_t imageIndex);
+    void createSwapchain(const VulkanSwapchainDescriptor& descriptor);
+
+    uint32_t acquireNextImageIndex();
+
+    void setAcquireImageInfo(const uint32_t imageIndex, VkSemaphore semaphore);
+    VkSemaphore getAcquireSemaphore(const uint32_t imageIndex) const;
     uint32_t getAcquireImageIndex() const;
-    void setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex);
 
 private:
-    VulkanDevice& m_device;
-    const VulkanSwapchainDescriptor m_descriptor;
+    VulkanDevice* m_device = nullptr;
+    VulkanSwapchainDescriptor m_descriptor;
 
-    std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
-    std::vector<std::unique_ptr<VulkanTextureView>> m_textureViews{};
+    std::vector<std::unique_ptr<VulkanSwapchainTexture>> m_textures{};
+    std::vector<std::unique_ptr<VulkanSwapchainTextureView>> m_textureViews{};
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-    std::vector<VkSemaphore> m_acquireImageSemaphores{};
     uint32_t m_acquiredImageIndex = 0u;
 };
 
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Generate Helper
-VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice& device, const SwapchainDescriptor& descriptor);
+VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor);
 
 } // namespace jipu

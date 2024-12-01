@@ -17,8 +17,8 @@ public:
     ~ImGuiSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -67,14 +67,14 @@ void ImGuiSample::init()
     createRenderPipeline();
 }
 
-void ImGuiSample::update()
+void ImGuiSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateImGui();
 }
 
-void ImGuiSample::draw()
+void ImGuiSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {
@@ -95,13 +95,13 @@ void ImGuiSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), renderView);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         m_queue->submit({ commandBuffer.get() });

@@ -6,6 +6,7 @@
 #include <random>
 #include <stdexcept>
 
+#include "vulkan_adapter.h"
 #include "vulkan_bind_group.h"
 #include "vulkan_bind_group_layout.h"
 #include "vulkan_buffer.h"
@@ -13,7 +14,6 @@
 #include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
 #include "vulkan_framebuffer.h"
-#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
@@ -150,9 +150,9 @@ void VulkanSubpassesSample::init()
     createCompositionPipeline();
 }
 
-void VulkanSubpassesSample::update()
+void VulkanSubpassesSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
@@ -237,7 +237,7 @@ void VulkanSubpassesSample::updateImGui()
     } });
 }
 
-void VulkanSubpassesSample::draw()
+void VulkanSubpassesSample::onDraw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
@@ -402,7 +402,7 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), *renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     if (m_useTimestamp)
     {

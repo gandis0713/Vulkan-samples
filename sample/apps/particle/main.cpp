@@ -2,9 +2,9 @@
 #include "file.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/shader_module.h"
 #include "jipu/native/surface.h"
@@ -40,8 +40,8 @@ public:
 
 public:
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -137,9 +137,9 @@ void ParticleSample::init()
     createRenderPipeline();
 }
 
-void ParticleSample::update()
+void ParticleSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
@@ -156,15 +156,15 @@ void ParticleSample::updateImGui()
     } });
 }
 
-void ParticleSample::draw()
+void ParticleSample::onDraw()
 {
     // encoder compute command
     std::unique_ptr<CommandEncoder> computeCommandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
 
     ComputePassEncoderDescriptor computePassDescriptor{};
     std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
-    computePassEncoder->setPipeline(*m_computePipeline);
-    computePassEncoder->setBindGroup(0, *m_computeBindGroups[(m_vertexIndex + 1) % 2]);
+    computePassEncoder->setPipeline(m_computePipeline.get());
+    computePassEncoder->setBindGroup(0, m_computeBindGroups[(m_vertexIndex + 1) % 2].get());
     computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
     computePassEncoder->end();
 
@@ -188,13 +188,13 @@ void ParticleSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(renderCommandEncoder.get(), *renderView);
+    drawImGui(renderCommandEncoder.get(), renderView);
     std::unique_ptr<CommandBuffer> renderCommandBuffer = renderCommandEncoder->finish(CommandBufferDescriptor{});
 
     if (separateCmdBuffer)

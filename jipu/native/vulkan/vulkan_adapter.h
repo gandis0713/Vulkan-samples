@@ -1,8 +1,9 @@
 #pragma once
 
-#include "instance.h"
 #include "jipu/common/cast.h"
 #include "jipu/common/dylib.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/physical_device.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_surface.h"
@@ -13,28 +14,32 @@
 namespace jipu
 {
 
-struct VulkanInstanceInfo : VulkanInstanceKnobs
+struct VulkanAdapterInfo : VulkanAdapterKnobs
 {
     std::vector<VkLayerProperties> layerProperties;
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class VULKAN_EXPORT VulkanInstance : public Instance
+class Instance;
+class VULKAN_EXPORT VulkanAdapter : public Adapter
 {
 
 public:
-    VulkanInstance() = delete;
-    VulkanInstance(const InstanceDescriptor& descriptor) noexcept(false);
-    ~VulkanInstance() override;
+    VulkanAdapter() = delete;
+    VulkanAdapter(Instance* instance, const AdapterDescriptor& descriptor) noexcept(false);
+    ~VulkanAdapter() override;
 
-    VulkanInstance(const VulkanInstance&) = delete;
-    VulkanInstance& operator=(const VulkanInstance&) = delete;
+    VulkanAdapter(const VulkanAdapter&) = delete;
+    VulkanAdapter& operator=(const VulkanAdapter&) = delete;
 
 public:
     std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
     std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
 
 public:
+    Instance* getInstance() const override;
+
+public: // vulkan
     std::unique_ptr<Surface> createSurface(const VulkanSurfaceDescriptor& descriptor);
 
 public: // vulkan
@@ -42,7 +47,7 @@ public: // vulkan
     const std::vector<VkPhysicalDevice>& getVkPhysicalDevices() const;
     VkPhysicalDevice getVkPhysicalDevice(uint32_t index) const;
 
-    const VulkanInstanceInfo& getInstanceInfo() const;
+    const VulkanAdapterInfo& getInstanceInfo() const;
 
 public:
     VulkanAPI vkAPI{};
@@ -60,16 +65,19 @@ private:
     const std::vector<const char*> getRequiredInstanceLayers();
 
 private:
-    VkInstance m_instance = VK_NULL_HANDLE;
+    Instance* m_instance = nullptr;
+
+private:
+    VkInstance m_vkInstance = VK_NULL_HANDLE;
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DyLib m_vulkanLib{};
-    VulkanInstanceInfo m_instanceInfo{};
+    VulkanAdapterInfo m_vkInstanceInfo{};
 #ifndef NDEBUG
     VkDebugUtilsMessengerEXT m_debugUtilsMessenger = VK_NULL_HANDLE;
 #endif
 };
 
-DOWN_CAST(VulkanInstance, Instance);
+DOWN_CAST(VulkanAdapter, Adapter);
 
 } // namespace jipu

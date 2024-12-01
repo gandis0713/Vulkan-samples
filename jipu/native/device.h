@@ -32,9 +32,6 @@ public:
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
 
-protected:
-    Device() = default;
-
 public:
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<BindGroup> createBindGroup(const BindGroupDescriptor& descriptor) = 0;
@@ -49,6 +46,9 @@ public:
     virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) = 0;
     virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
+
+protected:
+    Device() = default;
 };
 
 } // namespace jipu

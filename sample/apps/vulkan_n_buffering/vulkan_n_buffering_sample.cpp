@@ -7,8 +7,8 @@
 #include <random>
 #include <stdexcept>
 
+#include "vulkan_adapter.h"
 #include "vulkan_device.h"
-#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
@@ -77,9 +77,9 @@ void VulkanNBufferingSample::init()
     createRenderPipeline();
 }
 
-void VulkanNBufferingSample::update()
+void VulkanNBufferingSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
@@ -129,7 +129,7 @@ void VulkanNBufferingSample::updateImGui()
     } });
 }
 
-void VulkanNBufferingSample::draw()
+void VulkanNBufferingSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 
@@ -154,16 +154,16 @@ void VulkanNBufferingSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
+    renderPassEncoder->setBindGroup(0, m_bindGroup.get() s[0]);
     renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
-    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-    renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), *renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }

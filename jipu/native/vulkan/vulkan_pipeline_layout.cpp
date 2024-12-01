@@ -7,7 +7,7 @@
 namespace jipu
 {
 
-VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice& device, const PipelineLayoutDescriptor& descriptor)
+VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor)
     : m_device(device)
 {
     std::vector<VkDescriptorSetLayout> layouts{};
@@ -21,7 +21,7 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice& device, const PipelineL
                                            .setLayoutCount = static_cast<uint32_t>(layouts.size()),
                                            .pSetLayouts = layouts.data() };
 
-    VkResult result = device.vkAPI.CreatePipelineLayout(device.getVkDevice(), &createInfo, nullptr, &m_pipelineLayout);
+    VkResult result = device->vkAPI.CreatePipelineLayout(device->getVkDevice(), &createInfo, nullptr, &m_pipelineLayout);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create VkPipelineLayout");
@@ -30,8 +30,7 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice& device, const PipelineL
 
 VulkanPipelineLayout::~VulkanPipelineLayout()
 {
-    auto& vulkanDevice = downcast(m_device);
-    vulkanDevice.vkAPI.DestroyPipelineLayout(vulkanDevice.getVkDevice(), m_pipelineLayout, nullptr);
+    m_device->getDeleter()->safeDestroy(m_pipelineLayout);
 }
 
 VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const

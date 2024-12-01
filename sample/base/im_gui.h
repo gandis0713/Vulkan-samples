@@ -5,11 +5,11 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/command_encoder.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/pipeline.h"
 #include "jipu/native/pipeline_layout.h"
@@ -29,10 +29,10 @@ public:
     void window(const char* title, std::vector<std::function<void()>> uis);
 
 public:
-    void init(Device* device, Queue* queue, Swapchain& swapchain);
+    void init(Device* device, Queue* queue, Swapchain* swapchain);
     void clear();
     void build();
-    void draw(CommandEncoder* commandEncoder, TextureView& renderView);
+    void draw(CommandEncoder* commandEncoder, TextureView* renderView);
 
 protected:
     struct Padding

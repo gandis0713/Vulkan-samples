@@ -33,26 +33,33 @@ Sample::~Sample()
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
+    m_adapter.reset();
     m_instance.reset();
 }
 
 void Sample::createInstance()
 {
     InstanceDescriptor descriptor;
-    descriptor.type = InstanceType::kVulkan;
     m_instance = Instance::create(descriptor);
+}
+
+void Sample::createAdapter()
+{
+    AdapterDescriptor descriptor;
+    descriptor.type = BackendAPI::kVulkan;
+    m_adapter = m_instance->createAdapter(descriptor);
 }
 
 void Sample::getPhysicalDevices()
 {
-    m_physicalDevices = m_instance->getPhysicalDevices();
+    m_physicalDevices = m_adapter->getPhysicalDevices();
 }
 
 void Sample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
-    m_surface = m_instance->createSurface(descriptor);
+    m_surface = m_adapter->createSurface(descriptor);
 }
 
 void Sample::createSwapchain()
@@ -97,6 +104,7 @@ void Sample::createQueue()
 void Sample::init()
 {
     createInstance();
+    createAdapter();
     getPhysicalDevices();
     createSurface();
     createDevice();
@@ -105,15 +113,21 @@ void Sample::init()
 
     if (m_imgui.has_value())
     {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+        m_imgui.value().init(m_device.get(), m_queue.get(), m_swapchain.get());
     }
 
     Window::init();
 }
 
-void Sample::update()
+void Sample::onUpdate()
 {
     m_fps.update();
+}
+
+void Sample::onResize(uint32_t width, uint32_t height)
+{
+    if (m_swapchain)
+        m_swapchain->resize(width, height);
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -143,7 +157,7 @@ void Sample::windowImGui(const char* title, std::vector<std::function<void()>> u
     }
 }
 
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     if (m_imgui.has_value())
     {

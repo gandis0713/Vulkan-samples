@@ -16,10 +16,12 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_resource_synchronizer.cpp
@@ -50,10 +52,12 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_context.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_fence_pool.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_submitter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_framebuffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_resource_allocator.h
@@ -82,13 +86,14 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/query_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/texture_view.h

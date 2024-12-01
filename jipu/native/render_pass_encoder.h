@@ -90,15 +90,15 @@ class JIPU_EXPORT RenderPassEncoder
 public:
     virtual ~RenderPassEncoder() = default;
 
-protected:
-    RenderPassEncoder() = default;
+    RenderPassEncoder(const RenderPassEncoder&) = delete;
+    RenderPassEncoder& operator=(const RenderPassEncoder&) = delete;
 
 public:
     virtual void setPipeline(RenderPipeline* pipeline) = 0;
-    virtual void setBindGroup(uint32_t index, BindGroup& bindGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
+    virtual void setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
 
-    virtual void setVertexBuffer(uint32_t slot, Buffer& buffer) = 0;
-    virtual void setIndexBuffer(Buffer& buffer, IndexFormat format) = 0;
+    virtual void setVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
+    virtual void setIndexBuffer(Buffer* buffer, IndexFormat format) = 0;
 
     virtual void setViewport(float x,
                              float y,
@@ -127,6 +127,9 @@ public:
     virtual void endOcclusionQuery() = 0;
 
     virtual void end() = 0;
+
+protected:
+    RenderPassEncoder() = default;
 };
 
 } // namespace jipu

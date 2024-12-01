@@ -16,6 +16,9 @@ class ShaderModule
 public:
     virtual ~ShaderModule() = default;
 
+    ShaderModule(const ShaderModule&) = delete;
+    ShaderModule& operator=(const ShaderModule&) = delete;
+
 protected:
     ShaderModule() = default;
 };

@@ -15,8 +15,8 @@ public:
     ~WGPURotatingCube() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
     void initializeContext() override;
     void finalizeContext() override;

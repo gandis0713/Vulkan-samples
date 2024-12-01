@@ -8,21 +8,21 @@ namespace jipu
 
 WebGPUInstance* WebGPUInstance::create(WGPUInstanceDescriptor const* wgpuDescriptor)
 {
-    if (wgpuDescriptor)
+    WGPUInstanceDescriptor descriptor = wgpuDescriptor ? *wgpuDescriptor : WGPUInstanceDescriptor{};
+
+    auto instance = Instance::create({});
+    if (!instance)
     {
-        return new WebGPUInstance(wgpuDescriptor);
+        // TODO: log or throw error
+        return nullptr;
     }
 
-    return new WebGPUInstance();
+    return new WebGPUInstance(std::move(instance), descriptor);
 }
 
-WebGPUInstance::WebGPUInstance()
-    : m_wgpuDescriptor()
-{
-}
-
-WebGPUInstance::WebGPUInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
-    : m_wgpuDescriptor(*wgpuDescriptor)
+WebGPUInstance::WebGPUInstance(std::unique_ptr<Instance> instance, const WGPUInstanceDescriptor& wgpuDescriptor)
+    : m_wgpuDescriptor(wgpuDescriptor)
+    , m_instance(std::move(instance))
 {
 }
 
@@ -44,6 +44,11 @@ void WebGPUInstance::requestAdapter(WGPURequestAdapterOptions const* options, WG
 WebGPUSurface* WebGPUInstance::createSurface(WGPUSurfaceDescriptor const* descriptor)
 {
     return new WebGPUSurface(this, descriptor);
+}
+
+Instance* WebGPUInstance::getInstance() const
+{
+    return m_instance.get();
 }
 
 } // namespace jipu

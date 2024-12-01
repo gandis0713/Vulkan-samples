@@ -7,15 +7,15 @@
 namespace jipu
 {
 
-VulkanTextureView::VulkanTextureView(VulkanTexture& texture, const TextureViewDescriptor& descriptor)
+VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor)
     : m_texture(texture)
     , m_descriptor(descriptor)
 {
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    imageViewCreateInfo.image = texture.getVkImage();
+    imageViewCreateInfo.image = texture->getVkImage();
     imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
-    imageViewCreateInfo.format = ToVkFormat(texture.getFormat());
+    imageViewCreateInfo.format = ToVkFormat(texture->getFormat());
 
     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -24,12 +24,12 @@ VulkanTextureView::VulkanTextureView(VulkanTexture& texture, const TextureViewDe
 
     imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-    imageViewCreateInfo.subresourceRange.levelCount = texture.getMipLevels();
+    imageViewCreateInfo.subresourceRange.levelCount = texture->getMipLevels();
     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
     imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-    auto& vulkanDevice = downcast(m_texture.getDevice());
-    if (vulkanDevice.vkAPI.CreateImageView(vulkanDevice.getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    auto vulkanDevice = downcast(m_texture->getDevice());
+    if (vulkanDevice->vkAPI.CreateImageView(vulkanDevice->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create image views!");
     }
@@ -37,12 +37,8 @@ VulkanTextureView::VulkanTextureView(VulkanTexture& texture, const TextureViewDe
 
 VulkanTextureView::~VulkanTextureView()
 {
-    auto& vulkanDevice = downcast(m_texture.getDevice());
-
-    auto framebufferCache = vulkanDevice.getFramebufferCache();
-    framebufferCache->invalidate(this);
-
-    vulkanDevice.vkAPI.DestroyImageView(vulkanDevice.getVkDevice(), m_imageView, nullptr);
+    auto vulkanDevice = downcast(m_texture->getDevice());
+    vulkanDevice->getDeleter()->safeDestroy(m_imageView);
 }
 
 TextureViewDimension VulkanTextureView::getDimension() const
@@ -57,22 +53,22 @@ TextureAspectFlags VulkanTextureView::getAspect() const
 
 uint32_t VulkanTextureView::getWidth() const
 {
-    return m_texture.getWidth();
+    return m_texture->getWidth();
 }
 
 uint32_t VulkanTextureView::getHeight() const
 {
-    return m_texture.getHeight();
+    return m_texture->getHeight();
 }
 
 uint32_t VulkanTextureView::getDepth() const
 {
-    return m_texture.getDepth();
+    return m_texture->getDepth();
 }
 
 Texture* VulkanTextureView::getTexture() const
 {
-    return &m_texture;
+    return m_texture;
 }
 
 VkImageView VulkanTextureView::getVkImageView() const

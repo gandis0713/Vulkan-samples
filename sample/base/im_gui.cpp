@@ -77,7 +77,7 @@ void Im_Gui::record(std::vector<std::function<void()>> cmds)
     ImGui::Render();
 }
 
-void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
+void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 {
     m_device = device;
     m_queue = queue;
@@ -102,7 +102,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 #else
     io.FontGlobalScale = 1.0;
 #endif
-    io.DisplaySize = ImVec2(swapchain.getWidth(), swapchain.getHeight());
+    io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -348,7 +348,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
 
         FragmentStage::Target target{};
-        target.format = swapchain.getTextureFormat();
+        target.format = swapchain->getTextureFormat();
         target.blend = {
             .color = {
                 .srcFactor = BlendFactor::kSrcAlpha,
@@ -452,7 +452,7 @@ void Im_Gui::build()
     }
 }
 
-void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
+void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -461,7 +461,7 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         ImGuiIO& io = ImGui::GetIO();
 
         ColorAttachment colorAttachment{
-            .renderView = &renderView
+            .renderView = renderView
         };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
@@ -472,11 +472,11 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_pipeline.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
-        renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
+        renderPassEncoder->setBindGroup(0, m_bindGroups[0].get());
+        renderPassEncoder->setBindGroup(1, m_bindGroups[1].get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;

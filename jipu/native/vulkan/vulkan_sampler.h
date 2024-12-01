@@ -13,13 +13,13 @@ class VULKAN_EXPORT VulkanSampler : public Sampler
 {
 public:
     VulkanSampler() = delete;
-    VulkanSampler(VulkanDevice& device, const SamplerDescriptor& descriptor);
+    VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor);
     ~VulkanSampler() override;
 
     VkSampler getVkSampler() const;
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
 private:
     VkSampler m_sampler = VK_NULL_HANDLE;

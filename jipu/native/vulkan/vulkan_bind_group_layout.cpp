@@ -52,12 +52,12 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
     return vkdescriptor;
 }
 
-VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const BindGroupLayoutDescriptor& descriptor)
+VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor)
     : VulkanBindGroupLayout(device, generateVulkanBindGroupLayoutDescriptor(descriptor))
 {
 }
 
-VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const VulkanBindGroupLayoutDescriptor& descriptor)
+VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const VulkanBindGroupLayoutDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -70,8 +70,8 @@ VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const VulkanB
                                                       .bindingCount = static_cast<uint32_t>(bindings.size()),
                                                       .pBindings = bindings.data() };
 
-    const VulkanAPI& vkAPI = device.vkAPI;
-    VkResult result = vkAPI.CreateDescriptorSetLayout(device.getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create VkDescriptorSetLayout");
@@ -80,8 +80,7 @@ VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice& device, const VulkanB
 
 VulkanBindGroupLayout::~VulkanBindGroupLayout()
 {
-    auto& vulkanDevice = downcast(m_device);
-    vulkanDevice.vkAPI.DestroyDescriptorSetLayout(vulkanDevice.getVkDevice(), m_descriptorSetLayout, nullptr);
+    m_device->getDeleter()->safeDestroy(m_descriptorSetLayout);
 }
 
 std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const

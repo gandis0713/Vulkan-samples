@@ -1,7 +1,7 @@
 #pragma once
 
 #include "jipu/common/ref_counted.h"
-#include "jipu/native/instance.h"
+#include "jipu/native/adapter.h"
 #include "jipu/native/surface.h"
 #include "jipu/native/swapchain.h"
 #include "jipu/webgpu/webgpu_header.h"
@@ -49,7 +49,7 @@ private:
     [[maybe_unused]] WGPUSurfaceConfiguration m_configuration{};
 
 private:
-    std::shared_ptr<Instance> m_instance = nullptr; // shared with adapter.
+    std::shared_ptr<Adapter> m_adapter = nullptr; // shared with adapter.
     std::unique_ptr<Surface> m_surface = nullptr;
     Swapchain* m_swapchain = nullptr;
 

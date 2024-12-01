@@ -35,7 +35,6 @@ const CommandEncodingResult& VulkanCommandBuffer::getCommandEncodingResult() con
 
 VulkanCommandRecordResult VulkanCommandBuffer::recordToVkCommandBuffer()
 {
-    releaseVkCommandBuffer();
     createVkCommandBuffer();
 
     auto commandRecorder = createCommandRecorder();
@@ -55,16 +54,17 @@ std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorde
 
 void VulkanCommandBuffer::createVkCommandBuffer()
 {
-    releaseVkCommandBuffer();
-
-    m_commandBuffer = getDevice()->getCommandPool()->create();
+    if (!m_commandBuffer)
+    {
+        m_commandBuffer = getDevice()->getCommandPool()->create();
+    }
 }
 
 void VulkanCommandBuffer::releaseVkCommandBuffer()
 {
     if (m_commandBuffer)
     {
-        getDevice()->getCommandPool()->release(m_commandBuffer);
+        getDevice()->getDeleter()->safeDestroy(m_commandBuffer);
         m_commandBuffer = VK_NULL_HANDLE;
     }
 }

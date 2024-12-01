@@ -1,4 +1,4 @@
-#include "vulkan_instance.h"
+#include "vulkan_adapter.h"
 #include "vulkan_surface.h"
 
 #include <fmt/format.h>
@@ -22,8 +22,8 @@ void VulkanSurface::createSurfaceKHR()
                                               .flags = 0,
                                               .window = m_descriptor.window };
 
-    VulkanInstance& instance = downcast(m_instance);
-    VkResult result = instance.vkAPI.CreateAndroidSurfaceKHR(instance.getVkInstance(),
+    VulkanAdapter* adapter = downcast(m_adapter);
+    VkResult result = adapter->vkAPI.CreateAndroidSurfaceKHR(adapter->getVkInstance(),
                                                              &createInfo, nullptr,
                                                              &m_surface);
     if (result != VK_SUCCESS)

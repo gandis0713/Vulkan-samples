@@ -31,8 +31,9 @@ public:
     uint32_t getHeight() const;
 
     virtual void init();
-    virtual void update() = 0;
-    virtual void draw() = 0;
+    virtual void onUpdate() = 0;
+    virtual void onDraw() = 0;
+    virtual void onResize(uint32_t width, uint32_t height) = 0;
 
     int exec();
     void* getWindowHandle();

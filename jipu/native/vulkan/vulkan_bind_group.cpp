@@ -72,25 +72,25 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
     return vkdescriptor;
 }
 
-VulkanBindGroup::VulkanBindGroup(VulkanDevice& device, const BindGroupDescriptor& descriptor)
+VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor& descriptor)
     : BindGroup()
     , m_device(device)
     , m_descriptor(descriptor)
 {
     auto vkdescriptor = generateVulkanBindGroupDescriptor(descriptor);
 
-    auto& vulkanDevice = downcast(device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+    auto vulkanDevice = downcast(device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     auto vulkanBindGroupLayout = downcast(m_descriptor.layout);
     auto descriptorSetLayout = vulkanBindGroupLayout->getVkDescriptorSetLayout();
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.descriptorPool = downcast(device).getVkDescriptorPool();
+    descriptorSetAllocateInfo.descriptorPool = vulkanDevice->getVkDescriptorPool();
     descriptorSetAllocateInfo.descriptorSetCount = 1;
     descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
 
-    VkResult result = vkAPI.AllocateDescriptorSets(vulkanDevice.getVkDevice(), &descriptorSetAllocateInfo, &m_descriptorSet);
+    VkResult result = vkAPI.AllocateDescriptorSets(vulkanDevice->getVkDevice(), &descriptorSetAllocateInfo, &m_descriptorSet);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to allocate descriptor sets.");
@@ -163,15 +163,12 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice& device, const BindGroupDescriptor
         descriptorWrites[bufferSize + samplerSize + i] = descriptorWrite;
     }
 
-    vkAPI.UpdateDescriptorSets(vulkanDevice.getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    vkAPI.UpdateDescriptorSets(vulkanDevice->getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 VulkanBindGroup::~VulkanBindGroup()
 {
-    auto& vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-
-    vkAPI.FreeDescriptorSets(vulkanDevice.getVkDevice(), vulkanDevice.getVkDescriptorPool(), 1, &m_descriptorSet);
+    m_device->getDeleter()->safeDestroy(m_descriptorSet);
 }
 
 BindGroupLayout* VulkanBindGroup::getLayout() const

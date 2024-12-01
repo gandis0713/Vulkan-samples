@@ -38,6 +38,9 @@ public:
 
     virtual BufferUsageFlags getUsage() const = 0;
     virtual uint64_t getSize() const = 0;
+
+protected:
+    Buffer() = default;
 };
 
 } // namespace jipu

@@ -3,6 +3,8 @@
 #include "jipu/common/ref_counted.h"
 #include "jipu/webgpu/webgpu_header.h"
 
+#include "jipu/native/instance.h"
+
 namespace jipu
 {
 
@@ -11,10 +13,6 @@ class WebGPUInstance : public RefCounted
 {
 public:
     static WebGPUInstance* create(WGPUInstanceDescriptor const* wgpuDescriptor);
-
-public:
-    WebGPUInstance();
-    explicit WebGPUInstance(WGPUInstanceDescriptor const* wgpuDescriptor);
 
 public:
     virtual ~WebGPUInstance() = default;
@@ -27,7 +25,16 @@ public: // WebGPU API
     WebGPUSurface* createSurface(WGPUSurfaceDescriptor const* descriptor);
 
 public:
+    Instance* getInstance() const;
+
+private:
     [[maybe_unused]] const WGPUInstanceDescriptor m_wgpuDescriptor{};
+
+private:
+    std::unique_ptr<Instance> m_instance = nullptr;
+
+private:
+    explicit WebGPUInstance(std::unique_ptr<Instance> instance, const WGPUInstanceDescriptor& wgpuDescriptor);
 };
 
 } // namespace jipu

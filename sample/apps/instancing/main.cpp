@@ -4,11 +4,11 @@
 #include "file.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/command_encoder.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/pipeline.h"
 #include "jipu/native/pipeline_layout.h"
@@ -36,8 +36,8 @@ public:
     ~InstancingSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -226,16 +226,16 @@ void InstancingSample::updateUniformBuffer()
     memcpy(pointer, &ubo, sizeof(UBO));
 }
 
-void InstancingSample::update()
+void InstancingSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
     updateImGui();
 }
 
-void InstancingSample::draw()
+void InstancingSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {
@@ -256,16 +256,16 @@ void InstancingSample::draw()
         {
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
-            renderPassEncoder->setBindGroup(0, *m_instancing.bindGroup);
-            renderPassEncoder->setVertexBuffer(VERTEX_SLOT, *m_vertexBuffer);
-            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, *m_instancing.transformBuffer);
-            renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+            renderPassEncoder->setBindGroup(0, m_instancing.bindGroup.get());
+            renderPassEncoder->setVertexBuffer(VERTEX_SLOT, m_vertexBuffer.get());
+            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.transformBuffer.get());
+            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commandEncoder.get(), *renderView);
+            drawImGui(commandEncoder.get(), renderView);
             auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
 
             m_queue->submit({ commandBuffer.get() });
@@ -275,19 +275,19 @@ void InstancingSample::draw()
         {
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
-            renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-            renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+            renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             for (auto i = 0; i < m_imguiSettings.objectCount; ++i)
             {
                 uint32_t offset = i * sizeof(Transform);
-                renderPassEncoder->setBindGroup(0, *m_nonInstancing.bindGroup, { offset });
+                renderPassEncoder->setBindGroup(0, m_nonInstancing.bindGroup.get(), { offset });
                 renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
             }
             renderPassEncoder->end();
 
-            drawImGui(commandEncoder.get(), *renderView);
+            drawImGui(commandEncoder.get(), renderView);
 
             auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
             m_queue->submit({ commandBuffer.get() });

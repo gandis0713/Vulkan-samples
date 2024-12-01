@@ -11,8 +11,9 @@ public:
     ~WGPUTriangleSampleMSAA() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
+    void onResize(uint32_t width, uint32_t height) override;
 
     void initializeContext() override;
     void finalizeContext() override;
@@ -22,6 +23,9 @@ public:
     void createShaderModule();
     void createRenderPipelineLayout();
     void createRenderPipeline();
+
+    void releaseRenderTexture();
+    void releaseRenderTextureView();
 
 private:
     WGPUTexture m_renderTexture = nullptr;

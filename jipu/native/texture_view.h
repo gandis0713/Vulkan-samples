@@ -39,8 +39,8 @@ class JIPU_EXPORT TextureView
 public:
     virtual ~TextureView() = default;
 
-protected:
-    TextureView() = default;
+    TextureView(const TextureView&) = delete;
+    TextureView& operator=(const TextureView&) = delete;
 
 public:
     virtual Texture* getTexture() const = 0;
@@ -49,6 +49,9 @@ public:
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
     virtual uint32_t getDepth() const = 0;
+
+protected:
+    TextureView() = default;
 
 public:
     using Ref = std::reference_wrapper<TextureView>;

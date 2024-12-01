@@ -48,6 +48,9 @@ class JIPU_EXPORT BindGroup
 public:
     virtual ~BindGroup() = default;
 
+    BindGroup(const BindGroup&) = delete;
+    BindGroup& operator=(const BindGroup&) = delete;
+
 public:
     virtual BindGroupLayout* getLayout() const = 0;
     virtual const std::vector<BufferBinding>& getBufferBindings() const = 0;

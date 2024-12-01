@@ -4,11 +4,11 @@
 #include "file.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/command_encoder.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/pipeline.h"
 #include "jipu/native/pipeline_layout.h"
@@ -31,8 +31,8 @@ public:
     ~TriangleSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -147,16 +147,16 @@ void TriangleSample::updateUniformBuffer()
     memcpy(pointer, &m_ubo, m_uniformBuffer->getSize());
 }
 
-void TriangleSample::update()
+void TriangleSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
 
     updateImGui();
 }
 
-void TriangleSample::draw()
+void TriangleSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {
@@ -176,15 +176,15 @@ void TriangleSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroup);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setBindGroup(0, m_bindGroup.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), renderView);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         m_queue->submit({ commandBuffer.get() });

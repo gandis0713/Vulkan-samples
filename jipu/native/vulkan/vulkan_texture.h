@@ -14,6 +14,12 @@
 namespace jipu
 {
 
+enum class VulkanTextureOwner
+{
+    kSelf,
+    kSwapchain
+};
+
 struct VulkanTextureDescriptor
 {
     const void* next = nullptr;
@@ -30,7 +36,8 @@ struct VulkanTextureDescriptor
     std::vector<uint32_t> queueFamilyIndices{};
     VkImageLayout initialLayout;
 
-    // if created by swap chain.
+    // if image created by other.
+    VulkanTextureOwner owner = VulkanTextureOwner::kSelf;
     VkImage image = VK_NULL_HANDLE;
 };
 
@@ -39,8 +46,8 @@ class VULKAN_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice& device, const TextureDescriptor& descriptor);
-    VulkanTexture(VulkanDevice& device, const VulkanTextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
@@ -56,10 +63,12 @@ public:
     uint32_t getSampleCount() const override;
 
 public:
-    VulkanDevice& getDevice() const;
+    VulkanDevice* getDevice() const;
 
 public:
     VkImage getVkImage() const;
+    VulkanMemory getVulkanMemory() const;
+    VulkanTextureResource getVulkanTextureResource() const;
 
     /// @brief generate final layout by usage.
     /// @return VKImageLayout
@@ -69,21 +78,15 @@ public:
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range);
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
-    enum class Owner
-    {
-        User,
-        Swapchain
-    };
+    VulkanTextureOwner getOwner() const;
 
-    Owner getOwner() const;
-
-private:
-    VulkanDevice& m_device;
+protected:
+    VulkanDevice* m_device = nullptr;
     const VulkanTextureDescriptor m_descriptor{};
 
 private:
     VulkanTextureResource m_resource;
-    Owner m_owner;
+    VulkanTextureOwner m_owner;
 };
 
 DOWN_CAST(VulkanTexture, Texture);

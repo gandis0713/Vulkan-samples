@@ -19,7 +19,7 @@ class VULKAN_EXPORT VulkanComputePipeline : public ComputePipeline
 {
 public:
     VulkanComputePipeline() = delete;
-    VulkanComputePipeline(VulkanDevice& device, const ComputePipelineDescriptor& descriptor);
+    VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor);
     ~VulkanComputePipeline() override;
 
     VulkanComputePipeline(const VulkanComputePipeline&) = delete;
@@ -30,12 +30,13 @@ public:
 
 public:
     VkPipeline getVkPipeline() const;
+    VkShaderModule getShaderModule() const;
 
 private:
     void initialize();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
 
     const ComputePipelineDescriptor m_descriptor;
 
@@ -89,7 +90,7 @@ struct VulkanRenderPipelineDescriptor
     VulkanPipelineColorBlendStateCreateInfo colorBlendState{};
     VulkanPipelineDynamicStateCreateInfo dynamicState{};
     VulkanPipelineLayout* layout = nullptr;
-    VulkanRenderPass* renderPass = nullptr;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
     uint32_t subpass = 0;
     VkPipeline basePipelineHandle = VK_NULL_HANDLE;
     int32_t basePipelineIndex = -1;
@@ -100,8 +101,8 @@ class VULKAN_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;
-    VulkanRenderPipeline(VulkanDevice& device, const RenderPipelineDescriptor& descriptor);
-    VulkanRenderPipeline(VulkanDevice& device, const VulkanRenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor);
     ~VulkanRenderPipeline() override;
 
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
@@ -112,12 +113,13 @@ public:
 
 public:
     VkPipeline getVkPipeline() const;
+    std::vector<VkShaderModule> getShaderModules() const;
 
 private:
     void initialize();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
     const VulkanRenderPipelineDescriptor m_descriptor;
 
 private:
@@ -141,7 +143,7 @@ VulkanPipelineColorBlendStateCreateInfo VULKAN_EXPORT generateColorBlendStateCre
 VkPipelineDepthStencilStateCreateInfo VULKAN_EXPORT generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 VulkanPipelineDynamicStateCreateInfo VULKAN_EXPORT generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 std::vector<VkPipelineShaderStageCreateInfo> VULKAN_EXPORT generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor);
-VulkanRenderPipelineDescriptor VULKAN_EXPORT generateVulkanRenderPipelineDescriptor(VulkanDevice& device, const RenderPipelineDescriptor& descriptor);
+VulkanRenderPipelineDescriptor VULKAN_EXPORT generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

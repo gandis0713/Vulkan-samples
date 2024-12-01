@@ -287,11 +287,11 @@ void VulkanCommandResourceSynchronizer::sync()
 
     auto& currentPassResourceInfo = getCurrentPassResourceInfo();
 
-    spdlog::trace("current pass buffers src: {}", currentPassResourceInfo.src.buffers.size());
-    spdlog::trace("current pass textures src: {}", currentPassResourceInfo.src.textures.size());
+    // spdlog::trace("current pass buffers src: {}", currentPassResourceInfo.src.buffers.size());
+    // spdlog::trace("current pass textures src: {}", currentPassResourceInfo.src.textures.size());
 
-    spdlog::trace("current pass buffers dst: {}", currentPassResourceInfo.dst.buffers.size());
-    spdlog::trace("current pass textures dst: {}", currentPassResourceInfo.dst.textures.size());
+    // spdlog::trace("current pass buffers dst: {}", currentPassResourceInfo.dst.buffers.size());
+    // spdlog::trace("current pass textures dst: {}", currentPassResourceInfo.dst.textures.size());
 
     // buffers
     auto& currentDstPassBuffers = currentPassResourceInfo.dst.buffers;

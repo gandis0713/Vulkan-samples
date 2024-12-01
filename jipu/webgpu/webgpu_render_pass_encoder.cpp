@@ -98,12 +98,12 @@ void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
 
 void WebGPURenderPassEncoder::setVertexBuffer(uint32_t slot, WebGPUBuffer* buffer, uint64_t offset, uint64_t size)
 {
-    m_renderPassEncoder->setVertexBuffer(slot, *buffer->getBuffer()); // TODO: offset, size
+    m_renderPassEncoder->setVertexBuffer(slot, buffer->getBuffer()); // TODO: offset, size
 }
 
 void WebGPURenderPassEncoder::setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
 {
-    m_renderPassEncoder->setIndexBuffer(*buffer->getBuffer(), WGPUToIndexFormat(format)); // TODO: offset, size
+    m_renderPassEncoder->setIndexBuffer(buffer->getBuffer(), WGPUToIndexFormat(format)); // TODO: offset, size
 }
 
 void WebGPURenderPassEncoder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)

@@ -19,7 +19,7 @@ namespace jipu
 
 class DyLib;
 
-struct VulkanInstanceKnobs
+struct VulkanAdapterKnobs
 {
     uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 1, 0); // Require 1.1 or higher.
 
@@ -49,7 +49,7 @@ struct VulkanDeviceKnobs
 struct VulkanAPI
 {
     bool loadInstanceProcs(DyLib* vulkanLib);
-    bool loadInstanceProcs(VkInstance instance, const VulkanInstanceKnobs& globalInfo);
+    bool loadInstanceProcs(VkInstance instance, const VulkanAdapterKnobs& globalInfo);
     bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs);
 
     // ---------- Instance procs

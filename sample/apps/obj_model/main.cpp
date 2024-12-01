@@ -5,12 +5,12 @@
 #include "model.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/bind_group.h"
 #include "jipu/native/bind_group_layout.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/pipeline.h"
 #include "jipu/native/pipeline_layout.h"
@@ -40,8 +40,8 @@ public:
     ~OBJModelSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -107,7 +107,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    uint32_t m_sampleCount = 4;
+    uint32_t m_sampleCount = 1;
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
@@ -169,9 +169,9 @@ void OBJModelSample::init()
     createRenderPipeline();
 }
 
-void OBJModelSample::update()
+void OBJModelSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateUniformBuffer();
     updateImGui();
@@ -184,7 +184,7 @@ void OBJModelSample::updateImGui()
     } });
 }
 
-void OBJModelSample::draw()
+void OBJModelSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
 
@@ -209,16 +209,16 @@ void OBJModelSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindGroup(0, *m_bindGroups[0]);
-    renderPassEncoder->setBindGroup(1, *m_bindGroups[1]);
-    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-    renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+    renderPassEncoder->setBindGroup(0, m_bindGroups[0].get());
+    renderPassEncoder->setBindGroup(1, m_bindGroups[1].get());
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), *renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
 

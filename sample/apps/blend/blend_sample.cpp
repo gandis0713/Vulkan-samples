@@ -47,14 +47,14 @@ void BlendSample::init()
     m_renderPipeline2 = createRenderPipeline(BlendState{}); // default blend state.
 }
 
-void BlendSample::update()
+void BlendSample::onUpdate()
 {
-    Sample::update();
+    Sample::onUpdate();
 
     updateImGui();
 }
 
-void BlendSample::draw()
+void BlendSample::onDraw()
 {
     auto renderView = m_swapchain->acquireNextTextureView();
     {
@@ -76,19 +76,19 @@ void BlendSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline1.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroup1);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setBindGroup(0, m_bindGroup1.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->setPipeline(m_renderPipeline2.get());
-        renderPassEncoder->setBindGroup(0, *m_bindGroup2);
+        renderPassEncoder->setBindGroup(0, m_bindGroup2.get());
         renderPassEncoder->setBlendConstant({ 0.5, 0.5, 0.5, 0.0 });
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), renderView);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         m_queue->submit({ commandBuffer.get() });

@@ -18,7 +18,7 @@ VulkanFencePool::~VulkanFencePool()
     {
         if (fence.second)
         {
-            spdlog::warn("Fence is not released in this fence pool.");
+            spdlog::warn("The fence might be in-flight on device. {}", reinterpret_cast<void*>(fence.first));
         }
 
         m_device->vkAPI.DestroyFence(m_device->getVkDevice(), fence.first, nullptr);
@@ -54,6 +54,8 @@ VkFence VulkanFencePool::create()
         throw std::runtime_error("Failed to create fence.");
     }
 
+    // spdlog::trace("The fence is created {}.", reinterpret_cast<void*>(fence));
+
     m_fences.insert(std::make_pair(fence, true));
 
     return fence;
@@ -67,6 +69,7 @@ void VulkanFencePool::release(VkFence fence)
         return;
     }
 
+    // spdlog::trace("The fence is released. {}", reinterpret_cast<void*>(fence));
     m_fences[fence] = false;
 }
 

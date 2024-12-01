@@ -174,9 +174,6 @@ public:
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
-protected:
-    Texture() = default;
-
 public:
     virtual std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) = 0;
 
@@ -189,6 +186,9 @@ public:
     virtual uint32_t getDepth() const = 0;
     virtual uint32_t getMipLevels() const = 0;
     virtual uint32_t getSampleCount() const = 0;
+
+protected:
+    Texture() = default;
 };
 
 } // namespace jipu

@@ -9,11 +9,11 @@
 #include "model.h"
 #include "sample.h"
 
+#include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
 #include "jipu/native/command_encoder.h"
 #include "jipu/native/device.h"
-#include "jipu/native/instance.h"
 #include "jipu/native/physical_device.h"
 #include "jipu/native/pipeline_layout.h"
 #include "jipu/native/query_set.h"
@@ -40,8 +40,8 @@ public:
 
 public:
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();

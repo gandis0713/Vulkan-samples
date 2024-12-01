@@ -21,11 +21,11 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-protected:
-    Pipeline() = default;
-
 public:
     virtual PipelineLayout* getPipelineLayout() const = 0;
+
+protected:
+    Pipeline() = default;
 };
 
 struct ProgrammableStage

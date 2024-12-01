@@ -240,10 +240,18 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
     //                             command->timestampWrites.beginQueryIndex);
     // }
 
+    auto renderPass = command->renderPass.lock();
+    if (!renderPass)
+        throw std::runtime_error("The render pass is null for begin render pass command.");
+
+    auto framebuffer = command->framebuffer.lock();
+    if (!framebuffer)
+        throw std::runtime_error("The framebuffer is null for begin render pass command.");
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = command->renderPass->getVkRenderPass();
-    renderPassInfo.framebuffer = command->framebuffer->getVkFrameBuffer();
+    renderPassInfo.renderPass = renderPass->getVkRenderPass();
+    renderPassInfo.framebuffer = framebuffer->getVkFrameBuffer();
     renderPassInfo.renderArea = command->renderArea;
     renderPassInfo.clearValueCount = static_cast<uint32_t>(command->clearValues.size());
     renderPassInfo.pClearValues = command->clearValues.data();

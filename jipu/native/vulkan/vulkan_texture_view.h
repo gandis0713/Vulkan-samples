@@ -13,7 +13,7 @@ class VULKAN_EXPORT VulkanTextureView : public TextureView
 {
 public:
     VulkanTextureView() = delete;
-    VulkanTextureView(VulkanTexture& texture, const TextureViewDescriptor& descriptor);
+    VulkanTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor);
     ~VulkanTextureView() override;
 
 public:
@@ -27,11 +27,11 @@ public:
 public:
     VkImageView getVkImageView() const;
 
-private:
-    VulkanTexture& m_texture;
+protected:
+    VulkanTexture* m_texture = nullptr;
     const TextureViewDescriptor m_descriptor{};
 
-private:
+protected:
     VkImageView m_imageView = VK_NULL_HANDLE;
 };
 
