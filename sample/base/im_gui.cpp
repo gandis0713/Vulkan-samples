@@ -162,7 +162,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
     // copy buffer to texture
     {
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = m_fontBuffer.get(),
             .offset = 0,
             .bytesPerRow = 0,
@@ -171,10 +171,10 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
         uint32_t channel = 4;
         uint32_t bytesPerData = sizeof(FontDataType);
-        blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
-        blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
+        copyTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
+        copyTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_fontTexture.get(),
             .aspect = TextureAspectFlagBits::kColor
         };
@@ -185,7 +185,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         queue->submit({ commandBuffer.get() });

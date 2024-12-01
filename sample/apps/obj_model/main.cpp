@@ -559,12 +559,12 @@ void OBJModelSample::createRenderPipeline()
 
 void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
-    BlitBuffer srcBuffer{
+    CopyBuffer srcBuffer{
         .buffer = &src,
         .offset = 0,
     };
 
-    BlitBuffer dstBuffer{
+    CopyBuffer dstBuffer{
         .buffer = &dst,
         .offset = 0,
     };
@@ -581,7 +581,7 @@ void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
@@ -590,10 +590,10 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
 
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
-    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
-    blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
+    copyTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
+    copyTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    CopyTexture copyTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
@@ -602,7 +602,7 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEndoer->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     CommandBufferDescriptor commandBufferDescriptor{};
     auto commandBuffer = commandEndoer->finish(commandBufferDescriptor);

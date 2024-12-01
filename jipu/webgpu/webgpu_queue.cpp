@@ -50,12 +50,12 @@ void WebGPUQueue::writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void 
     memcpy(ptr, data, bufferDescriptor.size);
     srcBuffer->unmap();
 
-    BlitBuffer srcCopyBuffer{
+    CopyBuffer srcCopyBuffer{
         .buffer = srcBuffer.get(),
         .offset = bufferOffset,
     };
 
-    BlitBuffer dstCopyBuffer{
+    CopyBuffer dstCopyBuffer{
         .buffer = buffer->getBuffer(),
         .offset = bufferOffset,
     };

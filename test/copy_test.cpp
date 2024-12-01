@@ -42,14 +42,14 @@ void CopyTest::SetUp()
     m_srcTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, m_srcTexture);
 
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = m_srcBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
-    BlitTexture blitTexture{
+    CopyTexture copyTexture{
         .texture = m_srcTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
@@ -63,7 +63,7 @@ void CopyTest::SetUp()
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     QueueDescriptor queueDescriptor{};
 
@@ -92,14 +92,14 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     auto dstBuffer = m_device->createBuffer(dstBufferDescriptor);
     EXPECT_NE(nullptr, dstBuffer);
 
-    BlitTextureBuffer dstBlitBuffer{
+    CopyTextureBuffer dstCopyBuffer{
         .buffer = dstBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
-    BlitTexture srcBlitTexture{
+    CopyTexture srcCopyTexture{
         .texture = srcTexture,
         .aspect = TextureAspectFlagBits::kColor,
     };
@@ -113,7 +113,7 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
+    commandEncoder->copyTextureToBuffer(srcCopyTexture, dstCopyBuffer, extent);
 
     QueueDescriptor queueDescriptor{};
 
@@ -135,7 +135,7 @@ TEST_F(CopyTest, test_BufferToBuffer)
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    BlitBuffer srcBlitBuffer{
+    CopyBuffer srcCopyBuffer{
         .buffer = m_srcBuffer.get(),
         .offset = 0,
     };
@@ -147,12 +147,12 @@ TEST_F(CopyTest, test_BufferToBuffer)
     auto buffer = m_device->createBuffer(bufferDescriptor);
     EXPECT_NE(nullptr, buffer);
 
-    BlitBuffer dstBlitBuffer{
+    CopyBuffer dstCopyBuffer{
         .buffer = buffer.get(),
         .offset = 0,
     };
 
-    commandEncoder->copyBufferToBuffer(srcBlitBuffer, dstBlitBuffer, m_srcBuffer->getSize());
+    commandEncoder->copyBufferToBuffer(srcCopyBuffer, dstCopyBuffer, m_srcBuffer->getSize());
 
     QueueDescriptor queueDescriptor{};
 
@@ -186,14 +186,14 @@ TEST_F(CopyTest, test_BufferToTexture)
     auto texture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, texture);
 
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = m_srcBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
-    BlitTexture blitTexture{
+    CopyTexture copyTexture{
         .texture = texture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
@@ -207,7 +207,7 @@ TEST_F(CopyTest, test_BufferToTexture)
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     QueueDescriptor queueDescriptor{};
 
@@ -241,12 +241,12 @@ TEST_F(CopyTest, test_TextureToTexture)
     auto dstTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, dstTexture);
 
-    BlitTexture srcBlitTexture{
+    CopyTexture srcCopyTexture{
         .texture = m_srcTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
 
-    BlitTexture dstBlitTexture{
+    CopyTexture dstCopyTexture{
         .texture = dstTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
@@ -260,7 +260,7 @@ TEST_F(CopyTest, test_TextureToTexture)
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    commandEncoder->copyTextureToTexture(srcBlitTexture, dstBlitTexture, extent);
+    commandEncoder->copyTextureToTexture(srcCopyTexture, dstCopyTexture, extent);
 
     QueueDescriptor queueDescriptor{};
 

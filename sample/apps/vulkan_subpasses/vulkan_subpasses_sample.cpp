@@ -658,14 +658,14 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = m_offscreen.colorStagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.colorMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -677,7 +677,7 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         CommandBufferDescriptor commandBufferDescriptor{};
         m_copyColorTextureCommandBuffer = commandEncoder->finish(commandBufferDescriptor);
@@ -726,14 +726,14 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = m_offscreen.normalStagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.normalMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -745,7 +745,7 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         CommandBufferDescriptor commandBufferDescriptor{};
         m_copyNomralTextureCommandBuffer = commandEncoder->finish(commandBufferDescriptor);

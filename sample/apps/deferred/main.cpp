@@ -533,14 +533,14 @@ void DeferredSample::createOffscreenColorMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.colorMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -553,7 +553,7 @@ void DeferredSample::createOffscreenColorMapTexture()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
         CommandBufferDescriptor commandBufferDescriptor{};
         auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
@@ -601,14 +601,14 @@ void DeferredSample::createOffscreenNormalMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight())
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.normalMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -621,7 +621,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         CommandBufferDescriptor commandBufferDescriptor{};
         auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);

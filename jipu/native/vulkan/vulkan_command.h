@@ -90,29 +90,29 @@ struct ClearBufferCommand : public Command
 
 struct CopyBufferToBufferCommand : public Command
 {
-    BlitBuffer src{};
-    BlitBuffer dst{};
+    CopyBuffer src{};
+    CopyBuffer dst{};
     uint64_t size = 0;
 };
 
 struct CopyBufferToTextureCommand : public Command
 {
-    BlitTextureBuffer buffer{};
-    BlitTexture texture{};
+    CopyTextureBuffer buffer{};
+    CopyTexture texture{};
     Extent3D extent{};
 };
 
 struct CopyTextureToBufferCommand : public Command
 {
-    BlitTexture texture{};
-    BlitTextureBuffer buffer{};
+    CopyTexture texture{};
+    CopyTextureBuffer buffer{};
     Extent3D extent{};
 };
 
 struct CopyTextureToTextureCommand : public Command
 {
-    BlitTexture src{};
-    BlitTexture dst{};
+    CopyTexture src{};
+    CopyTexture dst{};
     Extent3D extent{};
 };
 
