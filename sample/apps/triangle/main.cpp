@@ -80,9 +80,9 @@ private:
     std::vector<uint16_t> m_indices{ 0, 1, 2 };
     std::vector<Vertex>
         m_vertices{
-            { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
-            { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
+            { { 0.0, 500, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { -500, -500, 0.0 }, { 0.0, 1.0, 0.0 } },
+            { { 500, -500, 0.0 }, { 0.0, 0.0, 1.0 } },
         };
 
     uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
@@ -320,7 +320,7 @@ void TriangleSample::createRenderPipeline()
     // rasterization
     RasterizationStage rasterizationStage{};
     {
-        rasterizationStage.cullMode = CullMode::kNone;
+        rasterizationStage.cullMode = CullMode::kBack;
         rasterizationStage.frontFace = FrontFace::kCounterClockwise;
         rasterizationStage.sampleCount = m_sampleCount;
     }
