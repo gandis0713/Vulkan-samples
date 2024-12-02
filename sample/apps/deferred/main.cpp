@@ -1246,7 +1246,7 @@ void DeferredSample::createDepthStencilTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment; // TODO: render attachment
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }

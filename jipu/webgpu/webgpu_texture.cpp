@@ -315,10 +315,6 @@ WGPUTextureUsageFlags ToWGPUTextureUsageFlags(TextureUsageFlags flags)
     {
         wgpuUsages |= WGPUTextureUsage_StorageBinding;
     }
-    if (flags & TextureUsageFlagBits::kDepthStencil)
-    {
-        wgpuUsages |= WGPUTextureUsage_RenderAttachment;
-    }
     if (flags & TextureUsageFlagBits::kColorAttachment)
     {
         wgpuUsages |= WGPUTextureUsage_RenderAttachment;
@@ -592,17 +588,7 @@ TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags, WGPUTextu
     }
     if (flags & WGPUTextureUsage_RenderAttachment)
     {
-        if (format == WGPUTextureFormat::WGPUTextureFormat_Depth16Unorm ||
-            format == WGPUTextureFormat::WGPUTextureFormat_Depth24Plus ||
-            format == WGPUTextureFormat::WGPUTextureFormat_Depth24PlusStencil8 ||
-            format == WGPUTextureFormat::WGPUTextureFormat_Depth32Float)
-        {
-            jipuUsageFlags |= TextureUsageFlagBits::kDepthStencil;
-        }
-        else
-        {
-            jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
-        }
+        jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
     }
 
     return jipuUsageFlags;

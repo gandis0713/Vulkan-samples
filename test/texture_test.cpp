@@ -41,12 +41,6 @@ TEST_F(TextureTest, test_createtexture_usage)
     }
 
     {
-        descriptor.usage = TextureUsageFlagBits::kDepthStencil;
-        texture = m_device->createTexture(descriptor);
-        ASSERT_NE(texture, nullptr);
-    }
-
-    {
         descriptor.usage = TextureUsageFlagBits::kStorageBinding;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
