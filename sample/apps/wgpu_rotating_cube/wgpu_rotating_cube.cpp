@@ -33,32 +33,25 @@ void WGPURotatingCube::onUpdate()
 {
     WGPUSample::onUpdate();
 
-    auto getTransformationMatrix = [&]() -> glm::mat4 {
-        // Projection matrix (예제의 투영 행렬, 필요에 따라 정의 가능)
+    auto transformationMatrix = []() -> glm::mat4 {
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-        // View matrix 초기화
         glm::mat4 viewMatrix = glm::mat4(1.0f); // Identity matrix
 
-        // View matrix에 translation 적용
         viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 
-        // 현재 시간 (초 단위)
         auto now = std::chrono::high_resolution_clock::now();
         auto timeSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
         float currentTime = static_cast<float>(timeSinceEpoch) / 1000.0f;
 
-        // View matrix에 rotation 적용
         glm::vec3 rotationAxis(std::sin(currentTime), std::cos(currentTime), 0.0f);
         viewMatrix = glm::rotate(viewMatrix, 1.0f, rotationAxis);
 
-        // Model-View-Projection matrix 계산
         glm::mat4 modelViewProjectionMatrix = projectionMatrix * viewMatrix;
 
         return modelViewProjectionMatrix;
-    };
+    }();
 
-    auto transformationMatrix = getTransformationMatrix();
     wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &transformationMatrix, sizeof(glm::mat4));
 }
 
@@ -78,7 +71,7 @@ void WGPURotatingCube::onDraw()
     colorAttachment.loadOp = WGPULoadOp_Clear;
     colorAttachment.storeOp = WGPUStoreOp_Store;
     colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-    colorAttachment.clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+    colorAttachment.clearValue = { .r = 0.5f, .g = 0.5f, .b = 0.5f, .a = 1.0f };
 
     WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
     depthStencilAttachment.view = depthTextureView;
@@ -97,7 +90,7 @@ void WGPURotatingCube::onDraw()
     wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
     wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
     wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, m_cube.size() * sizeof(float));
-    // TODO: set bind group
+    wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_bindGroup, 0, nullptr);
     // wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint16, 0, m_indices.size() * sizeof(IndexType));
     // wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
