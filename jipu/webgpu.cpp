@@ -52,6 +52,8 @@ extern void procRenderPassEncoderSetViewport(WGPURenderPassEncoder renderPassEnc
 extern void procRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 extern void procQueueWriteBuffer(WGPUQueue queue, WGPUBuffer buffer, uint64_t bufferOffset, void const* data, size_t size);
 extern void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets);
+extern void procBindGroupRelease(WGPUBindGroup bindGroup);
+extern void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout);
 
 } // namespace jipu
 
@@ -302,5 +304,15 @@ extern "C"
     WGPU_EXPORT void wgpuRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets) WGPU_FUNCTION_ATTRIBUTE
     {
         return procRenderPassEncoderSetBindGroup(renderPassEncoder, groupIndex, group, dynamicOffsetCount, dynamicOffsets);
+    }
+
+    WGPU_EXPORT void wgpuBindGroupRelease(WGPUBindGroup bindGroup) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procBindGroupRelease(bindGroup);
+    }
+
+    WGPU_EXPORT void wgpuBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procBindGroupLayoutRelease(bindGroupLayout);
     }
 }

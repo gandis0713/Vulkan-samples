@@ -37,10 +37,10 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(AdapterInfoFreeMembers);
     // GET_PROC(BindGroupSetLabel);
     // GET_PROC(BindGroupAddRef);
-    // GET_PROC(BindGroupRelease);
+    GET_PROC(BindGroupRelease);
     // GET_PROC(BindGroupLayoutSetLabel);
     // GET_PROC(BindGroupLayoutAddRef);
-    // GET_PROC(BindGroupLayoutRelease);
+    GET_PROC(BindGroupLayoutRelease);
     // GET_PROC(BufferDestroy);
     // GET_PROC(BufferGetConstMappedRange);
     // GET_PROC(BufferGetMapState);

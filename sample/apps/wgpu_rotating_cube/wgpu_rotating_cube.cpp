@@ -151,17 +151,17 @@ void WGPURotatingCube::finalizeContext()
         m_depthTexture = nullptr;
     }
 
-    // if (m_bindGroup)
-    // {
-    //     wgpu.BindGroupRelease(m_bindGroup);
-    //     m_bindGroup = nullptr;
-    // }
+    if (m_bindGroup)
+    {
+        wgpu.BindGroupRelease(m_bindGroup);
+        m_bindGroup = nullptr;
+    }
 
-    // if (m_bindGroupLayout)
-    // {
-    //     wgpu.BindGroupLayoutRelease(m_bindGroupLayout);
-    //     m_bindGroupLayout = nullptr;
-    // }
+    if (m_bindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_bindGroupLayout);
+        m_bindGroupLayout = nullptr;
+    }
 
     if (m_renderPipeline)
     {

@@ -1,6 +1,8 @@
 #include "jipu/webgpu/webgpu_header.h"
 
 #include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_bind_group.h"
+#include "webgpu/webgpu_bind_group_layout.h"
 #include "webgpu/webgpu_buffer.h"
 #include "webgpu/webgpu_command_buffer.h"
 #include "webgpu/webgpu_command_encoder.h"
@@ -311,6 +313,18 @@ void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, 
     return webgpuRenderPassEncoder->setBindGroup(groupIndex, webgpuBindGroup, dynamicOffsetCount, dynamicOffsets);
 }
 
+void procBindGroupRelease(WGPUBindGroup bindGroup)
+{
+    WebGPUBindGroup* webgpuBindGroup = reinterpret_cast<WebGPUBindGroup*>(bindGroup);
+    return webgpuBindGroup->release();
+}
+
+void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout)
+{
+    WebGPUBindGroupLayout* webgpuBindGroupLayout = reinterpret_cast<WebGPUBindGroupLayout*>(bindGroupLayout);
+    return webgpuBindGroupLayout->release();
+}
+
 namespace
 {
 
@@ -363,6 +377,8 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
     { "wgpuQueueWriteBuffer", reinterpret_cast<WGPUProc>(procQueueWriteBuffer) },
     { "wgpuRenderPassEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBindGroup) },
+    { "wgpuBindGroupRelease", reinterpret_cast<WGPUProc>(procBindGroupRelease) },
+    { "wgpuBindGroupLayoutRelease", reinterpret_cast<WGPUProc>(procBindGroupLayoutRelease) },
 };
 
 } // namespace
