@@ -28,7 +28,7 @@ std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const V
     return std::make_unique<VulkanRenderPassEncoder>(this, descriptor);
 }
 
-void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
+void VulkanCommandEncoder::copyBufferToBuffer(const CopyBuffer& src, const CopyBuffer& dst, uint64_t size)
 {
     CopyBufferToBufferCommand command{
         { .type = CommandType::kCopyBufferToBuffer },
@@ -40,7 +40,7 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
 }
 
-void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
+void VulkanCommandEncoder::copyBufferToTexture(const CopyTextureBuffer& buffer, const CopyTexture& texture, const Extent3D& extent)
 {
     CopyBufferToTextureCommand command{
         { .type = CommandType::kCopyBufferToTexture },
@@ -52,7 +52,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, 
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
 }
 
-void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent)
+void VulkanCommandEncoder::copyTextureToBuffer(const CopyTexture& texture, const CopyTextureBuffer& buffer, const Extent3D& extent)
 {
     CopyTextureToBufferCommand command{
         { .type = CommandType::kCopyTextureToBuffer },
@@ -64,7 +64,7 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
     m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
 }
 
-void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent)
+void VulkanCommandEncoder::copyTextureToTexture(const CopyTexture& src, const CopyTexture& dst, const Extent3D& extent)
 {
     CopyTextureToTextureCommand command{
         { .type = CommandType::kCopyTextureToTexture },

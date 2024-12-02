@@ -183,7 +183,7 @@ void OffscreenSample::createOffscreenTexture()
     textureDescriptor.height = m_height;
     textureDescriptor.depth = 1;
     textureDescriptor.format = textureFormat;
-    textureDescriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    textureDescriptor.usage = TextureUsageFlagBits::kRenderAttachment | TextureUsageFlagBits::kTextureBinding;
     textureDescriptor.type = TextureType::k2D;
     textureDescriptor.sampleCount = 1; // TODO: set from descriptor
     textureDescriptor.mipLevels = 1;   // TODO: set from descriptor

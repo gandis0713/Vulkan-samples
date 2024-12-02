@@ -92,16 +92,30 @@ private:
     {
         Cube(float len, glm::vec3 pos = glm::vec3(0.0f))
         {
-            vertices[0] = { { -len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 0.0, 0.0 } };
-            vertices[1] = { { +len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 1.0, 0.0 } };
-            vertices[2] = { { +len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 0.0, 1.0 } };
-            vertices[3] = { { -len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 1.0, 1.0 } };
-            vertices[4] = { { -len + pos[0], -len + pos[1], +len + pos[2] }, { 0.0, 1.0, 1.0 } };
-            vertices[5] = { { +len + pos[0], -len + pos[1], +len + pos[2] }, { 0.0, 1.0, 0.0 } };
-            vertices[6] = { { +len + pos[0], +len + pos[1], +len + pos[2] }, { 0.0, 0.0, 1.0 } };
-            vertices[7] = { { -len + pos[0], +len + pos[1], +len + pos[2] }, { 1.0, 0.5, 0.5 } };
+            vertices[0] = { { -len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 0.0, 0.0 } };
+            vertices[1] = { { +len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 1.0, 0.0 } };
+            vertices[2] = { { +len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 0.0, 1.0 } };
+            vertices[3] = { { -len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 1.0, 1.0 } };
+            vertices[4] = { { -len + pos[0], +len + pos[1], +len + pos[2] }, { 0.0, 1.0, 1.0 } };
+            vertices[5] = { { +len + pos[0], +len + pos[1], +len + pos[2] }, { 0.0, 1.0, 0.0 } };
+            vertices[6] = { { +len + pos[0], -len + pos[1], +len + pos[2] }, { 0.0, 0.0, 1.0 } };
+            vertices[7] = { { -len + pos[0], -len + pos[1], +len + pos[2] }, { 1.0, 0.5, 0.5 } };
         }
         Vertex vertices[8];
+        std::vector<uint16_t> indices{
+            0, 1, 3, // front
+            3, 1, 2,
+            1, 5, 2, // bottom
+            2, 5, 6,
+            5, 4, 6, // back
+            6, 4, 7,
+            4, 0, 7, // top
+            7, 0, 3,
+            3, 2, 7, // right
+            7, 2, 6,
+            4, 5, 0, // left
+            0, 5, 1
+        };
     };
 
 private:
@@ -129,21 +143,7 @@ private:
     } m_instancing;
 
     MVP m_mvp;
-    Cube m_vertices = Cube(10.0f);
-    std::vector<uint16_t> m_indices{
-        0, 1, 3, // front
-        3, 1, 2,
-        1, 5, 2, // bottom
-        2, 5, 6,
-        5, 4, 6, // back
-        6, 4, 7,
-        4, 0, 7, // top
-        7, 0, 3,
-        3, 2, 7, // right
-        7, 2, 6,
-        4, 5, 0, // left
-        0, 5, 1
-    };
+    Cube m_cube = Cube(10.0f);
     std::vector<Transform> m_transforms{};
 
     std::unique_ptr<Camera> m_camera = nullptr;
@@ -262,7 +262,7 @@ void InstancingSample::onDraw()
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
+            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_cube.indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
             drawImGui(commandEncoder.get(), renderView);
@@ -283,7 +283,7 @@ void InstancingSample::onDraw()
             {
                 uint32_t offset = i * sizeof(Transform);
                 renderPassEncoder->setBindGroup(0, m_nonInstancing.bindGroup.get(), { offset });
-                renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+                renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_cube.indices.size()), 1, 0, 0, 0);
             }
             renderPassEncoder->end();
 
@@ -310,26 +310,26 @@ void InstancingSample::updateImGui()
 void InstancingSample::createVertexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size = sizeof(Cube);
+    descriptor.size = 8 * sizeof(Vertex);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
     m_vertexBuffer = m_device->createBuffer(descriptor);
 
     void* pointer = m_vertexBuffer->map();
-    memcpy(pointer, &m_vertices, descriptor.size);
+    memcpy(pointer, &m_cube.vertices, descriptor.size);
     m_vertexBuffer->unmap();
 }
 
 void InstancingSample::createIndexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size = m_indices.size() * sizeof(uint16_t);
+    descriptor.size = m_cube.indices.size() * sizeof(uint16_t);
     descriptor.usage = BufferUsageFlagBits::kIndex;
 
     m_indexBuffer = m_device->createBuffer(descriptor);
 
     void* pointer = m_indexBuffer->map();
-    memcpy(pointer, m_indices.data(), descriptor.size);
+    memcpy(pointer, m_cube.indices.data(), descriptor.size);
     m_indexBuffer->unmap();
 }
 

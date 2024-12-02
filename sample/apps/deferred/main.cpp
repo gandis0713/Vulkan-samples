@@ -150,12 +150,12 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
         std::vector<CompositionVertex> vertices{
-            { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
-            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-            { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+            { { -1.0, 1.0, 0.0 }, { 0.0, 0.0 } },
+            { { -1.0, -1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, 1.0, 0.0 }, { 1.0, 0.0 } },
+            { { 1.0, 1.0, 0.0 }, { 1.0, 0.0 } },
+            { { -1.0, -1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, -1.0, 0.0 }, { 1.0, 1.0 } },
         };
     } m_composition;
 
@@ -439,7 +439,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -463,7 +463,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment |
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment |
                        TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
@@ -488,7 +488,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -533,14 +533,14 @@ void DeferredSample::createOffscreenColorMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.colorMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -553,7 +553,7 @@ void DeferredSample::createOffscreenColorMapTexture()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
         CommandBufferDescriptor commandBufferDescriptor{};
         auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
@@ -601,14 +601,14 @@ void DeferredSample::createOffscreenNormalMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight())
         };
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_offscreen.normalMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
@@ -621,7 +621,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         CommandBufferDescriptor commandBufferDescriptor{};
         auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
@@ -645,7 +645,7 @@ void DeferredSample::createOffscreenCamera()
                                                              m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
                                                              0.1f,
                                                              1000.0f);
-    m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void DeferredSample::createOffscreenUniformBuffer()
@@ -1246,7 +1246,7 @@ void DeferredSample::createDepthStencilTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }

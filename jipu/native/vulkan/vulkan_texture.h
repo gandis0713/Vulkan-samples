@@ -99,7 +99,7 @@ VkFormat VULKAN_EXPORT ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
-VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat format);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkSampleCountFlagBits VULKAN_EXPORT ToVkSampleCountFlagBits(uint32_t count);
 uint32_t ToSampleCount(VkSampleCountFlagBits flag);

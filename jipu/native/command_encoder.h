@@ -16,13 +16,13 @@ class CommandBuffer;
 class TextureView;
 class RenderPassEncoder;
 
-struct BlitBuffer
+struct CopyBuffer
 {
     Buffer* buffer = nullptr;
     uint64_t offset = 0;
 };
 
-struct BlitTextureBuffer
+struct CopyTextureBuffer
 {
     Buffer* buffer = nullptr;
     uint64_t offset = 0;
@@ -30,7 +30,7 @@ struct BlitTextureBuffer
     uint32_t rowsPerTexture = 0;
 };
 
-struct BlitTexture
+struct CopyTexture
 {
     Texture* texture = nullptr;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
@@ -51,17 +51,17 @@ public:
     virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
 
-    virtual void copyBufferToBuffer(const BlitBuffer& src,
-                                    const BlitBuffer& dst,
+    virtual void copyBufferToBuffer(const CopyBuffer& src,
+                                    const CopyBuffer& dst,
                                     uint64_t size) = 0;
-    virtual void copyBufferToTexture(const BlitTextureBuffer& buffer,
-                                     const BlitTexture& texture,
+    virtual void copyBufferToTexture(const CopyTextureBuffer& buffer,
+                                     const CopyTexture& texture,
                                      const Extent3D& extent) = 0;
-    virtual void copyTextureToBuffer(const BlitTexture& texture,
-                                     const BlitTextureBuffer& buffer,
+    virtual void copyTextureToBuffer(const CopyTexture& texture,
+                                     const CopyTextureBuffer& buffer,
                                      const Extent3D& extent) = 0;
-    virtual void copyTextureToTexture(const BlitTexture& src,
-                                      const BlitTexture& dst,
+    virtual void copyTextureToTexture(const CopyTexture& src,
+                                      const CopyTexture& dst,
                                       const Extent3D& extent) = 0;
     virtual void resolveQuerySet(QuerySet* querySet,
                                  uint32_t firstQuery,

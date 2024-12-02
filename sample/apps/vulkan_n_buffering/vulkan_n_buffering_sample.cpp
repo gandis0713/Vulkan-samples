@@ -312,7 +312,7 @@ void VulkanNBufferingSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usage = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kRenderAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .depth = 1,
@@ -542,12 +542,12 @@ void VulkanNBufferingSample::createRenderPipeline()
 
 void VulkanNBufferingSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
-    BlitBuffer srcBuffer{
+    CopyBuffer srcBuffer{
         .buffer = &src,
         .offset = 0,
     };
 
-    BlitBuffer dstBuffer{
+    CopyBuffer dstBuffer{
         .buffer = &dst,
         .offset = 0,
     };
@@ -568,14 +568,14 @@ void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuff
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
 
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = bytesPerData * imageTexture.getWidth() * channel,
         .rowsPerTexture = imageTexture.getHeight(),
     };
 
-    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    CopyTexture copyTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
@@ -586,7 +586,7 @@ void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuff
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
-    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEndoer->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     m_queue->submit({ commandEndoer->finish() });
 }

@@ -27,10 +27,10 @@ struct WebGPUAPI
     // WGPUProcAdapterInfoFreeMembers AdapterInfoFreeMembers = nullptr;
     // WGPUProcBindGroupSetLabel BindGroupSetLabel = nullptr;
     // WGPUProcBindGroupAddRef BindGroupAddRef = nullptr;
-    // WGPUProcBindGroupRelease BindGroupRelease = nullptr;
+    WGPUProcBindGroupRelease BindGroupRelease = nullptr;
     // WGPUProcBindGroupLayoutSetLabel BindGroupLayoutSetLabel = nullptr;
     // WGPUProcBindGroupLayoutAddRef BindGroupLayoutAddRef = nullptr;
-    // WGPUProcBindGroupLayoutRelease BindGroupLayoutRelease = nullptr;
+    WGPUProcBindGroupLayoutRelease BindGroupLayoutRelease = nullptr;
     // WGPUProcBufferDestroy BufferDestroy = nullptr;
     // WGPUProcBufferGetConstMappedRange BufferGetConstMappedRange = nullptr;
     // WGPUProcBufferGetMapState BufferGetMapState = nullptr;
@@ -152,7 +152,7 @@ struct WebGPUAPI
     // WGPUProcRenderPassEncoderInsertDebugMarker RenderPassEncoderInsertDebugMarker = nullptr;
     // WGPUProcRenderPassEncoderPopDebugGroup RenderPassEncoderPopDebugGroup = nullptr;
     // WGPUProcRenderPassEncoderPushDebugGroup RenderPassEncoderPushDebugGroup = nullptr;
-    // WGPUProcRenderPassEncoderSetBindGroup RenderPassEncoderSetBindGroup = nullptr;
+    WGPUProcRenderPassEncoderSetBindGroup RenderPassEncoderSetBindGroup = nullptr;
     // WGPUProcRenderPassEncoderSetBlendConstant RenderPassEncoderSetBlendConstant = nullptr;
     WGPUProcRenderPassEncoderSetIndexBuffer RenderPassEncoderSetIndexBuffer = nullptr;
     // WGPUProcRenderPassEncoderSetLabel RenderPassEncoderSetLabel = nullptr;

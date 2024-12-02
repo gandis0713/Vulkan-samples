@@ -1,6 +1,7 @@
 @fragment
 fn main(
-  @location(0) fragColor: vec3f
+  @location(0) fragUV: vec2f,
+  @location(1) fragPosition: vec4f
 ) -> @location(0) vec4f {
-  return vec4(fragColor, 1.0);
+  return fragPosition;
 }

@@ -122,13 +122,24 @@ TextureAspectFlags WGPUToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUText
     if (aspect & WGPUTextureAspect::WGPUTextureAspect_All)
     {
         auto usage = wgpuTexture->getTexture()->getUsage();
+        auto format = wgpuTexture->getTexture()->getFormat();
 
-        if (usage & TextureUsageFlagBits::kDepthStencil)
+        if (format == TextureFormat::kDepth16Unorm ||
+            format == TextureFormat::kDepth24Plus ||
+            format == TextureFormat::kDepth32Float)
         {
-            flags |= TextureAspectFlagBits::kDepth | TextureAspectFlagBits::kStencil;
+            flags |= TextureAspectFlagBits::kDepth;
         }
-
-        if (usage & TextureUsageFlagBits::kColorAttachment)
+        else if (format == TextureFormat::kDepth24PlusStencil8)
+        {
+            flags |= TextureAspectFlagBits::kDepth;
+            flags |= TextureAspectFlagBits::kStencil;
+        }
+        else if (format == TextureFormat::kStencil8)
+        {
+            flags |= TextureAspectFlagBits::kStencil;
+        }
+        else
         {
             flags |= TextureAspectFlagBits::kColor;
         }
@@ -144,4 +155,5 @@ TextureAspectFlags WGPUToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUText
 
     return flags;
 }
+
 } // namespace jipu

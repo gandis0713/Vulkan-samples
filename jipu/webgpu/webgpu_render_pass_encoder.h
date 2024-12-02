@@ -11,7 +11,9 @@ namespace jipu
 {
 
 class WebGPUBuffer;
+class WebGPUBindGroup;
 class WebGPUCommandEncoder;
+class WebGPURenderPipeline;
 class WebGPURenderPassEncoder : public RefCounted
 {
 
@@ -29,9 +31,10 @@ public:
     WebGPURenderPassEncoder& operator=(const WebGPURenderPassEncoder&) = delete;
 
 public: // WebGPU API
-    void setPipeline(WGPURenderPipeline pipeline);
+    void setPipeline(WebGPURenderPipeline* pipeline);
     void setVertexBuffer(uint32_t slot, WebGPUBuffer* buffer, uint64_t offset, uint64_t size);
     void setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size);
+    void setBindGroup(uint32_t groupIndex, WGPU_NULLABLE WebGPUBindGroup* group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets);
     void setViewport(float x, float y, float width, float height, float minDepth, float maxDepth);
     void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
     void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);

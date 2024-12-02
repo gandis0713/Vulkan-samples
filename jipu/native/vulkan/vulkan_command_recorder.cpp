@@ -319,7 +319,12 @@ void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
     auto minDepth = command->minDepth;
     auto maxDepth = command->maxDepth;
 
-    VkViewport viewport{ x, y, width, height, minDepth, maxDepth };
+    VkViewport viewport{ x,
+                         y + height,
+                         width,
+                         -height,
+                         minDepth,
+                         maxDepth };
     m_commandBuffer->getDevice()->vkAPI.CmdSetViewport(m_commandBuffer->getVkCommandBuffer(), 0, 1, &viewport);
 }
 

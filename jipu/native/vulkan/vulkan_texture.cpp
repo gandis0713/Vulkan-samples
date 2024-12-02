@@ -23,7 +23,7 @@ VulkanTextureDescriptor generateVulkanTextureDescriptor(const TextureDescriptor&
     vkdescriptor.format = ToVkFormat(descriptor.format);
     vkdescriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
     vkdescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    vkdescriptor.usage = ToVkImageUsageFlags(descriptor.usage);
+    vkdescriptor.usage = ToVkImageUsageFlags(descriptor.usage, descriptor.format);
     vkdescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vkdescriptor.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     vkdescriptor.flags = 0;
@@ -302,10 +302,9 @@ VkFormat ToVkFormat(TextureFormat format)
         return VK_FORMAT_S8_UINT;
     case TextureFormat::kDepth16Unorm:
         return VK_FORMAT_D16_UNORM;
-    case TextureFormat::kDepth24Plus:
-        return VK_FORMAT_X8_D24_UNORM_PACK32;
     case TextureFormat::kDepth24PlusStencil8:
         return VK_FORMAT_D24_UNORM_S8_UINT;
+    case TextureFormat::kDepth24Plus:
     case TextureFormat::kDepth32Float:
         return VK_FORMAT_D32_SFLOAT;
     case TextureFormat::kBC1RGBAUnorm:
@@ -528,8 +527,6 @@ TextureFormat ToTextureFormat(VkFormat format)
         return TextureFormat::kStencil8;
     case VK_FORMAT_D16_UNORM:
         return TextureFormat::kDepth16Unorm;
-    case VK_FORMAT_X8_D24_UNORM_PACK32:
-        return TextureFormat::kDepth24Plus;
     case VK_FORMAT_D24_UNORM_S8_UINT:
         return TextureFormat::kDepth24PlusStencil8;
     case VK_FORMAT_D32_SFLOAT:
@@ -721,17 +718,17 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
     }
     if (usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
-        flags |= TextureUsageFlagBits::kDepthStencil;
+        flags |= TextureUsageFlagBits::kRenderAttachment;
     }
     if (usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
     {
-        flags |= TextureUsageFlagBits::kColorAttachment;
+        flags |= TextureUsageFlagBits::kRenderAttachment;
     }
 
     return flags;
 }
 
-VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat format)
 {
     VkImageUsageFlags flags = 0u;
 
@@ -751,13 +748,20 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     {
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
-    if (usages & TextureUsageFlagBits::kDepthStencil)
+    if (usages & TextureUsageFlagBits::kRenderAttachment)
     {
-        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    }
-    if (usages & TextureUsageFlagBits::kColorAttachment)
-    {
-        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        if (format == TextureFormat::kDepth16Unorm ||
+            format == TextureFormat::kDepth24Plus ||
+            format == TextureFormat::kDepth24PlusStencil8 ||
+            format == TextureFormat::kDepth32Float ||
+            format == TextureFormat::kStencil8)
+        {
+            flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        }
+        else
+        {
+            flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        }
     }
 
     return flags;
@@ -823,7 +827,7 @@ bool isSupportedVkFormat(VkFormat format)
     case VK_FORMAT_R32G32B32A32_SINT:
     case VK_FORMAT_S8_UINT:
     case VK_FORMAT_D16_UNORM:
-    case VK_FORMAT_X8_D24_UNORM_PACK32:
+    // case VK_FORMAT_X8_D24_UNORM_PACK32:
     case VK_FORMAT_D24_UNORM_S8_UINT:
     case VK_FORMAT_D32_SFLOAT:
     case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
@@ -933,17 +937,13 @@ VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
 //     {
 //         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 //     }
-//     if (usage & TextureUsageFlagBits::kColorAttachment)
+//     if (usage & TextureUsageFlagBits::kRenderAttachment)
 //     {
 //         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 //     }
 //     if (usage & TextureUsageFlagBits::kStorageBinding)
 //     {
 //         return VK_IMAGE_LAYOUT_GENERAL;
-//     }
-//     if (usage & TextureUsageFlagBits::kDepthStencil)
-//     {
-//         return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 //     }
 //     if (usage & TextureUsageFlagBits::kCopySrc)
 //     {

@@ -370,7 +370,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
 
 void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
@@ -379,10 +379,10 @@ void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture
 
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
-    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
-    blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
+    copyTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
+    copyTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    CopyTexture copyTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
@@ -390,7 +390,7 @@ void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
-    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEndoer->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     auto commandBuffer = commandEndoer->finish(CommandBufferDescriptor{});
     m_queue->submit({ commandBuffer.get() });

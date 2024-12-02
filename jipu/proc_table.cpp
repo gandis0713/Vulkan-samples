@@ -1,6 +1,8 @@
 #include "jipu/webgpu/webgpu_header.h"
 
 #include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_bind_group.h"
+#include "webgpu/webgpu_bind_group_layout.h"
 #include "webgpu/webgpu_buffer.h"
 #include "webgpu/webgpu_command_buffer.h"
 #include "webgpu/webgpu_command_encoder.h"
@@ -119,7 +121,7 @@ WGPURenderPassEncoder procCommandEncoderBeginRenderPass(WGPUCommandEncoder comma
 void procRenderPassEncoderSetPipeline(WGPURenderPassEncoder renderPassEncoder, WGPURenderPipeline pipeline)
 {
     WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
-    return webgpuRenderPassEncoder->setPipeline(pipeline);
+    return webgpuRenderPassEncoder->setPipeline(reinterpret_cast<WebGPURenderPipeline*>(pipeline));
 }
 
 void procRenderPassEncoderDraw(WGPURenderPassEncoder renderPassEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
@@ -304,6 +306,25 @@ void procQueueWriteBuffer(WGPUQueue queue, WGPUBuffer buffer, uint64_t bufferOff
     return webgpuQueue->writeBuffer(webgpuBuffer, bufferOffset, data, size);
 }
 
+void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    WebGPUBindGroup* webgpuBindGroup = reinterpret_cast<WebGPUBindGroup*>(group);
+    return webgpuRenderPassEncoder->setBindGroup(groupIndex, webgpuBindGroup, dynamicOffsetCount, dynamicOffsets);
+}
+
+void procBindGroupRelease(WGPUBindGroup bindGroup)
+{
+    WebGPUBindGroup* webgpuBindGroup = reinterpret_cast<WebGPUBindGroup*>(bindGroup);
+    return webgpuBindGroup->release();
+}
+
+void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout)
+{
+    WebGPUBindGroupLayout* webgpuBindGroupLayout = reinterpret_cast<WebGPUBindGroupLayout*>(bindGroupLayout);
+    return webgpuBindGroupLayout->release();
+}
+
 namespace
 {
 
@@ -355,6 +376,9 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetViewport", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetViewport) },
     { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
     { "wgpuQueueWriteBuffer", reinterpret_cast<WGPUProc>(procQueueWriteBuffer) },
+    { "wgpuRenderPassEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBindGroup) },
+    { "wgpuBindGroupRelease", reinterpret_cast<WGPUProc>(procBindGroupRelease) },
+    { "wgpuBindGroupLayoutRelease", reinterpret_cast<WGPUProc>(procBindGroupLayoutRelease) },
 };
 
 } // namespace

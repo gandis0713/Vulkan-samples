@@ -162,7 +162,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
     // copy buffer to texture
     {
-        BlitTextureBuffer blitTextureBuffer{
+        CopyTextureBuffer copyTextureBuffer{
             .buffer = m_fontBuffer.get(),
             .offset = 0,
             .bytesPerRow = 0,
@@ -171,10 +171,10 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
         uint32_t channel = 4;
         uint32_t bytesPerData = sizeof(FontDataType);
-        blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
-        blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
+        copyTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
+        copyTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{
+        CopyTexture copyTexture{
             .texture = m_fontTexture.get(),
             .aspect = TextureAspectFlagBits::kColor
         };
@@ -185,7 +185,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         queue->submit({ commandBuffer.get() });
@@ -392,9 +392,16 @@ void Im_Gui::build()
 {
     // update transfrom buffer
     {
-        m_uiTransform.scale =
-            glm::vec2(2.0f / ImGui::GetIO().DisplaySize.x, 2.0f / ImGui::GetIO().DisplaySize.y);
-        m_uiTransform.translate = glm::vec2(-1.0f);
+        float L = ImGui::GetDrawData()->DisplayPos.x;
+        float R = ImGui::GetDrawData()->DisplayPos.x + ImGui::GetDrawData()->DisplaySize.x;
+        float T = ImGui::GetDrawData()->DisplayPos.y;
+        float B = ImGui::GetDrawData()->DisplayPos.y + ImGui::GetDrawData()->DisplaySize.y;
+
+        m_uiTransform.scale[0] = 2.0f / (R - L);
+        m_uiTransform.scale[1] = 2.0f / (T - B);
+
+        m_uiTransform.translate[0] = -(R + L) / (R - L);
+        m_uiTransform.translate[1] = -(T + B) / (T - B);
 
         void* pointer = m_uniformBuffer->map();
         memcpy(pointer, &m_uiTransform, sizeof(UITransform));

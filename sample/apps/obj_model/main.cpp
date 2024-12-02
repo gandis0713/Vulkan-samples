@@ -327,7 +327,7 @@ void OBJModelSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usage = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kRenderAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .depth = 1,
@@ -350,7 +350,7 @@ void OBJModelSample::createDepthStencilTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kDepth32Float;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
@@ -559,12 +559,12 @@ void OBJModelSample::createRenderPipeline()
 
 void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
-    BlitBuffer srcBuffer{
+    CopyBuffer srcBuffer{
         .buffer = &src,
         .offset = 0,
     };
 
-    BlitBuffer dstBuffer{
+    CopyBuffer dstBuffer{
         .buffer = &dst,
         .offset = 0,
     };
@@ -581,7 +581,7 @@ void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{
+    CopyTextureBuffer copyTextureBuffer{
         .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
@@ -590,10 +590,10 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
 
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
-    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
-    blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
+    copyTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
+    copyTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    CopyTexture copyTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
@@ -602,7 +602,7 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    commandEndoer->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
     CommandBufferDescriptor commandBufferDescriptor{};
     auto commandBuffer = commandEndoer->finish(commandBufferDescriptor);
@@ -620,8 +620,6 @@ void OBJModelSample::updateUniformBuffer()
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 10.0f);
-
-    ubo.proj[1][1] *= -1;
 
     memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
 }
