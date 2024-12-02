@@ -97,6 +97,7 @@ void WGPURotatingCube::onDraw()
     wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
     wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
     wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, m_cube.size() * sizeof(float));
+    // TODO: set bind group
     // wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_cubeIndexBuffer, WGPUIndexFormat_Uint16, 0, m_indices.size() * sizeof(IndexType));
     // wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, 3, 1, 0, 0, 0);
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
@@ -259,13 +260,13 @@ void WGPURotatingCube::createUniformBuffer()
 }
 void WGPURotatingCube::createBindingGroupLayout()
 {
-    WGPUBindGroupLayoutEntry bindGroupLayoutEntries[1] = {
-        { .binding = 0, .visibility = WGPUShaderStage_Vertex, .buffer = { .type = WGPUBufferBindingType_Uniform } },
+    std::array<WGPUBindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
+        WGPUBindGroupLayoutEntry{ .binding = 0, .visibility = WGPUShaderStage_Vertex, .buffer = { .type = WGPUBufferBindingType_Uniform } },
     };
 
     WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
-    bindGroupLayoutDescriptor.entryCount = 1;
-    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries;
+    bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
+    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
 
     m_bindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
     assert(m_bindGroupLayout);
@@ -273,14 +274,14 @@ void WGPURotatingCube::createBindingGroupLayout()
 
 void WGPURotatingCube::createBindingGroup()
 {
-    WGPUBindGroupEntry bindGroupEntries[1] = {
-        { .binding = 0, .buffer = m_uniformBuffer, .offset = 0, .size = sizeof(glm::mat4) },
+    std::array<WGPUBindGroupEntry, 1> bindGroupEntries = {
+        WGPUBindGroupEntry{ .binding = 0, .buffer = m_uniformBuffer, .offset = 0, .size = sizeof(glm::mat4) },
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
     bindGroupDescriptor.layout = m_bindGroupLayout;
-    bindGroupDescriptor.entryCount = 1;
-    bindGroupDescriptor.entries = bindGroupEntries;
+    bindGroupDescriptor.entryCount = bindGroupEntries.size();
+    bindGroupDescriptor.entries = bindGroupEntries.data();
 
     m_bindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
     assert(m_bindGroup);
