@@ -303,7 +303,7 @@ VkFormat ToVkFormat(TextureFormat format)
     case TextureFormat::kDepth16Unorm:
         return VK_FORMAT_D16_UNORM;
     case TextureFormat::kDepth24Plus:
-        return VK_FORMAT_X8_D24_UNORM_PACK32;
+        return VK_FORMAT_D32_SFLOAT;
     case TextureFormat::kDepth24PlusStencil8:
         return VK_FORMAT_D24_UNORM_S8_UINT;
     case TextureFormat::kDepth32Float:
@@ -528,8 +528,6 @@ TextureFormat ToTextureFormat(VkFormat format)
         return TextureFormat::kStencil8;
     case VK_FORMAT_D16_UNORM:
         return TextureFormat::kDepth16Unorm;
-    case VK_FORMAT_X8_D24_UNORM_PACK32:
-        return TextureFormat::kDepth24Plus;
     case VK_FORMAT_D24_UNORM_S8_UINT:
         return TextureFormat::kDepth24PlusStencil8;
     case VK_FORMAT_D32_SFLOAT:
@@ -823,7 +821,7 @@ bool isSupportedVkFormat(VkFormat format)
     case VK_FORMAT_R32G32B32A32_SINT:
     case VK_FORMAT_S8_UINT:
     case VK_FORMAT_D16_UNORM:
-    case VK_FORMAT_X8_D24_UNORM_PACK32:
+    // case VK_FORMAT_X8_D24_UNORM_PACK32:
     case VK_FORMAT_D24_UNORM_S8_UINT:
     case VK_FORMAT_D32_SFLOAT:
     case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
