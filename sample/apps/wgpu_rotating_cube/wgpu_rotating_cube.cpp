@@ -322,8 +322,8 @@ void WGPURotatingCube::createPipelineLayout()
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
     pipelineLayoutDescriptor.bindGroupLayouts = &m_bindGroupLayout;
-    m_pipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 
+    m_pipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
     assert(m_pipelineLayout);
 }
 

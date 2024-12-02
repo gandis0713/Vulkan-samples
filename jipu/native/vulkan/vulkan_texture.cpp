@@ -302,10 +302,9 @@ VkFormat ToVkFormat(TextureFormat format)
         return VK_FORMAT_S8_UINT;
     case TextureFormat::kDepth16Unorm:
         return VK_FORMAT_D16_UNORM;
-    case TextureFormat::kDepth24Plus:
-        return VK_FORMAT_D32_SFLOAT;
     case TextureFormat::kDepth24PlusStencil8:
         return VK_FORMAT_D24_UNORM_S8_UINT;
+    case TextureFormat::kDepth24Plus:
     case TextureFormat::kDepth32Float:
         return VK_FORMAT_D32_SFLOAT;
     case TextureFormat::kBC1RGBAUnorm:
