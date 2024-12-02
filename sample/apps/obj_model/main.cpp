@@ -327,7 +327,7 @@ void OBJModelSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usage = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kRenderAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .depth = 1,
@@ -350,7 +350,7 @@ void OBJModelSample::createDepthStencilTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kDepth32Float;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment; // TODO: render attachment
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();

@@ -439,7 +439,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -463,7 +463,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment |
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment |
                        TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
@@ -488,7 +488,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -1246,7 +1246,7 @@ void DeferredSample::createDepthStencilTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment; // TODO: render attachment
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }

@@ -718,11 +718,11 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
     }
     if (usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
-        flags |= TextureUsageFlagBits::kColorAttachment;
+        flags |= TextureUsageFlagBits::kRenderAttachment;
     }
     if (usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
     {
-        flags |= TextureUsageFlagBits::kColorAttachment;
+        flags |= TextureUsageFlagBits::kRenderAttachment;
     }
 
     return flags;
@@ -748,7 +748,7 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat fo
     {
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
-    if (usages & TextureUsageFlagBits::kColorAttachment)
+    if (usages & TextureUsageFlagBits::kRenderAttachment)
     {
         if (format == TextureFormat::kDepth16Unorm ||
             format == TextureFormat::kDepth24Plus ||
@@ -937,7 +937,7 @@ VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
 //     {
 //         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 //     }
-//     if (usage & TextureUsageFlagBits::kColorAttachment)
+//     if (usage & TextureUsageFlagBits::kRenderAttachment)
 //     {
 //         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 //     }

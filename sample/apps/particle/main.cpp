@@ -272,7 +272,7 @@ void ParticleSample::createColorAttachmentTexture()
     TextureDescriptor descriptor{};
     descriptor.format = m_swapchain->getTextureFormat();
     descriptor.type = TextureType::k2D;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment;
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;

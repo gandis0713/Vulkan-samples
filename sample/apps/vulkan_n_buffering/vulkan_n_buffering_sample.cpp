@@ -312,7 +312,7 @@ void VulkanNBufferingSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usage = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kRenderAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .depth = 1,

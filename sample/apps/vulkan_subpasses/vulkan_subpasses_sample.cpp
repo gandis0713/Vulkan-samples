@@ -2337,7 +2337,7 @@ void VulkanSubpassesSample::createDepthStencilTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment; // TODO: render attachment
+    descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }

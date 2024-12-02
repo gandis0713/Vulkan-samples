@@ -315,7 +315,7 @@ WGPUTextureUsageFlags ToWGPUTextureUsageFlags(TextureUsageFlags flags)
     {
         wgpuUsages |= WGPUTextureUsage_StorageBinding;
     }
-    if (flags & TextureUsageFlagBits::kColorAttachment)
+    if (flags & TextureUsageFlagBits::kRenderAttachment)
     {
         wgpuUsages |= WGPUTextureUsage_RenderAttachment;
     }
@@ -588,7 +588,7 @@ TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags, WGPUTextu
     }
     if (flags & WGPUTextureUsage_RenderAttachment)
     {
-        jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
+        jipuUsageFlags |= TextureUsageFlagBits::kRenderAttachment;
     }
 
     return jipuUsageFlags;

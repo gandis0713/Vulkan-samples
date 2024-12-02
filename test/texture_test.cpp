@@ -23,7 +23,7 @@ TEST_F(TextureTest, test_createtexture_usage)
     }
 
     {
-        descriptor.usage = TextureUsageFlagBits::kColorAttachment;
+        descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
