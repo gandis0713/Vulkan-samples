@@ -1,5 +1,6 @@
 #include "webgpu_render_pass_encoder.h"
 
+#include "webgpu_bind_group.h"
 #include "webgpu_buffer.h"
 #include "webgpu_command_encoder.h"
 #include "webgpu_render_pipeline.h"
@@ -74,9 +75,9 @@ WebGPURenderPassEncoder::WebGPURenderPassEncoder(WebGPUCommandEncoder* wgpuComma
 {
 }
 
-void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
+void WebGPURenderPassEncoder::setPipeline(WebGPURenderPipeline* wgpuPipeline)
 {
-    auto renderPipeline = reinterpret_cast<WebGPURenderPipeline*>(wgpuPipeline)->getRenderPipeline();
+    auto renderPipeline = wgpuPipeline->getRenderPipeline();
     m_renderPassEncoder->setPipeline(renderPipeline);
 
     // TODO: default viewport
@@ -104,6 +105,14 @@ void WebGPURenderPassEncoder::setVertexBuffer(uint32_t slot, WebGPUBuffer* buffe
 void WebGPURenderPassEncoder::setIndexBuffer(WebGPUBuffer* buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
 {
     m_renderPassEncoder->setIndexBuffer(buffer->getBuffer(), WGPUToIndexFormat(format)); // TODO: offset, size
+}
+
+void WebGPURenderPassEncoder::setBindGroup(uint32_t groupIndex, WGPU_NULLABLE WebGPUBindGroup* group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
+{
+    auto bindGroup = group->getBindGroup();
+
+    std::vector<uint32_t> dynamicOffsetsVec(dynamicOffsets, dynamicOffsets + dynamicOffsetCount);
+    m_renderPassEncoder->setBindGroup(groupIndex, bindGroup, dynamicOffsetsVec);
 }
 
 void WebGPURenderPassEncoder::setViewport(float x, float y, float width, float height, float minDepth, float maxDepth)

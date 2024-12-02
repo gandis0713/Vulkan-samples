@@ -119,7 +119,7 @@ WGPURenderPassEncoder procCommandEncoderBeginRenderPass(WGPUCommandEncoder comma
 void procRenderPassEncoderSetPipeline(WGPURenderPassEncoder renderPassEncoder, WGPURenderPipeline pipeline)
 {
     WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
-    return webgpuRenderPassEncoder->setPipeline(pipeline);
+    return webgpuRenderPassEncoder->setPipeline(reinterpret_cast<WebGPURenderPipeline*>(pipeline));
 }
 
 void procRenderPassEncoderDraw(WGPURenderPassEncoder renderPassEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
