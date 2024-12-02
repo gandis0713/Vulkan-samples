@@ -129,7 +129,7 @@ VulkanBufferResource _createBufferResource(VulkanDevice* device, const VkBufferC
 
     VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; // TODO: set memory property flags by create information.
 
-    int memoryTypeIndex = downcast(device->getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
+    int memoryTypeIndex = downcast(device->getPhysicalDevice())->findMemoryTypeIndex(memoryPropertyFlags);
     if (memoryTypeIndex == -1)
     {
         throw std::runtime_error("Failed to find memory type index");
@@ -179,7 +179,7 @@ VulkanTextureResource _createTextureResource(VulkanDevice* device, const VkImage
 
     VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: set memory property flags by create information.
 
-    int memoryTypeIndex = downcast(device->getPhysicalDevice()).findMemoryTypeIndex(memoryPropertyFlags);
+    int memoryTypeIndex = downcast(device->getPhysicalDevice())->findMemoryTypeIndex(memoryPropertyFlags);
     if (memoryTypeIndex == -1)
     {
         throw std::runtime_error("Failed to find memory type index");
