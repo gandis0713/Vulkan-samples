@@ -51,6 +51,6 @@ WGPUTextureUsageFlags ToWGPUTextureUsageFlags(TextureUsageFlags usage);
 // Convert from WebGPU to JIPU
 TextureFormat WGPUToTextureFormat(WGPUTextureFormat format);
 TextureType WGPUToTextureType(WGPUTextureDimension dimension);
-TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags);
+TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags, WGPUTextureFormat format);
 
 } // namespace jipu

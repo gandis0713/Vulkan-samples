@@ -22,7 +22,7 @@ WebGPUTexture* WebGPUTexture::create(WebGPUDevice* device, WGPUTextureDescriptor
     textureDescriptor.mipLevels = descriptor->mipLevelCount;
     textureDescriptor.sampleCount = descriptor->sampleCount;
     textureDescriptor.format = WGPUToTextureFormat(descriptor->format);
-    textureDescriptor.usage = WGPUToTextureUsageFlags(descriptor->usage);
+    textureDescriptor.usage = WGPUToTextureUsageFlags(descriptor->usage, descriptor->format);
 
     auto texture = device->getDevice()->createTexture(textureDescriptor);
 
@@ -571,7 +571,7 @@ TextureType WGPUToTextureType(WGPUTextureDimension dimension)
     }
 }
 
-TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags)
+TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags, WGPUTextureFormat format)
 {
     TextureUsageFlags jipuUsageFlags = TextureUsageFlagBits::kUndefined;
     if (flags & WGPUTextureUsage_CopySrc)
@@ -592,9 +592,18 @@ TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags)
     }
     if (flags & WGPUTextureUsage_RenderAttachment)
     {
-        jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
+        if (format == WGPUTextureFormat::WGPUTextureFormat_Depth16Unorm ||
+            format == WGPUTextureFormat::WGPUTextureFormat_Depth24Plus ||
+            format == WGPUTextureFormat::WGPUTextureFormat_Depth24PlusStencil8 ||
+            format == WGPUTextureFormat::WGPUTextureFormat_Depth32Float)
+        {
+            jipuUsageFlags |= TextureUsageFlagBits::kDepthStencil;
+        }
+        else
+        {
+            jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
+        }
     }
-    // TODO: depth
 
     return jipuUsageFlags;
 }
