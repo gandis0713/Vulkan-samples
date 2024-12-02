@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 project(
     jipu_sample_base
@@ -28,6 +28,8 @@ list(APPEND SRC_FILES
     camera.h
     sample.cpp
     sample.h
+    wgpu_sample.cpp
+    wgpu_sample.h
     fps.cpp
     fps.h
     window.cpp
@@ -48,6 +50,8 @@ list(APPEND SRC_FILES
     image.h
     hpc_watcher.cpp
     hpc_watcher.h
+    webgpu_api.cpp
+    webgpu_api.h
 )
 
 if(ANDROID)
@@ -83,14 +87,22 @@ target_include_directories(jipu_sample_base
 target_link_libraries(jipu_sample_base
     PUBLIC
     glm::glm
+    jipu::common
+    jipu::native
+    jipu::jipu
     PRIVATE
     tinyobjloader::tinyobjloader
-    spdlog::spdlog_header_only
     KTX::ktx
-    jipu::jipu
     hpc::hpc
     imgui::imgui
 )
+
+if(USE_DAWN_WEBGPU)
+    target_compile_definitions(jipu_sample_base
+        PUBLIC
+        "USE_DAWN_HEADER"
+    )
+endif()
 
 if(NOT ANDROID)
     target_link_libraries(jipu_sample_base

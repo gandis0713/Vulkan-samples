@@ -26,6 +26,10 @@ jobs:
           vulkan-query-version: 1.3.204.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader # Glslang, SPIRV-Cross, SPIRV-Tools
           vulkan-use-cache: true
+      - name: Setup Python
+        uses: actions/setup-python@v5.2.0
+        with:
+          python-version: '3.12'
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
         uses: lukka/get-cmake@v3.30.2
@@ -35,7 +39,7 @@ jobs:
         uses: lukka/run-vcpkg@v10
         with:
           vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-          vcpkgGitCommitId: "1de2026f28ead93ff1773e6e680387643e914ea1" # 2024.07.12
+          vcpkgGitCommitId: "10b7a178346f3f0abef60cecd5130e295afd8da4" # 2024.10.21
           vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
           runVcpkgInstall: false
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.

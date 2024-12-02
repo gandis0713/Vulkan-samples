@@ -13,7 +13,9 @@
 				"VCPKG_INSTALLED_DIR": "${sourceDir}/externals",
 				"JIPU_SAMPLE": "ON",
 				"JIPU_TEST": "ON",
-				"ENABLE_VULKAN_EXPERIMENTAL": "ON"
+				"EXPORT_JIPU_COMMON": "ON",
+				"EXPORT_JIPU_NATIVE": "ON",
+				"USE_DAWN_WEBGPU": "ON"
 			},
 			"environment": {
 				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries"
@@ -33,7 +35,7 @@
 				"rhs": "Darwin"
 			},
 			"cacheVariables": {
-				"BUILD_SHARED_LIBS": true
+				"BUILD_SHARED_LIBS": false
 			}
 		},
 		{

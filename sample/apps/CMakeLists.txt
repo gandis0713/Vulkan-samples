@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 if(APPLE)
     # Scheme Environment should be set to Xcode project.
@@ -9,7 +9,7 @@ if(APPLE)
 endif()
 
 function(configure_sample target)
-    cmake_minimum_required(VERSION 3.21)
+    cmake_minimum_required(VERSION 3.22)
 
     project(
         ${target}
@@ -33,7 +33,6 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        jipu::jipu
         jipu::sample_base
     )
 
@@ -74,7 +73,8 @@ function(configure_sample target)
     if(NOT ANDROID)
         # copy spirv to output
         set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-        file(GLOB_RECURSE shaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.comp")
+        file(GLOB_RECURSE glslShaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.comp")
+        file(GLOB_RECURSE wgslShaders "${SHADER_DIR}/*.wgsl")
 
         if(EXISTS ${GLSLC_EXE})
             function(run_glslc tar shader_name src dst)
@@ -83,17 +83,21 @@ function(configure_sample target)
                 )
             endfunction()
 
-            foreach(shader ${shaders})
+            foreach(shader ${glslShaders})
                 cmake_path(GET shader FILENAME shader_name)
                 run_glslc(${target} ${shader_name} ${SHADER_DIR} ${BINARY_OUT})
                 run_glslc(${target} ${shader_name} ${SHADER_DIR} ${SHADER_DIR})
             endforeach(shader)
         else()
-            foreach(shader ${shaders})
+            foreach(shader ${glslShaders})
                 cmake_path(GET shader FILENAME shader_name)
                 file(COPY ${SHADER_DIR}/${shader_name}.spv DESTINATION ${BINARY_OUT})
             endforeach(shader)
         endif()
+
+        foreach(shader ${wgslShaders})
+            file(COPY ${shader} DESTINATION ${BINARY_OUT})
+        endforeach(shader)
     endif()
 
     # copy resources
@@ -102,8 +106,31 @@ function(configure_sample target)
     foreach(resource ${resources})
         file(COPY ${resource} DESTINATION ${BINARY_OUT})
     endforeach(resource)
+
+    if(ANDROID)
+        set(JINLIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../android/apps/${target}/src/main/jniLibs/arm64-v8a)
+
+        find_library(DAWN_LIB REQUIRED
+            NAMES webgpu_dawn
+            PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib
+        )
+
+        add_custom_command(
+            TARGET ${target}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${JINLIBS_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${DAWN_LIB}" "${JINLIBS_DIR}"
+            COMMENT "Copying webgpu_dawn library to ${JINLIBS_DIR}"
+        )
+    endif()
 endfunction()
 
+# for jipu
+add_subdirectory(wgpu_triangle)
+add_subdirectory(wgpu_triangle_msaa)
+add_subdirectory(wgpu_rotating_cube)
+
+# experimental for native
 add_subdirectory(triangle)
 add_subdirectory(query)
 add_subdirectory(blend)
@@ -114,9 +141,7 @@ add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
-# experimental
-if(ENABLE_VULKAN_EXPERIMENTAL)
-    add_subdirectory(vulkan_subpasses)
-    add_subdirectory(vulkan_n_buffering)
-    add_subdirectory(vulkan_pipeline_barrier)
-endif()
+# experimental for vulkan
+# add_subdirectory(vulkan_subpasses)
+# add_subdirectory(vulkan_n_buffering)
+# add_subdirectory(vulkan_pipeline_barrier)

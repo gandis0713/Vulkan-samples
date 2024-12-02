@@ -3,8 +3,9 @@
 #include <SDL2/SDL.h>
 #include <gtest/gtest.h>
 
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 #include "test.h"
 
 namespace jipu
@@ -23,6 +24,7 @@ protected:
     uint32_t m_height = 0;
 
     std::unique_ptr<jipu::Surface> m_surface = nullptr;
+    std::unique_ptr<jipu::Queue> m_queue = nullptr;
     std::unique_ptr<jipu::Swapchain> m_swapchain = nullptr;
 };
 

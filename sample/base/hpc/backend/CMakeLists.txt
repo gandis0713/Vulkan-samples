@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 project(
     hpc-backend
@@ -6,6 +6,8 @@ project(
     DESCRIPTION "HPC backend"
     LANGUAGES CXX
 )
+
+find_package(spdlog REQUIRED)
 
 set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
@@ -35,11 +37,15 @@ add_library(backend STATIC
 )
 add_library(hpc::backend ALIAS backend)
 
-target_link_libraries(backend PRIVATE spdlog::spdlog_header_only)
 target_include_directories(backend
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>
+)
+
+target_link_libraries(backend
+    PUBLIC
+    spdlog::spdlog_header_only
 )

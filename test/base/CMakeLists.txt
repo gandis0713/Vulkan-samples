@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 find_package(Gtest CONFIG REQUIRED)
 find_package(sdl2 CONFIG REQUIRED)
@@ -28,6 +28,8 @@ target_include_directories(test_base PUBLIC
 
 target_link_libraries(test_base
   PUBLIC
+  jipu::common
+  jipu::native
   jipu::jipu
   GTest::gmock
   GTest::gtest

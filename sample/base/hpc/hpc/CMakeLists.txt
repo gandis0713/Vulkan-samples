@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
 if(ANDROID)
     find_package(hwcpipe CONFIG REQUIRED)
@@ -61,10 +61,6 @@ if(ANDROID)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/mali>
     )
 endif()
-
-target_link_libraries(hpc PRIVATE
-    spdlog::spdlog_header_only
-)
 
 if(ANDROID)
     # for custom backend

@@ -3,17 +3,17 @@
 #include "image.h"
 #include "sample.h"
 
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -30,28 +30,26 @@ public:
     ~BlendSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
     void createSampler();
     std::unique_ptr<Texture> createTexture(const char* name);
     std::unique_ptr<TextureView> createTextureView(Texture* texture);
-    void createBindingGroupLayout();
-    std::unique_ptr<BindingGroup> createBindingGroup(TextureView* textureView);
+    void createBindGroupLayout();
+    std::unique_ptr<BindGroup> createBindGroup(TextureView* textureView);
     void createRenderPipelineLayout();
     std::unique_ptr<RenderPipeline> createRenderPipeline(const BlendState& blendState);
 
     void copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture);
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Texture> m_texture1 = nullptr;
@@ -60,9 +58,9 @@ private:
     std::unique_ptr<TextureView> m_textureView2 = nullptr;
     std::unique_ptr<Sampler> m_sampler = nullptr;
 
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup1 = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup2 = nullptr;
+    std::unique_ptr<BindGroupLayout> m_bindGroupLayout = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup1 = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup2 = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline1 = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline2 = nullptr;
@@ -74,14 +72,14 @@ private:
     std::vector<uint16_t> m_indices{ 0, 1, 2, 0, 2, 3 };
     // clang-format off
     std::vector<Vertex> m_vertices{
-            { { 1.0, 1.0, }, { 1.0, 1.0, } },
-            { { 0.0, 1.0, }, { 0.0, 1.0, } },
-            { { 0.0, -1.0, }, { 0.0, 0.0, } },
-            { { 1.0, -1.0, }, { 1.0, 0.0, } },
+            { { 1.0, -1.0, }, { 1.0, 1.0, } },
+            { { 0.0, -1.0, }, { 0.0, 1.0, } },
+            { { 0.0, 1.0, }, { 0.0, 0.0, } },
+            { { 1.0, 1.0, }, { 1.0, 0.0, } },
         };
     // clang-format on
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
 
     std::unique_ptr<Image> m_image1 = nullptr;
     std::unique_ptr<Image> m_image2 = nullptr;

@@ -6,7 +6,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "[windows x64] Triangle",
+            "name": "[WGPU] [windows x64] Triangle",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_triangle/wgpu_triangle.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "[WGPU] [windows x64] Triangle MSAA",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_triangle_msaa/wgpu_triangle_msaa.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "[WGPU] [windows x64] Rotating Cube",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_rotating_cube/wgpu_rotating_cube.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "[Native] [windows x64] Triangle",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/triangle/triangle.exe",
@@ -15,7 +42,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Query",
+            "name": "[Native] [windows x64] Query",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/query/query.exe",
@@ -24,7 +51,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Blend",
+            "name": "[Native] [windows x64] Blend",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/blend/blend.exe",
@@ -33,7 +60,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] OBJ Model",
+            "name": "[Native] [windows x64] OBJ Model",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/obj_model/obj_model.exe",
@@ -42,7 +69,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Partical",
+            "name": "[Native] [windows x64] Partical",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/particle/particle.exe",
@@ -51,7 +78,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Deferred",
+            "name": "[Native] [windows x64] Deferred",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/deferred/deferred.exe",
@@ -60,7 +87,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] ImGui",
+            "name": "[Native] [windows x64] ImGui",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/imgui/imgui.exe",
@@ -69,7 +96,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Instancing",
+            "name": "[Native] [windows x64] Instancing",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/instancing/instancing.exe",
@@ -78,7 +105,7 @@
             "environment": [],
         },
         {
-            "name": "[windows x64] Offscreen",
+            "name": "[Native] [windows x64] Offscreen",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/offscreen/offscreen.exe",
@@ -87,160 +114,7 @@
             "environment": [],
         },
         {
-            "name": "[arm64 osx] Triangle",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Query",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/query/query",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Blend",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/blend/blend",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] OBJ Model",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/obj_model/obj_model",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Partical",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/particle/particle",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Deferred",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred/deferred",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] ImGui",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/imgui/imgui",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Instancing",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/instancing/instancing",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[arm64 osx] Offscreen",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/offscreen/offscreen",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "Vulkan [windows x64] Subpasses",
+            "name": "[Vulkan] [windows x64] Subpasses",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses.exe",
@@ -249,7 +123,7 @@
             "environment": [],
         },
         {
-            "name": "Vulkan [windows x64] N Buffering",
+            "name": "[Vulkan] [windows x64] N Buffering",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering.exe",
@@ -258,7 +132,7 @@
             "environment": [],
         },
         {
-            "name": "Vulkan [windows x64] Pipeline Barrier",
+            "name": "[Vulkan] [windows x64] Pipeline Barrier",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier.exe",
@@ -267,7 +141,211 @@
             "environment": [],
         },
         {
-            "name": "Vulkan [arm64 osx] Subpasses",
+            "name": "[WGPU] [arm64 osx] Triangle",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_triangle/wgpu_triangle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[WGPU] [arm64 osx] Triangle MSAA",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_triangle_msaa/wgpu_triangle_msaa",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[WGPU] [arm64 osx] Rotating Cube",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_rotating_cube/wgpu_rotating_cube",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Triangle",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Query",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/query/query",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Blend",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/blend/blend",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] OBJ Model",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/obj_model/obj_model",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Partical",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/particle/particle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Deferred",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred/deferred",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] ImGui",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/imgui/imgui",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Instancing",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/instancing/instancing",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Native] [arm64 osx] Offscreen",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/offscreen/offscreen",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[Vulkan] [arm64 osx] Subpasses",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses",
@@ -276,7 +354,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -284,7 +362,7 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Vulkan [arm64 osx] N Buffering",
+            "name": "[Vulkan] [arm64 osx] N Buffering",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering",
@@ -293,7 +371,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",
@@ -301,7 +379,7 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Vulkan [arm64 osx] Pipeline Barrier",
+            "name": "[Vulkan] [arm64 osx] Pipeline Barrier",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier",
@@ -310,7 +388,7 @@
             "environment": [
                 {
                     "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib"
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
                 }
             ],
             "cwd": "${workspaceFolder}",

@@ -77,13 +77,10 @@ void Im_Gui::record(std::vector<std::function<void()>> cmds)
     ImGui::Render();
 }
 
-void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
+void Im_Gui::init(Device* device, Queue* queue, Swapchain* swapchain)
 {
     m_device = device;
     m_queue = queue;
-
-    CommandBufferDescriptor commandBufferDescriptor{};
-    m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
 
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
@@ -105,7 +102,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 #else
     io.FontGlobalScale = 1.0;
 #endif
-    io.DisplaySize = ImVec2(swapchain.getWidth(), swapchain.getHeight());
+    io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -129,7 +126,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureDescriptor fontTextureDescriptor{};
         fontTextureDescriptor.type = TextureType::k2D;
-        fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+        fontTextureDescriptor.format = TextureFormat::kRGBA8Unorm;
         fontTextureDescriptor.width = fontTexWidth;
         fontTextureDescriptor.height = fontTexHeight;
         fontTextureDescriptor.depth = 1;
@@ -145,7 +142,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureViewDescriptor fontTextureViewDescriptor{};
         fontTextureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
-        fontTextureViewDescriptor.type = TextureViewType::k2D;
+        fontTextureViewDescriptor.dimension = TextureViewDimension::k2D;
 
         m_fontTextureView = m_fontTexture->createTextureView(fontTextureViewDescriptor);
     }
@@ -165,8 +162,8 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 
     // copy buffer to texture
     {
-        BlitTextureBuffer blitTextureBuffer{
-            .buffer = *m_fontBuffer,
+        CopyTextureBuffer copyTextureBuffer{
+            .buffer = m_fontBuffer.get(),
             .offset = 0,
             .bytesPerRow = 0,
             .rowsPerTexture = 0,
@@ -174,11 +171,11 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 
         uint32_t channel = 4;
         uint32_t bytesPerData = sizeof(FontDataType);
-        blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
-        blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
+        copyTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
+        copyTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{
-            .texture = *m_fontTexture,
+        CopyTexture copyTexture{
+            .texture = m_fontTexture.get(),
             .aspect = TextureAspectFlagBits::kColor
         };
         Extent3D extent{};
@@ -187,10 +184,11 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         extent.depth = 1;
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
-        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
+        commandEncoder->copyBufferToTexture(copyTextureBuffer, copyTexture, extent);
 
-        queue->submit({ commandEncoder->finish() });
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        queue->submit({ commandBuffer.get() });
     }
 
     // create uniform buffer
@@ -219,17 +217,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 
     // create binding group layout
     {
-        m_bindingGroupLayouts.resize(2);
+        m_bindGroupLayouts.resize(2);
         {
             BufferBindingLayout uiTransformBindingLayout{};
             uiTransformBindingLayout.index = 0;
             uiTransformBindingLayout.stages = BindingStageFlagBits::kVertexStage;
             uiTransformBindingLayout.type = BufferBindingType::kUniform;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.buffers = { uiTransformBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.buffers = { uiTransformBindingLayout };
 
-            m_bindingGroupLayouts[0] = device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_bindGroupLayouts[0] = device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
         {
             SamplerBindingLayout fontSamplerBindingLayout{};
@@ -240,58 +238,58 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
             fontTextureBindingLayout.index = 1;
             fontTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-            BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-            bindingGroupLayoutDescriptor.samplers = { fontSamplerBindingLayout };
-            bindingGroupLayoutDescriptor.textures = { fontTextureBindingLayout };
+            BindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+            bindGroupLayoutDescriptor.samplers = { fontSamplerBindingLayout };
+            bindGroupLayoutDescriptor.textures = { fontTextureBindingLayout };
 
-            m_bindingGroupLayouts[1] = device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+            m_bindGroupLayouts[1] = device->createBindGroupLayout(bindGroupLayoutDescriptor);
         }
     }
 
     // create binding group
     {
-        m_bindingGroups.resize(2);
+        m_bindGroups.resize(2);
         {
             BufferBinding uiTransformBinding{
                 .index = 0,
                 .offset = 0,
                 .size = m_uniformBuffer->getSize(),
-                .buffer = *m_uniformBuffer,
+                .buffer = m_uniformBuffer.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[0],
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_bindGroupLayouts[0].get(),
                 .buffers = { uiTransformBinding },
             };
 
-            m_bindingGroups[0] = device->createBindingGroup(bindingGroupDescriptor);
+            m_bindGroups[0] = device->createBindGroup(bindGroupDescriptor);
         }
 
         {
             SamplerBinding fontSamplerBinding{
                 .index = 0,
-                .sampler = *m_fontSampler,
+                .sampler = m_fontSampler.get(),
             };
 
             TextureBinding fontTextureBinding{
                 .index = 1,
-                .textureView = *m_fontTextureView,
+                .textureView = m_fontTextureView.get(),
             };
 
-            BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[1],
+            BindGroupDescriptor bindGroupDescriptor{
+                .layout = m_bindGroupLayouts[1].get(),
                 .samplers = { fontSamplerBinding },
                 .textures = { fontTextureBinding },
             };
 
-            m_bindingGroups[1] = device->createBindingGroup(bindingGroupDescriptor);
+            m_bindGroups[1] = device->createBindGroup(bindGroupDescriptor);
         }
     }
 
     // create pipeline layout
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-        pipelineLayoutDescriptor.layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] };
+        pipelineLayoutDescriptor.layouts = { m_bindGroupLayouts[0].get(), m_bindGroupLayouts[1].get() };
 
         m_pipelineLayout = device->createPipelineLayout(pipelineLayoutDescriptor);
     }
@@ -308,17 +306,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         VertexInputLayout vertexInputLayout{};
         {
             VertexAttribute positionAttribute{};
-            positionAttribute.format = VertexFormat::kSFLOATx2;
+            positionAttribute.format = VertexFormat::kFloat32x2;
             positionAttribute.offset = offsetof(ImDrawVert, pos);
             positionAttribute.location = 0;
 
             VertexAttribute uiAttribute{};
-            uiAttribute.format = VertexFormat::kSFLOATx2;
+            uiAttribute.format = VertexFormat::kFloat32x2;
             uiAttribute.offset = offsetof(ImDrawVert, uv);
             uiAttribute.location = 1;
 
             VertexAttribute colorAttribute{};
-            colorAttribute.format = VertexFormat::kUNORM8x4;
+            colorAttribute.format = VertexFormat::kUnorm8x4;
             colorAttribute.offset = offsetof(ImDrawVert, col);
             colorAttribute.location = 2;
 
@@ -336,7 +334,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         VertexStage vertexStage{
-            { *vertexShaderModule, "main" },
+            { vertexShaderModule.get(), "main" },
             { vertexInputLayout },
         };
 
@@ -350,7 +348,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
 
         FragmentStage::Target target{};
-        target.format = swapchain.getTextureFormat();
+        target.format = swapchain->getTextureFormat();
         target.blend = {
             .color = {
                 .srcFactor = BlendFactor::kSrcAlpha,
@@ -374,12 +372,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         FragmentStage fragmentStage{
-            { *fragmentShaderModule, "main" }, // ProgramableStage
+            { fragmentShaderModule.get(), "main" }, // ProgramableStage
             { target }
         };
 
         RenderPipelineDescriptor renderPipelineDescriptor{
-            { *m_pipelineLayout }, // PipelineDescriptor
+            m_pipelineLayout.get(), // PipelineDescriptor
             inputAssemblyStage,
             vertexStage,
             rasterizationStage,
@@ -394,9 +392,16 @@ void Im_Gui::build()
 {
     // update transfrom buffer
     {
-        m_uiTransform.scale =
-            glm::vec2(2.0f / ImGui::GetIO().DisplaySize.x, 2.0f / ImGui::GetIO().DisplaySize.y);
-        m_uiTransform.translate = glm::vec2(-1.0f);
+        float L = ImGui::GetDrawData()->DisplayPos.x;
+        float R = ImGui::GetDrawData()->DisplayPos.x + ImGui::GetDrawData()->DisplaySize.x;
+        float T = ImGui::GetDrawData()->DisplayPos.y;
+        float B = ImGui::GetDrawData()->DisplayPos.y + ImGui::GetDrawData()->DisplaySize.y;
+
+        m_uiTransform.scale[0] = 2.0f / (R - L);
+        m_uiTransform.scale[1] = 2.0f / (T - B);
+
+        m_uiTransform.translate[0] = -(R + L) / (R - L);
+        m_uiTransform.translate[1] = -(T + B) / (T - B);
 
         void* pointer = m_uniformBuffer->map();
         memcpy(pointer, &m_uiTransform, sizeof(UITransform));
@@ -418,8 +423,6 @@ void Im_Gui::build()
         // Vertex buffer
         if ((m_vertexBuffer == nullptr) || (m_vertexBuffer->getSize() != vertexBufferSize))
         {
-            m_vertexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = vertexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kVertex;
@@ -431,8 +434,6 @@ void Im_Gui::build()
         // Index buffer
         if ((m_indexBuffer == nullptr) || (m_indexBuffer->getSize() < indexBufferSize))
         {
-            m_indexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = indexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kIndex;
@@ -458,7 +459,7 @@ void Im_Gui::build()
     }
 }
 
-void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
+void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -473,17 +474,16 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         colorAttachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { colorAttachment },
-            .sampleCount = 1
+            .colorAttachments = { colorAttachment }
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_pipeline);
-        renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
-        renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
+        renderPassEncoder->setPipeline(m_pipeline.get());
+        renderPassEncoder->setBindGroup(0, m_bindGroups[0].get());
+        renderPassEncoder->setBindGroup(1, m_bindGroups[1].get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
-        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;
@@ -522,10 +522,8 @@ void Im_Gui::clear()
 
     m_pipeline.reset();
     m_pipelineLayout.reset();
-    m_bindingGroups.clear();
-    m_bindingGroupLayouts.clear();
-
-    m_commandBuffer.reset();
+    m_bindGroups.clear();
+    m_bindGroupLayouts.clear();
 }
 
 } // namespace jipu

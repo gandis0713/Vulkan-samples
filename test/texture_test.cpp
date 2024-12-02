@@ -1,6 +1,6 @@
 #include "texture_test.h"
 
-#include "jipu/texture.h"
+#include "jipu/native/texture.h"
 
 using namespace jipu;
 
@@ -15,7 +15,7 @@ TEST_F(TextureTest, test_createtexture_usage)
     descriptor.mipLevels = 1;
     descriptor.sampleCount = 1;
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA8Unorm;
 
     {
         descriptor.usage = TextureUsageFlagBits::kUndefined;
@@ -23,7 +23,7 @@ TEST_F(TextureTest, test_createtexture_usage)
     }
 
     {
-        descriptor.usage = TextureUsageFlagBits::kColorAttachment;
+        descriptor.usage = TextureUsageFlagBits::kRenderAttachment;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
@@ -36,12 +36,6 @@ TEST_F(TextureTest, test_createtexture_usage)
 
     {
         descriptor.usage = TextureUsageFlagBits::kCopySrc;
-        texture = m_device->createTexture(descriptor);
-        ASSERT_NE(texture, nullptr);
-    }
-
-    {
-        descriptor.usage = TextureUsageFlagBits::kDepthStencil;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
@@ -67,7 +61,7 @@ TEST_F(TextureTest, test_createtexture_with_size)
     descriptor.mipLevels = 1;
     descriptor.sampleCount = 1;
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA8Unorm;
     descriptor.usage = TextureUsageFlagBits::kTextureBinding;
 
     {
@@ -102,7 +96,7 @@ TEST_F(TextureTest, test_createtexture_with_type)
     descriptor.depth = 1;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA8Unorm;
     descriptor.usage = TextureUsageFlagBits::kTextureBinding;
 
     {
@@ -148,13 +142,13 @@ TEST_F(TextureTest, test_createtexture_with_format)
     }
 
     {
-        descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm;
+        descriptor.format = TextureFormat::kBGRA8Unorm;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
 
     {
-        descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+        descriptor.format = TextureFormat::kBGRA8UnormSrgb;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
@@ -166,7 +160,7 @@ TEST_F(TextureTest, test_createtexture_with_format)
     }
 
     {
-        descriptor.format = TextureFormat::kD_32_SFloat;
+        descriptor.format = TextureFormat::kDepth32Float;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
@@ -184,19 +178,19 @@ TEST_F(TextureTest, test_createtexture_with_format)
     }
 
     {
-        descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
+        descriptor.format = TextureFormat::kRGBA16Unorm;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
 
     {
-        descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+        descriptor.format = TextureFormat::kRGBA8Unorm;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }
 
     {
-        descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+        descriptor.format = TextureFormat::kRGBA8UnormSrgb;
         texture = m_device->createTexture(descriptor);
         ASSERT_NE(texture, nullptr);
     }

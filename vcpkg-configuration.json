@@ -2,16 +2,17 @@
     "default-registry": {
         "kind": "git",
         "repository": "https://github.com/Microsoft/vcpkg",
-        "baseline": "9edb1b8e590cc086563301d735cae4b6e732d2d2"
+        "baseline": "10b7a178346f3f0abef60cecd5130e295afd8da4"
     },
     "registries": [
         {
             "repository": "https://github.com/gandis0713/vcpkg-registry",
             "kind": "git",
-            "baseline": "1259275ea2c5c50e7171916e488ef5f6c7c49f48",
+            "baseline": "78ab551229824ceed38811849f29eac70406771a",
             "packages": [
                 "hwcpipe",
-                "webgpu-headers"
+                "webgpu-headers",
+                "dawn"
             ]
         }
     ]

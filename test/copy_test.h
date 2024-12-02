@@ -1,7 +1,7 @@
 #pragma once
 #include "base/test.h"
 
-#include "jipu/texture.h"
+#include "jipu/native/texture.h"
 
 namespace jipu
 {

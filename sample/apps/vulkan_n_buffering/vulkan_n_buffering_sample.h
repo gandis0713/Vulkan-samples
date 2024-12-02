@@ -3,21 +3,21 @@
 #include "model.h"
 #include "sample.h"
 
-#include "jipu/binding_group.h"
-#include "jipu/binding_group_layout.h"
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/queue.h"
-#include "jipu/sampler.h"
-#include "jipu/shader_module.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
-#include "jipu/texture_view.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/bind_group.h"
+#include "jipu/native/bind_group_layout.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/sampler.h"
+#include "jipu/native/shader_module.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
+#include "jipu/native/texture_view.h"
 
 #include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
@@ -41,8 +41,8 @@ public:
     ~VulkanNBufferingSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -50,7 +50,6 @@ private:
 private:
     void createSurface() override;
     void createSwapchain() override;
-    void createCommandBuffer();
 
     void createVertexBuffer();
     void createIndexBuffer();
@@ -65,8 +64,8 @@ private:
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createBindGroupLayout();
+    void createBindGroup();
 
     void createPipelineLayout();
     void createRenderPipeline();
@@ -105,8 +104,8 @@ private:
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
-    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
-    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
+    std::vector<std::unique_ptr<BindGroupLayout>> m_bindGroupLayouts{};
+    std::vector<std::unique_ptr<BindGroup>> m_bindGroups{};
 
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;

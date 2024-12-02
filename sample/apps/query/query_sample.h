@@ -2,18 +2,18 @@
 #include "file.h"
 #include "sample.h"
 
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/query_set.h"
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/query_set.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -30,8 +30,8 @@ public:
     ~QuerySample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -42,24 +42,22 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createBindGroupLayout();
+    void createBindGroup();
     void createRenderPipeline();
     void createQuerySet();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     std::unique_ptr<Buffer> m_timestampQueryBuffer = nullptr; // use same buffer with occlusion
     std::unique_ptr<Buffer> m_occlusionQueryBuffer = nullptr; // use same buffer with timestamp
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<BindGroupLayout> m_bindGroupLayout = nullptr;
+    std::unique_ptr<BindGroup> m_bindGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
     std::unique_ptr<QuerySet> m_timestampQuerySet = nullptr;
@@ -91,7 +89,7 @@ private:
             { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
         };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
     bool m_useTimestamp = false;
     bool m_useOcclusion = false;

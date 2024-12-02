@@ -5,17 +5,17 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
 namespace jipu
 {
@@ -29,10 +29,10 @@ public:
     void window(const char* title, std::vector<std::function<void()>> uis);
 
 public:
-    void init(Device* device, Queue* queue, Swapchain& swapchain);
+    void init(Device* device, Queue* queue, Swapchain* swapchain);
     void clear();
     void build();
-    void draw(CommandEncoder* commandEncoder, TextureView& renderView);
+    void draw(CommandEncoder* commandEncoder, TextureView* renderView);
 
 protected:
     struct Padding
@@ -61,11 +61,10 @@ private:
     std::unique_ptr<Texture> m_fontTexture = nullptr;
     std::unique_ptr<TextureView> m_fontTextureView = nullptr;
     std::unique_ptr<Sampler> m_fontSampler = nullptr;
-    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
-    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
+    std::vector<std::unique_ptr<BindGroupLayout>> m_bindGroupLayouts{};
+    std::vector<std::unique_ptr<BindGroup>> m_bindGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
 };
 
 } // namespace jipu

@@ -4,17 +4,17 @@
 #include "file.h"
 #include "sample.h"
 
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
 namespace jipu
 {
@@ -27,8 +27,8 @@ public:
     ~OffscreenSample() override;
 
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
@@ -37,29 +37,25 @@ private:
     void updateOffscreenUniformBuffer();
 
 private:
-    void createCommandBuffer();
-
     void createOffscreenTexture();
     void createOffscreenTextureView();
     void createOffscreenVertexBuffer();
     void createOffscreenIndexBuffer();
     void createOffscreenUniformBuffer();
-    void createOffscreenBindingGroupLayout();
-    void createOffscreenBindingGroup();
+    void createOffscreenBindGroupLayout();
+    void createOffscreenBindGroup();
     void createOffscreenRenderPipeline();
 
     void createOnscreenVertexBuffer();
     void createOnscreenIndexBuffer();
     void createOnscreenSampler();
-    void createOnscreenBindingGroupLayout();
-    void createOnscreenBindingGroup();
+    void createOnscreenBindGroupLayout();
+    void createOnscreenBindGroup();
     void createOnscreenRenderPipeline();
 
     void createCamera();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;
@@ -67,8 +63,8 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_offscreen;
@@ -78,8 +74,8 @@ private:
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Sampler> sampler = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
+        std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_onscreen;
@@ -122,7 +118,7 @@ private:
     };
     std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
 };
 } // namespace jipu

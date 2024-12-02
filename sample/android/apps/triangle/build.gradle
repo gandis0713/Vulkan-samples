@@ -15,7 +15,7 @@ def resDir = "${appDir}/res"
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
 def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
-def androidNDKVersion = "26.3.11579264"
+def androidNDKVersion = "27.0.12077973"
 
 android {
     compileSdk 33
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId "com.gandis.jipu"
-        minSdk 25
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"

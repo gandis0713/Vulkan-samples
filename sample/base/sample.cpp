@@ -28,31 +28,38 @@ Sample::~Sample()
     if (m_imgui.has_value())
         m_imgui.value().clear();
 
-    m_queue.reset();
     m_swapchain.reset();
+    m_queue.reset();
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
+    m_adapter.reset();
     m_instance.reset();
 }
 
 void Sample::createInstance()
 {
     InstanceDescriptor descriptor;
-    descriptor.type = InstanceType::kVulkan;
     m_instance = Instance::create(descriptor);
+}
+
+void Sample::createAdapter()
+{
+    AdapterDescriptor descriptor;
+    descriptor.type = BackendAPI::kVulkan;
+    m_adapter = m_instance->createAdapter(descriptor);
 }
 
 void Sample::getPhysicalDevices()
 {
-    m_physicalDevices = m_instance->getPhysicalDevices();
+    m_physicalDevices = m_adapter->getPhysicalDevices();
 }
 
 void Sample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
-    m_surface = m_instance->createSurface(descriptor);
+    m_surface = m_adapter->createSurface(descriptor);
 }
 
 void Sample::createSwapchain()
@@ -61,17 +68,18 @@ void Sample::createSwapchain()
         throw std::runtime_error("Surface is null pointer.");
 
 #if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;
 #else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kBGRA8UnormSrgb;
 #endif
     SwapchainDescriptor descriptor{
-        .surface = *m_surface,
+        .surface = m_surface.get(),
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
         .width = m_width,
-        .height = m_height
+        .height = m_height,
+        .queue = m_queue.get()
     };
 
     m_swapchain = m_device->createSwapchain(descriptor);
@@ -89,7 +97,6 @@ void Sample::createDevice()
 void Sample::createQueue()
 {
     QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
 
     m_queue = m_device->createQueue(descriptor);
 }
@@ -97,23 +104,30 @@ void Sample::createQueue()
 void Sample::init()
 {
     createInstance();
+    createAdapter();
     getPhysicalDevices();
     createSurface();
     createDevice();
-    createSwapchain();
     createQueue();
+    createSwapchain();
 
     if (m_imgui.has_value())
     {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+        m_imgui.value().init(m_device.get(), m_queue.get(), m_swapchain.get());
     }
 
     Window::init();
 }
 
-void Sample::update()
+void Sample::onUpdate()
 {
     m_fps.update();
+}
+
+void Sample::onResize(uint32_t width, uint32_t height)
+{
+    if (m_swapchain)
+        m_swapchain->resize(width, height);
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -143,7 +157,7 @@ void Sample::windowImGui(const char* title, std::vector<std::function<void()>> u
     }
 }
 
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     if (m_imgui.has_value())
     {

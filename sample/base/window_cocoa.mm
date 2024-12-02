@@ -14,7 +14,20 @@ void* Window::getWindowHandle()
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);
     SDL_GetWindowWMInfo(static_cast<SDL_Window*>(m_handle), &wmi);
-    return [wmi.info.cocoa.window contentView];
+
+    NSWindow* win = wmi.info.cocoa.window;
+    NSView* nsView = [win contentView];
+    if (nsView == nil)
+    {
+        return nullptr;
+    }
+
+    NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
+    CAMetalLayer* layer = [[bundle classNamed:@"CAMetalLayer"] layer];
+    [nsView setLayer:layer];
+    [nsView setWantsLayer:YES];
+
+    return layer;
 }
 
 } // namespace jipu

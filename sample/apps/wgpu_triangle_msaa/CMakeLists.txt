@@ -1,0 +1,1 @@
+configure_sample(wgpu_triangle_msaa)

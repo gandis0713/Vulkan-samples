@@ -9,20 +9,20 @@
 #include "model.h"
 #include "sample.h"
 
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/query_set.h"
-#include "jipu/queue.h"
-#include "jipu/render_pass_encoder.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
+#include "jipu/native/adapter.h"
+#include "jipu/native/buffer.h"
+#include "jipu/native/command_buffer.h"
+#include "jipu/native/command_encoder.h"
+#include "jipu/native/device.h"
+#include "jipu/native/physical_device.h"
+#include "jipu/native/pipeline_layout.h"
+#include "jipu/native/query_set.h"
+#include "jipu/native/queue.h"
+#include "jipu/native/render_pass_encoder.h"
+#include "jipu/native/surface.h"
+#include "jipu/native/swapchain.h"
 
-#include "vulkan_pipeline.h"
+#include "jipu/native/vulkan/vulkan_pipeline.h"
 
 #include "khronos_texture.h"
 
@@ -40,15 +40,13 @@ public:
 
 public:
     void init() override;
-    void update() override;
-    void draw() override;
+    void onUpdate() override;
+    void onDraw() override;
 
 private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
-
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
@@ -65,15 +63,15 @@ private:
     void createOffscreenCamera();
     void createOffscreenUniformBuffer();
     void createOffscreenVertexBuffer();
-    void createOffscreenBindingGroupLayout();
-    void createOffscreenBindingGroup();
+    void createOffscreenBindGroupLayout();
+    void createOffscreenBindGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
 
     void updateOffscreenUniformBuffer();
 
-    void createCompositionBindingGroupLayout();
-    void createCompositionBindingGroup();
+    void createCompositionBindGroupLayout();
+    void createCompositionBindGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
     void createCompositionUniformBuffer();
@@ -84,9 +82,9 @@ private:
     void createMultipassQuerySet();
     void createSubpassQuerySet();
 
-    VulkanRenderPass& getSubpassesRenderPass();
-    VulkanRenderPass& getSubpassesCompatibleRenderPass();
-    VulkanFramebuffer& getSubpassesFrameBuffer(TextureView& renderView);
+    VulkanRenderPass* getSubpassesRenderPass();
+    VulkanRenderPass* getSubpassesCompatibleRenderPass();
+    VulkanFramebuffer* getSubpassesFrameBuffer(TextureView* renderView);
 
 private:
     struct CompositionUBO
@@ -122,8 +120,8 @@ private:
             std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
             std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
             std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -138,8 +136,8 @@ private:
             std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
             std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
             std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -170,8 +168,8 @@ private:
     {
         struct
         {
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -183,8 +181,8 @@ private:
             std::unique_ptr<Sampler> positionSampler = nullptr;
             std::unique_ptr<Sampler> normalSampler = nullptr;
             std::unique_ptr<Sampler> albedoSampler = nullptr;
-            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::vector<std::unique_ptr<BindGroupLayout>> bindGroupLayouts{};
+            std::vector<std::unique_ptr<BindGroup>> bindGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
             std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
             std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -217,7 +215,7 @@ private:
     std::unique_ptr<QuerySet> m_multipass2QuerySet = nullptr;
     std::unique_ptr<QuerySet> m_subpassQuerySet = nullptr;
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     int m_lightMax = 1000;
     bool m_useSubpasses = false;
     bool m_useTimestamp = false;

@@ -11,6 +11,7 @@
     "tinygltf",
     "ktx",
     "imgui",
+    "dawn",
     "webgpu-headers",
     "vulkan-headers",
     "vulkan-memory-allocator",
@@ -31,10 +32,6 @@
     {
       "name": "hwcpipe",
       "version": "2.3.0"
-    },
-    {
-      "name": "sdl2",
-      "version": "2.30.6"
     }
   ]
 }
