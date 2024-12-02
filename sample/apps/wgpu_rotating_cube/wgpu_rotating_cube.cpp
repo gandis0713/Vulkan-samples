@@ -105,6 +105,7 @@ void WGPURotatingCube::onDraw()
 
     wgpu.CommandBufferRelease(commandBuffer);
     wgpu.CommandEncoderRelease(commandEncoder);
+    wgpu.TextureViewRelease(depthTextureView);
     wgpu.TextureViewRelease(surfaceTextureView);
     wgpu.TextureRelease(surfaceTexture.texture);
 }
