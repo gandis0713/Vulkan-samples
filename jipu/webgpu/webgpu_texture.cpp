@@ -247,34 +247,34 @@ WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format)
         return WGPUTextureFormat::WGPUTextureFormat_ASTC12x12Unorm;
     case TextureFormat::kASTC12x12UnormSrgb:
         return WGPUTextureFormat::WGPUTextureFormat_ASTC12x12UnormSrgb;
-    case TextureFormat::kR16Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R16Unorm;
-    case TextureFormat::kRG16Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_RG16Unorm;
-    case TextureFormat::kRGBA16Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_RGBA16Unorm;
-    case TextureFormat::kR16Snorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R16Snorm;
-    case TextureFormat::kRG16Snorm:
-        return WGPUTextureFormat::WGPUTextureFormat_RG16Snorm;
-    case TextureFormat::kRGBA16Snorm:
-        return WGPUTextureFormat::WGPUTextureFormat_RGBA16Snorm;
-    case TextureFormat::kR8BG8Biplanar420Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar420Unorm;
-    case TextureFormat::kR10X6BG10X6Biplanar420Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar420Unorm;
-    case TextureFormat::kR8BG8A8Triplanar420Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R8BG8A8Triplanar420Unorm;
-    case TextureFormat::kR8BG8Biplanar422Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar422Unorm;
-    case TextureFormat::kR8BG8Biplanar444Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar444Unorm;
-    case TextureFormat::kR10X6BG10X6Biplanar422Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar422Unorm;
-    case TextureFormat::kR10X6BG10X6Biplanar444Unorm:
-        return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar444Unorm;
-    case TextureFormat::kExternal:
-        return WGPUTextureFormat::WGPUTextureFormat_External;
+    // case TextureFormat::kR16Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R16Unorm;
+    // case TextureFormat::kRG16Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_RG16Unorm;
+    // case TextureFormat::kRGBA16Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_RGBA16Unorm;
+    // case TextureFormat::kR16Snorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R16Snorm;
+    // case TextureFormat::kRG16Snorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_RG16Snorm;
+    // case TextureFormat::kRGBA16Snorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_RGBA16Snorm;
+    // case TextureFormat::kR8BG8Biplanar420Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar420Unorm;
+    // case TextureFormat::kR10X6BG10X6Biplanar420Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar420Unorm;
+    // case TextureFormat::kR8BG8A8Triplanar420Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R8BG8A8Triplanar420Unorm;
+    // case TextureFormat::kR8BG8Biplanar422Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar422Unorm;
+    // case TextureFormat::kR8BG8Biplanar444Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar444Unorm;
+    // case TextureFormat::kR10X6BG10X6Biplanar422Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar422Unorm;
+    // case TextureFormat::kR10X6BG10X6Biplanar444Unorm:
+    //     return WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar444Unorm;
+    // case TextureFormat::kExternal:
+    //     return WGPUTextureFormat::WGPUTextureFormat_External;
     case TextureFormat::kForce32:
         return WGPUTextureFormat::WGPUTextureFormat_Force32;
     default:
@@ -296,35 +296,35 @@ WGPUTextureDimension ToWGPUTextureDimension(TextureType type)
     }
 }
 
-WGPUTextureUsage ToWGPUTextureUsage(TextureUsageFlags usage)
+WGPUTextureUsageFlags ToWGPUTextureUsageFlags(TextureUsageFlags flags)
 {
-    WGPUTextureUsage wgpuUsage = WGPUTextureUsage_None;
-    if (usage & TextureUsageFlagBits::kCopySrc)
+    WGPUTextureUsageFlags wgpuUsages = WGPUTextureUsage_None;
+    if (flags & TextureUsageFlagBits::kCopySrc)
     {
-        wgpuUsage |= WGPUTextureUsage_CopySrc;
+        wgpuUsages |= WGPUTextureUsage_CopySrc;
     }
-    if (usage & TextureUsageFlagBits::kCopyDst)
+    if (flags & TextureUsageFlagBits::kCopyDst)
     {
-        wgpuUsage |= WGPUTextureUsage_CopyDst;
+        wgpuUsages |= WGPUTextureUsage_CopyDst;
     }
-    if (usage & TextureUsageFlagBits::kTextureBinding)
+    if (flags & TextureUsageFlagBits::kTextureBinding)
     {
-        wgpuUsage |= WGPUTextureUsage_TextureBinding;
+        wgpuUsages |= WGPUTextureUsage_TextureBinding;
     }
-    if (usage & TextureUsageFlagBits::kStorageBinding)
+    if (flags & TextureUsageFlagBits::kStorageBinding)
     {
-        wgpuUsage |= WGPUTextureUsage_StorageBinding;
+        wgpuUsages |= WGPUTextureUsage_StorageBinding;
     }
-    if (usage & TextureUsageFlagBits::kDepthStencil)
+    if (flags & TextureUsageFlagBits::kDepthStencil)
     {
-        // TODO
+        wgpuUsages |= WGPUTextureUsage_RenderAttachment;
     }
-    if (usage & TextureUsageFlagBits::kColorAttachment)
+    if (flags & TextureUsageFlagBits::kColorAttachment)
     {
-        wgpuUsage |= WGPUTextureUsage_RenderAttachment;
+        wgpuUsages |= WGPUTextureUsage_RenderAttachment;
     }
 
-    return wgpuUsage;
+    return wgpuUsages;
 }
 
 // Convert from WebGPU to JIPU
@@ -522,34 +522,34 @@ TextureFormat WGPUToTextureFormat(WGPUTextureFormat format)
         return TextureFormat::kASTC12x12Unorm;
     case WGPUTextureFormat::WGPUTextureFormat_ASTC12x12UnormSrgb:
         return TextureFormat::kASTC12x12UnormSrgb;
-    case WGPUTextureFormat::WGPUTextureFormat_R16Unorm:
-        return TextureFormat::kR16Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_RG16Unorm:
-        return TextureFormat::kRG16Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_RGBA16Unorm:
-        return TextureFormat::kRGBA16Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R16Snorm:
-        return TextureFormat::kR16Snorm;
-    case WGPUTextureFormat::WGPUTextureFormat_RG16Snorm:
-        return TextureFormat::kRG16Snorm;
-    case WGPUTextureFormat::WGPUTextureFormat_RGBA16Snorm:
-        return TextureFormat::kRGBA16Snorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar420Unorm:
-        return TextureFormat::kR8BG8Biplanar420Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar420Unorm:
-        return TextureFormat::kR10X6BG10X6Biplanar420Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R8BG8A8Triplanar420Unorm:
-        return TextureFormat::kR8BG8A8Triplanar420Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar422Unorm:
-        return TextureFormat::kR8BG8Biplanar422Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar444Unorm:
-        return TextureFormat::kR8BG8Biplanar444Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar422Unorm:
-        return TextureFormat::kR10X6BG10X6Biplanar422Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar444Unorm:
-        return TextureFormat::kR10X6BG10X6Biplanar444Unorm;
-    case WGPUTextureFormat::WGPUTextureFormat_External:
-        return TextureFormat::kExternal;
+    // case WGPUTextureFormat::WGPUTextureFormat_R16Unorm:
+    //     return TextureFormat::kR16Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_RG16Unorm:
+    //     return TextureFormat::kRG16Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_RGBA16Unorm:
+    //     return TextureFormat::kRGBA16Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R16Snorm:
+    //     return TextureFormat::kR16Snorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_RG16Snorm:
+    //     return TextureFormat::kRG16Snorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_RGBA16Snorm:
+    //     return TextureFormat::kRGBA16Snorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar420Unorm:
+    //     return TextureFormat::kR8BG8Biplanar420Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar420Unorm:
+    //     return TextureFormat::kR10X6BG10X6Biplanar420Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R8BG8A8Triplanar420Unorm:
+    //     return TextureFormat::kR8BG8A8Triplanar420Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar422Unorm:
+    //     return TextureFormat::kR8BG8Biplanar422Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R8BG8Biplanar444Unorm:
+    //     return TextureFormat::kR8BG8Biplanar444Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar422Unorm:
+    //     return TextureFormat::kR10X6BG10X6Biplanar422Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_R10X6BG10X6Biplanar444Unorm:
+    //     return TextureFormat::kR10X6BG10X6Biplanar444Unorm;
+    // case WGPUTextureFormat::WGPUTextureFormat_External:
+    //     return TextureFormat::kExternal;
     case WGPUTextureFormat::WGPUTextureFormat_Force32:
         return TextureFormat::kForce32;
     default:
@@ -571,32 +571,32 @@ TextureType WGPUToTextureType(WGPUTextureDimension dimension)
     }
 }
 
-TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsage usage)
+TextureUsageFlags WGPUToTextureUsageFlags(WGPUTextureUsageFlags flags)
 {
-    TextureUsageFlags jipuUsage = TextureUsageFlagBits::kUndefined;
-    if (usage & WGPUTextureUsage_CopySrc)
+    TextureUsageFlags jipuUsageFlags = TextureUsageFlagBits::kUndefined;
+    if (flags & WGPUTextureUsage_CopySrc)
     {
-        jipuUsage |= TextureUsageFlagBits::kCopySrc;
+        jipuUsageFlags |= TextureUsageFlagBits::kCopySrc;
     }
-    if (usage & WGPUTextureUsage_CopyDst)
+    if (flags & WGPUTextureUsage_CopyDst)
     {
-        jipuUsage |= TextureUsageFlagBits::kCopyDst;
+        jipuUsageFlags |= TextureUsageFlagBits::kCopyDst;
     }
-    if (usage & WGPUTextureUsage_TextureBinding)
+    if (flags & WGPUTextureUsage_TextureBinding)
     {
-        jipuUsage |= TextureUsageFlagBits::kTextureBinding;
+        jipuUsageFlags |= TextureUsageFlagBits::kTextureBinding;
     }
-    if (usage & WGPUTextureUsage_StorageBinding)
+    if (flags & WGPUTextureUsage_StorageBinding)
     {
-        jipuUsage |= TextureUsageFlagBits::kStorageBinding;
+        jipuUsageFlags |= TextureUsageFlagBits::kStorageBinding;
     }
-    if (usage & WGPUTextureUsage_RenderAttachment)
+    if (flags & WGPUTextureUsage_RenderAttachment)
     {
-        jipuUsage |= TextureUsageFlagBits::kColorAttachment;
+        jipuUsageFlags |= TextureUsageFlagBits::kColorAttachment;
     }
     // TODO: depth
 
-    return jipuUsage;
+    return jipuUsageFlags;
 }
 
 } // namespace jipu
