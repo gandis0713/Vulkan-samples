@@ -118,6 +118,7 @@ void WGPUTexturedCube::initializeContext()
     createCubeBuffer();
     createDepthTexture();
     createImageTexture();
+    createSampler();
     createUniformBuffer();
     createBindingGroupLayout();
     createBindingGroup();
@@ -145,6 +146,12 @@ void WGPUTexturedCube::finalizeContext()
     {
         wgpu.BufferRelease(m_uniformBuffer);
         m_uniformBuffer = nullptr;
+    }
+
+    if (m_sampler)
+    {
+        wgpu.SamplerRelease(m_sampler);
+        m_sampler = nullptr;
     }
 
     if (m_imageTexture)
@@ -291,6 +298,23 @@ void WGPUTexturedCube::createImageTexture()
 #endif
 
     wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
+}
+
+void WGPUTexturedCube::createSampler()
+{
+    WGPUSamplerDescriptor samplerDescriptor{};
+    samplerDescriptor.minFilter = WGPUFilterMode_Linear;
+    samplerDescriptor.magFilter = WGPUFilterMode_Linear;
+    samplerDescriptor.mipmapFilter = WGPUMipmapFilterMode_Linear;
+    samplerDescriptor.addressModeU = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.addressModeV = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.addressModeW = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.lodMinClamp = 0.0f;
+    samplerDescriptor.lodMaxClamp = 32.0f;
+    samplerDescriptor.compare = WGPUCompareFunction_Undefined;
+
+    m_sampler = wgpu.DeviceCreateSampler(m_device, &samplerDescriptor);
+    assert(m_sampler);
 }
 
 void WGPUTexturedCube::createUniformBuffer()

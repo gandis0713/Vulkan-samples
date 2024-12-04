@@ -55,6 +55,8 @@ extern void procQueueWriteTexture(WGPUQueue queue, WGPUImageCopyTexture const* d
 extern void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets);
 extern void procBindGroupRelease(WGPUBindGroup bindGroup);
 extern void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout);
+extern WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor);
+extern void procSamplerRelease(WGPUSampler sampler);
 
 } // namespace jipu
 
@@ -320,5 +322,15 @@ extern "C"
     WGPU_EXPORT void wgpuBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout) WGPU_FUNCTION_ATTRIBUTE
     {
         return procBindGroupLayoutRelease(bindGroupLayout);
+    }
+
+    WGPU_EXPORT WGPUSampler wgpuDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateSampler(device, descriptor);
+    }
+
+    WGPU_EXPORT void wgpuSamplerRelease(WGPUSampler sampler) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procSamplerRelease(sampler);
     }
 }

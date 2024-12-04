@@ -12,6 +12,7 @@
 #include "webgpu/webgpu_queue.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_render_pipeline.h"
+#include "webgpu/webgpu_sampler.h"
 #include "webgpu/webgpu_shader_module.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
@@ -331,6 +332,18 @@ void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout)
     return webgpuBindGroupLayout->release();
 }
 
+WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUSampler>(webgpuDevice->createSampler(descriptor));
+}
+
+void procSamplerRelease(WGPUSampler sampler)
+{
+    WebGPUSampler* webgpuSampler = reinterpret_cast<WebGPUSampler*>(sampler);
+    return webgpuSampler->release();
+}
+
 namespace
 {
 
@@ -386,6 +399,8 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBindGroup) },
     { "wgpuBindGroupRelease", reinterpret_cast<WGPUProc>(procBindGroupRelease) },
     { "wgpuBindGroupLayoutRelease", reinterpret_cast<WGPUProc>(procBindGroupLayoutRelease) },
+    { "wgpuDeviceCreateSampler", reinterpret_cast<WGPUProc>(procDeviceCreateSampler) },
+    { "wgpuSamplerRelease", reinterpret_cast<WGPUProc>(procSamplerRelease) },
 };
 
 } // namespace

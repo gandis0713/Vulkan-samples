@@ -24,6 +24,7 @@ public:
     void createCubeBuffer();
     void createDepthTexture();
     void createImageTexture();
+    void createSampler();
     void createUniformBuffer();
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -105,6 +106,7 @@ private:
     // WGPUBuffer m_cubeIndexBuffer = nullptr;
     WGPUTexture m_depthTexture = nullptr;
     WGPUTexture m_imageTexture = nullptr;
+    WGPUSampler m_sampler = nullptr;
     WGPUBuffer m_uniformBuffer = nullptr;
     WGPUBindGroup m_bindGroup = nullptr;
     WGPUBindGroupLayout m_bindGroupLayout = nullptr;
