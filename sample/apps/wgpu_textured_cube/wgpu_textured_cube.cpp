@@ -118,6 +118,7 @@ void WGPUTexturedCube::initializeContext()
     createCubeBuffer();
     createDepthTexture();
     createImageTexture();
+    createImageTextureView();
     createSampler();
     createUniformBuffer();
     createBindingGroupLayout();
@@ -152,6 +153,12 @@ void WGPUTexturedCube::finalizeContext()
     {
         wgpu.SamplerRelease(m_sampler);
         m_sampler = nullptr;
+    }
+
+    if (m_imageTextureView)
+    {
+        wgpu.TextureViewRelease(m_imageTextureView);
+        m_imageTextureView = nullptr;
     }
 
     if (m_imageTexture)
@@ -267,7 +274,8 @@ void WGPUTexturedCube::createImageTexture()
     uint32_t height = image->getHeight();
     uint32_t channel = image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
-    uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    // uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    uint32_t mipLevels = 1;
 
     WGPUTextureDescriptor descriptor{};
     descriptor.dimension = WGPUTextureDimension_2D;
@@ -300,6 +308,21 @@ void WGPUTexturedCube::createImageTexture()
     wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
 }
 
+void WGPUTexturedCube::createImageTextureView()
+{
+    WGPUTextureViewDescriptor descriptor{};
+    descriptor.format = WGPUTextureFormat_RGBA8Unorm;
+    descriptor.dimension = WGPUTextureViewDimension_2D;
+    descriptor.aspect = WGPUTextureAspect_All;
+    descriptor.baseMipLevel = 0;
+    descriptor.mipLevelCount = 1;
+    descriptor.baseArrayLayer = 0;
+    descriptor.arrayLayerCount = 1;
+
+    m_imageTextureView = wgpu.TextureCreateView(m_imageTexture, &descriptor);
+    assert(m_imageTextureView);
+}
+
 void WGPUTexturedCube::createSampler()
 {
     WGPUSamplerDescriptor samplerDescriptor{};
@@ -310,7 +333,7 @@ void WGPUTexturedCube::createSampler()
     samplerDescriptor.addressModeV = WGPUAddressMode_ClampToEdge;
     samplerDescriptor.addressModeW = WGPUAddressMode_ClampToEdge;
     samplerDescriptor.lodMinClamp = 0.0f;
-    samplerDescriptor.lodMaxClamp = 32.0f;
+    samplerDescriptor.lodMaxClamp = 1.0f;
     samplerDescriptor.compare = WGPUCompareFunction_Undefined;
 
     m_sampler = wgpu.DeviceCreateSampler(m_device, &samplerDescriptor);
@@ -329,8 +352,18 @@ void WGPUTexturedCube::createUniformBuffer()
 }
 void WGPUTexturedCube::createBindingGroupLayout()
 {
-    std::array<WGPUBindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
-        WGPUBindGroupLayoutEntry{ .binding = 0, .visibility = WGPUShaderStage_Vertex, .buffer = { .type = WGPUBufferBindingType_Uniform } },
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+        WGPUBindGroupLayoutEntry{ .binding = 0,
+                                  .visibility = WGPUShaderStage_Vertex,
+                                  .buffer = { .type = WGPUBufferBindingType_Uniform } },
+        WGPUBindGroupLayoutEntry{ .binding = 1,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .sampler = { .type = WGPUSamplerBindingType_Filtering } },
+        WGPUBindGroupLayoutEntry{ .binding = 2,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .texture = { .sampleType = WGPUTextureSampleType_Uint,
+                                               .viewDimension = WGPUTextureViewDimension_2D,
+                                               .multisampled = WGPUOptionalBool_False } },
     };
 
     WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
@@ -343,8 +376,10 @@ void WGPUTexturedCube::createBindingGroupLayout()
 
 void WGPUTexturedCube::createBindingGroup()
 {
-    std::array<WGPUBindGroupEntry, 1> bindGroupEntries = {
+    std::array<WGPUBindGroupEntry, 3> bindGroupEntries = {
         WGPUBindGroupEntry{ .binding = 0, .buffer = m_uniformBuffer, .offset = 0, .size = sizeof(glm::mat4) },
+        WGPUBindGroupEntry{ .binding = 1, .sampler = m_sampler },
+        WGPUBindGroupEntry{ .binding = 2, .textureView = m_imageTextureView },
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};

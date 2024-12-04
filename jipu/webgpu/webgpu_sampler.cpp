@@ -1,4 +1,5 @@
 #include "webgpu_sampler.h"
+#include "webgpu_device.h"
 
 #include "jipu/native/sampler.h"
 
@@ -19,7 +20,9 @@ WebGPUSampler* WebGPUSampler::create(WebGPUDevice* device, WGPUSamplerDescriptor
     samplerDescriptor.lodMin = wgpuDescriptor.lodMinClamp;
     samplerDescriptor.lodMax = wgpuDescriptor.lodMaxClamp;
 
-    return new WebGPUSampler(device, nullptr, &wgpuDescriptor);
+    auto sampler = device->getDevice()->createSampler(samplerDescriptor);
+
+    return new WebGPUSampler(device, std::move(sampler), &wgpuDescriptor);
 }
 
 WebGPUSampler::WebGPUSampler(WebGPUDevice* device, std::unique_ptr<Sampler> sampler, WGPUSamplerDescriptor const* descriptor)
