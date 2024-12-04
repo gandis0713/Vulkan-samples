@@ -3,6 +3,8 @@
 #include "webgpu_buffer.h"
 #include "webgpu_command_buffer.h"
 #include "webgpu_device.h"
+#include "webgpu_texture.h"
+#include "webgpu_texture_view.h"
 
 #include "jipu/native/buffer.h"
 #include "jipu/native/queue.h"
@@ -64,6 +66,45 @@ void WebGPUQueue::writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void 
     auto commandEncoder = device->createCommandEncoder(commandEncoderDescriptor);
 
     commandEncoder->copyBufferToBuffer(srcCopyBuffer, dstCopyBuffer, size);
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    m_queue->submit({ commandBuffer.get() });
+}
+
+void WebGPUQueue::writeTexture(WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize)
+{
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = dataSize;
+    bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+    auto device = m_wgpuDevice->getDevice();
+    auto srcBuffer = device->createBuffer(bufferDescriptor);
+    void* ptr = srcBuffer->map();
+    memcpy(ptr, data, bufferDescriptor.size);
+    srcBuffer->unmap();
+
+    CopyTextureBuffer srcCopyBuffer{
+        .buffer = srcBuffer.get(),
+        .offset = dataLayout->offset,
+        .bytesPerRow = dataLayout->bytesPerRow,
+        .rowsPerTexture = dataLayout->rowsPerImage,
+    };
+
+    auto wgpuTexture = reinterpret_cast<WebGPUTexture*>(destination->texture);
+    CopyTexture dstCopyTexture{
+        .texture = wgpuTexture->getTexture(),
+        .aspect = WGPUToTextureAspectFlags(wgpuTexture, destination->aspect)
+    };
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = device->createCommandEncoder(commandEncoderDescriptor);
+
+    Extent3D extend3D{
+        .width = writeSize->width,
+        .height = writeSize->height,
+        .depth = writeSize->depthOrArrayLayers,
+    };
+
+    commandEncoder->copyBufferToTexture(srcCopyBuffer, dstCopyTexture, extend3D);
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     m_queue->submit({ commandBuffer.get() });
 }
