@@ -296,8 +296,7 @@ void OBJModelSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA8UnormSrgb,
-                                         .usage = TextureUsageFlagBits::kCopySrc |
-                                                  TextureUsageFlagBits::kCopyDst |
+                                         .usage = TextureUsageFlagBits::kCopyDst |
                                                   TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
