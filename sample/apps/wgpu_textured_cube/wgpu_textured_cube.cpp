@@ -1,6 +1,7 @@
 #include "wgpu_textured_cube.h"
 
 #include "file.h"
+#include "image.h"
 #include <chrono>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -116,6 +117,7 @@ void WGPUTexturedCube::initializeContext()
 
     createCubeBuffer();
     createDepthTexture();
+    createImageTexture();
     createUniformBuffer();
     createBindingGroupLayout();
     createBindingGroup();
@@ -143,6 +145,12 @@ void WGPUTexturedCube::finalizeContext()
     {
         wgpu.BufferRelease(m_uniformBuffer);
         m_uniformBuffer = nullptr;
+    }
+
+    if (m_imageTexture)
+    {
+        wgpu.TextureRelease(m_imageTexture);
+        m_imageTexture = nullptr;
     }
 
     if (m_depthTexture)
@@ -240,6 +248,49 @@ void WGPUTexturedCube::createDepthTexture()
 
     m_depthTexture = wgpu.DeviceCreateTexture(m_device, &descriptor);
     assert(m_depthTexture);
+}
+
+void WGPUTexturedCube::createImageTexture()
+{
+    std::vector<char> buffer = utils::readFile(m_appDir / "Di-3d.png", m_handle);
+    auto image = std::make_unique<Image>(buffer.data(), buffer.size());
+
+    unsigned char* pixels = static_cast<unsigned char*>(image->getPixels());
+    uint32_t width = image->getWidth();
+    uint32_t height = image->getHeight();
+    uint32_t channel = image->getChannel();
+    uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
+    uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+
+    WGPUTextureDescriptor descriptor{};
+    descriptor.dimension = WGPUTextureDimension_2D;
+    descriptor.size.width = width;
+    descriptor.size.height = height;
+    descriptor.size.depthOrArrayLayers = 1;
+    descriptor.sampleCount = 1;
+    descriptor.format = WGPUTextureFormat_RGBA8Unorm;
+    descriptor.mipLevelCount = mipLevels;
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
+
+    m_imageTexture = wgpu.DeviceCreateTexture(m_device, &descriptor);
+    assert(m_imageTexture);
+
+    WGPUImageCopyTexture imageCopyTexture{};
+    imageCopyTexture.texture = m_imageTexture;
+    imageCopyTexture.mipLevel = mipLevels;
+    imageCopyTexture.origin = { .x = 0, .y = 0, .z = 0 };
+    imageCopyTexture.aspect = WGPUTextureAspect_All;
+
+    WGPUTextureDataLayout dataLayout{};
+    dataLayout.offset = 0;
+    dataLayout.bytesPerRow = sizeof(unsigned char) * width * channel;
+#if defined(USE_DAWN_HEADER)
+    dataLayout.rowsPerImage = height;
+#else
+    dataLayout.rowsPerTexture = height;
+#endif
+
+    wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
 }
 
 void WGPUTexturedCube::createUniformBuffer()
