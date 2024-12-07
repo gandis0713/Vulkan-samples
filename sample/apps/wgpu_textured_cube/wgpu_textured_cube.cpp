@@ -274,8 +274,9 @@ void WGPUTexturedCube::createImageTexture()
     uint32_t height = image->getHeight();
     uint32_t channel = image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
-    // uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
-    uint32_t mipLevels = 1;
+    uint32_t mipLevelCount = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    if (mipLevelCount > 10)
+        mipLevelCount = 10;
 
     WGPUTextureDescriptor descriptor{};
     descriptor.dimension = WGPUTextureDimension_2D;
@@ -284,7 +285,7 @@ void WGPUTexturedCube::createImageTexture()
     descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = WGPUTextureFormat_RGBA8Unorm;
-    descriptor.mipLevelCount = mipLevels;
+    descriptor.mipLevelCount = mipLevelCount;
     descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
 
     m_imageTexture = wgpu.DeviceCreateTexture(m_device, &descriptor);
@@ -292,7 +293,7 @@ void WGPUTexturedCube::createImageTexture()
 
     WGPUImageCopyTexture imageCopyTexture{};
     imageCopyTexture.texture = m_imageTexture;
-    imageCopyTexture.mipLevel = mipLevels;
+    imageCopyTexture.mipLevel = 0;
     imageCopyTexture.origin = { .x = 0, .y = 0, .z = 0 };
     imageCopyTexture.aspect = WGPUTextureAspect_All;
 
@@ -335,6 +336,7 @@ void WGPUTexturedCube::createSampler()
     samplerDescriptor.lodMinClamp = 0.0f;
     samplerDescriptor.lodMaxClamp = 1.0f;
     samplerDescriptor.compare = WGPUCompareFunction_Undefined;
+    samplerDescriptor.maxAnisotropy = 1;
 
     m_sampler = wgpu.DeviceCreateSampler(m_device, &samplerDescriptor);
     assert(m_sampler);
@@ -361,7 +363,7 @@ void WGPUTexturedCube::createBindingGroupLayout()
                                   .sampler = { .type = WGPUSamplerBindingType_Filtering } },
         WGPUBindGroupLayoutEntry{ .binding = 2,
                                   .visibility = WGPUShaderStage_Fragment,
-                                  .texture = { .sampleType = WGPUTextureSampleType_Uint,
+                                  .texture = { .sampleType = WGPUTextureSampleType_Float,
                                                .viewDimension = WGPUTextureViewDimension_2D,
                                                .multisampled = WGPUOptionalBool_False } },
     };
