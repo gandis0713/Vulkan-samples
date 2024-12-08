@@ -97,7 +97,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(DeviceCreateRenderBundleEncoder);
     GET_PROC(DeviceCreateRenderPipeline);
     // GET_PROC(DeviceCreateRenderPipelineAsync);
-    // GET_PROC(DeviceCreateSampler);
+    GET_PROC(DeviceCreateSampler);
     GET_PROC(DeviceCreateShaderModule);
     GET_PROC(DeviceCreateTexture);
     GET_PROC(DeviceDestroy);
@@ -130,7 +130,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(QueueSetLabel);
     GET_PROC(QueueSubmit);
     GET_PROC(QueueWriteBuffer);
-    // GET_PROC(QueueWriteTexture);
+    GET_PROC(QueueWriteTexture);
     // GET_PROC(QueueAddRef);
     GET_PROC(QueueRelease);
     // GET_PROC(RenderBundleSetLabel);
@@ -179,7 +179,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(RenderPipelineRelease);
     // GET_PROC(SamplerSetLabel);
     // GET_PROC(SamplerAddRef);
-    // GET_PROC(SamplerRelease);
+    GET_PROC(SamplerRelease);
     // GET_PROC(ShaderModuleGetCompilationInfo);
     // GET_PROC(ShaderModuleSetLabel);
     // GET_PROC(ShaderModuleAddRef);

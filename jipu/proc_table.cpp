@@ -12,6 +12,7 @@
 #include "webgpu/webgpu_queue.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_render_pipeline.h"
+#include "webgpu/webgpu_sampler.h"
 #include "webgpu/webgpu_shader_module.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
@@ -306,6 +307,12 @@ void procQueueWriteBuffer(WGPUQueue queue, WGPUBuffer buffer, uint64_t bufferOff
     return webgpuQueue->writeBuffer(webgpuBuffer, bufferOffset, data, size);
 }
 
+void procQueueWriteTexture(WGPUQueue queue, WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize)
+{
+    WebGPUQueue* webgpuQueue = reinterpret_cast<WebGPUQueue*>(queue);
+    return webgpuQueue->writeTexture(destination, data, dataSize, dataLayout, writeSize);
+}
+
 void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
 {
     WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
@@ -323,6 +330,18 @@ void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout)
 {
     WebGPUBindGroupLayout* webgpuBindGroupLayout = reinterpret_cast<WebGPUBindGroupLayout*>(bindGroupLayout);
     return webgpuBindGroupLayout->release();
+}
+
+WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUSampler>(webgpuDevice->createSampler(descriptor));
+}
+
+void procSamplerRelease(WGPUSampler sampler)
+{
+    WebGPUSampler* webgpuSampler = reinterpret_cast<WebGPUSampler*>(sampler);
+    return webgpuSampler->release();
 }
 
 namespace
@@ -376,9 +395,12 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetViewport", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetViewport) },
     { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
     { "wgpuQueueWriteBuffer", reinterpret_cast<WGPUProc>(procQueueWriteBuffer) },
+    { "wgpuQueueWriteTexture", reinterpret_cast<WGPUProc>(procQueueWriteTexture) },
     { "wgpuRenderPassEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBindGroup) },
     { "wgpuBindGroupRelease", reinterpret_cast<WGPUProc>(procBindGroupRelease) },
     { "wgpuBindGroupLayoutRelease", reinterpret_cast<WGPUProc>(procBindGroupLayoutRelease) },
+    { "wgpuDeviceCreateSampler", reinterpret_cast<WGPUProc>(procDeviceCreateSampler) },
+    { "wgpuSamplerRelease", reinterpret_cast<WGPUProc>(procSamplerRelease) },
 };
 
 } // namespace

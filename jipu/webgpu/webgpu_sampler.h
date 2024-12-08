@@ -39,4 +39,17 @@ private:
     std::unique_ptr<Sampler> m_sampler = nullptr;
 };
 
+// Generators
+WGPUSamplerDescriptor GenerateWGPUSamplerDescriptor();
+
+// Convert from JIPU to WebGPU
+WGPUAddressMode ToWGPUAddressMode(AddressMode mode);
+WGPUFilterMode ToWGPUFilterMode(FilterMode mode);
+WGPUMipmapFilterMode ToWGPUMipmapFilterMode(MipmapFilterMode mode);
+
+// Convert from WebGPU to JIPU
+AddressMode ToAddressMode(WGPUAddressMode mode);
+FilterMode ToFilterMode(WGPUFilterMode mode);
+MipmapFilterMode ToMipmapFilterMode(WGPUMipmapFilterMode mode);
+
 } // namespace jipu

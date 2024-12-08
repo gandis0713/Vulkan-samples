@@ -23,10 +23,17 @@ VulkanTextureDescriptor generateVulkanTextureDescriptor(const TextureDescriptor&
     vkdescriptor.format = ToVkFormat(descriptor.format);
     vkdescriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
     vkdescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    vkdescriptor.usage = ToVkImageUsageFlags(descriptor.usage, descriptor.format);
     vkdescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vkdescriptor.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     vkdescriptor.flags = 0;
+
+    vkdescriptor.usage = ToVkImageUsageFlags(descriptor.usage, descriptor.format);
+    if (descriptor.mipLevels > 1)
+    {
+        /** if mip levels are greater than 1,
+            then we need to use transfer src bit to copy mipmap from original texture. */
+        vkdescriptor.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    }
 
     return vkdescriptor;
 }

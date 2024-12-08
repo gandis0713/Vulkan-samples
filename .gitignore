@@ -51,3 +51,6 @@ externals/
 
 # imgui
 imgui.ini
+
+# for mac
+.DS_Store

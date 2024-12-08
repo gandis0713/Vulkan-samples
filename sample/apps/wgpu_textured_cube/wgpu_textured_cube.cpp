@@ -1,6 +1,7 @@
-#include "wgpu_rotating_cube.h"
+#include "wgpu_textured_cube.h"
 
 #include "file.h"
+#include "image.h"
 #include <chrono>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -11,17 +12,17 @@
 namespace jipu
 {
 
-WGPURotatingCube::WGPURotatingCube(const WGPUSampleDescriptor& descriptor)
+WGPUTexturedCube::WGPUTexturedCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
 }
 
-WGPURotatingCube::~WGPURotatingCube()
+WGPUTexturedCube::~WGPUTexturedCube()
 {
     finalizeContext();
 }
 
-void WGPURotatingCube::init()
+void WGPUTexturedCube::init()
 {
     WGPUSample::init();
 
@@ -29,7 +30,7 @@ void WGPURotatingCube::init()
     // changeAPI(APIType::kDawn);
 }
 
-void WGPURotatingCube::onUpdate()
+void WGPUTexturedCube::onUpdate()
 {
     WGPUSample::onUpdate();
 
@@ -55,7 +56,7 @@ void WGPURotatingCube::onUpdate()
     wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &transformationMatrix, sizeof(glm::mat4));
 }
 
-void WGPURotatingCube::onDraw()
+void WGPUTexturedCube::onDraw()
 {
     WGPUSurfaceTexture surfaceTexture{};
     wgpu.SurfaceGetCurrentTexture(m_surface, &surfaceTexture);
@@ -110,12 +111,15 @@ void WGPURotatingCube::onDraw()
     wgpu.TextureRelease(surfaceTexture.texture);
 }
 
-void WGPURotatingCube::initializeContext()
+void WGPUTexturedCube::initializeContext()
 {
     WGPUSample::initializeContext();
 
     createCubeBuffer();
     createDepthTexture();
+    createImageTexture();
+    createImageTextureView();
+    createSampler();
     createUniformBuffer();
     createBindingGroupLayout();
     createBindingGroup();
@@ -124,7 +128,7 @@ void WGPURotatingCube::initializeContext()
     createPipeline();
 }
 
-void WGPURotatingCube::finalizeContext()
+void WGPUTexturedCube::finalizeContext()
 {
     // TODO: check ways release and destory.
     if (m_cubeVertexBuffer)
@@ -143,6 +147,24 @@ void WGPURotatingCube::finalizeContext()
     {
         wgpu.BufferRelease(m_uniformBuffer);
         m_uniformBuffer = nullptr;
+    }
+
+    if (m_sampler)
+    {
+        wgpu.SamplerRelease(m_sampler);
+        m_sampler = nullptr;
+    }
+
+    if (m_imageTextureView)
+    {
+        wgpu.TextureViewRelease(m_imageTextureView);
+        m_imageTextureView = nullptr;
+    }
+
+    if (m_imageTexture)
+    {
+        wgpu.TextureRelease(m_imageTexture);
+        m_imageTexture = nullptr;
     }
 
     if (m_depthTexture)
@@ -190,7 +212,7 @@ void WGPURotatingCube::finalizeContext()
     WGPUSample::finalizeContext();
 }
 
-void WGPURotatingCube::createCubeBuffer()
+void WGPUTexturedCube::createCubeBuffer()
 {
     {
         size_t vertexBufferSize = m_cube.size() * sizeof(float);
@@ -226,7 +248,7 @@ void WGPURotatingCube::createCubeBuffer()
     // }
 }
 
-void WGPURotatingCube::createDepthTexture()
+void WGPUTexturedCube::createDepthTexture()
 {
     WGPUTextureDescriptor descriptor{};
     descriptor.dimension = WGPUTextureDimension_2D;
@@ -242,7 +264,85 @@ void WGPURotatingCube::createDepthTexture()
     assert(m_depthTexture);
 }
 
-void WGPURotatingCube::createUniformBuffer()
+void WGPUTexturedCube::createImageTexture()
+{
+    std::vector<char> buffer = utils::readFile(m_appDir / "Di-3d.png", m_handle);
+    auto image = std::make_unique<Image>(buffer.data(), buffer.size());
+
+    unsigned char* pixels = static_cast<unsigned char*>(image->getPixels());
+    uint32_t width = image->getWidth();
+    uint32_t height = image->getHeight();
+    uint32_t channel = image->getChannel();
+    uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
+    uint32_t mipLevelCount = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+    if (mipLevelCount > 10)
+        mipLevelCount = 10;
+
+    WGPUTextureDescriptor descriptor{};
+    descriptor.dimension = WGPUTextureDimension_2D;
+    descriptor.size.width = width;
+    descriptor.size.height = height;
+    descriptor.size.depthOrArrayLayers = 1;
+    descriptor.sampleCount = 1;
+    descriptor.format = WGPUTextureFormat_RGBA8Unorm;
+    descriptor.mipLevelCount = mipLevelCount;
+    descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
+
+    m_imageTexture = wgpu.DeviceCreateTexture(m_device, &descriptor);
+    assert(m_imageTexture);
+
+    WGPUImageCopyTexture imageCopyTexture{};
+    imageCopyTexture.texture = m_imageTexture;
+    imageCopyTexture.mipLevel = 0;
+    imageCopyTexture.origin = { .x = 0, .y = 0, .z = 0 };
+    imageCopyTexture.aspect = WGPUTextureAspect_All;
+
+    WGPUTextureDataLayout dataLayout{};
+    dataLayout.offset = 0;
+    dataLayout.bytesPerRow = sizeof(unsigned char) * width * channel;
+#if defined(USE_DAWN_HEADER)
+    dataLayout.rowsPerImage = height;
+#else
+    dataLayout.rowsPerTexture = height;
+#endif
+
+    wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
+}
+
+void WGPUTexturedCube::createImageTextureView()
+{
+    WGPUTextureViewDescriptor descriptor{};
+    descriptor.format = WGPUTextureFormat_RGBA8Unorm;
+    descriptor.dimension = WGPUTextureViewDimension_2D;
+    descriptor.aspect = WGPUTextureAspect_All;
+    descriptor.baseMipLevel = 0;
+    descriptor.mipLevelCount = 1;
+    descriptor.baseArrayLayer = 0;
+    descriptor.arrayLayerCount = 1;
+
+    m_imageTextureView = wgpu.TextureCreateView(m_imageTexture, &descriptor);
+    assert(m_imageTextureView);
+}
+
+void WGPUTexturedCube::createSampler()
+{
+    WGPUSamplerDescriptor samplerDescriptor{};
+    samplerDescriptor.minFilter = WGPUFilterMode_Linear;
+    samplerDescriptor.magFilter = WGPUFilterMode_Linear;
+    samplerDescriptor.mipmapFilter = WGPUMipmapFilterMode_Linear;
+    samplerDescriptor.addressModeU = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.addressModeV = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.addressModeW = WGPUAddressMode_ClampToEdge;
+    samplerDescriptor.lodMinClamp = 0.0f;
+    samplerDescriptor.lodMaxClamp = 1.0f;
+    samplerDescriptor.compare = WGPUCompareFunction_Undefined;
+    samplerDescriptor.maxAnisotropy = 1;
+
+    m_sampler = wgpu.DeviceCreateSampler(m_device, &samplerDescriptor);
+    assert(m_sampler);
+}
+
+void WGPUTexturedCube::createUniformBuffer()
 {
     WGPUBufferDescriptor bufferDescriptor{};
     bufferDescriptor.size = sizeof(glm::mat4);
@@ -252,10 +352,20 @@ void WGPURotatingCube::createUniformBuffer()
     m_uniformBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
     assert(m_uniformBuffer);
 }
-void WGPURotatingCube::createBindingGroupLayout()
+void WGPUTexturedCube::createBindingGroupLayout()
 {
-    std::array<WGPUBindGroupLayoutEntry, 1> bindGroupLayoutEntries = {
-        WGPUBindGroupLayoutEntry{ .binding = 0, .visibility = WGPUShaderStage_Vertex, .buffer = { .type = WGPUBufferBindingType_Uniform } },
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+        WGPUBindGroupLayoutEntry{ .binding = 0,
+                                  .visibility = WGPUShaderStage_Vertex,
+                                  .buffer = { .type = WGPUBufferBindingType_Uniform } },
+        WGPUBindGroupLayoutEntry{ .binding = 1,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .sampler = { .type = WGPUSamplerBindingType_Filtering } },
+        WGPUBindGroupLayoutEntry{ .binding = 2,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .texture = { .sampleType = WGPUTextureSampleType_Float,
+                                               .viewDimension = WGPUTextureViewDimension_2D,
+                                               .multisampled = WGPUOptionalBool_False } },
     };
 
     WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
@@ -266,10 +376,12 @@ void WGPURotatingCube::createBindingGroupLayout()
     assert(m_bindGroupLayout);
 }
 
-void WGPURotatingCube::createBindingGroup()
+void WGPUTexturedCube::createBindingGroup()
 {
-    std::array<WGPUBindGroupEntry, 1> bindGroupEntries = {
+    std::array<WGPUBindGroupEntry, 3> bindGroupEntries = {
         WGPUBindGroupEntry{ .binding = 0, .buffer = m_uniformBuffer, .offset = 0, .size = sizeof(glm::mat4) },
+        WGPUBindGroupEntry{ .binding = 1, .sampler = m_sampler },
+        WGPUBindGroupEntry{ .binding = 2, .textureView = m_imageTextureView },
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
@@ -281,10 +393,10 @@ void WGPURotatingCube::createBindingGroup()
     assert(m_bindGroup);
 }
 
-void WGPURotatingCube::createShaderModule()
+void WGPUTexturedCube::createShaderModule()
 {
-    std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "rotating_cube.vert.wgsl", m_handle);
-    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "rotating_cube.frag.wgsl", m_handle);
+    std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "textured_cube.vert.wgsl", m_handle);
+    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "textured_cube.frag.wgsl", m_handle);
 
     std::string vertexShaderCode(vertexShaderSource.begin(), vertexShaderSource.end());
     std::string fragmentShaderCode(fragmentShaderSource.begin(), fragmentShaderSource.end());
@@ -312,7 +424,7 @@ void WGPURotatingCube::createShaderModule()
     assert(m_fragWGSLShaderModule);
 }
 
-void WGPURotatingCube::createPipelineLayout()
+void WGPUTexturedCube::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
@@ -322,7 +434,7 @@ void WGPURotatingCube::createPipelineLayout()
     assert(m_pipelineLayout);
 }
 
-void WGPURotatingCube::createPipeline()
+void WGPUTexturedCube::createPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;

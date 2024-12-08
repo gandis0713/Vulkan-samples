@@ -87,7 +87,7 @@ struct WebGPUAPI
     // WGPUProcDeviceCreateRenderBundleEncoder DeviceCreateRenderBundleEncoder = nullptr;
     WGPUProcDeviceCreateRenderPipeline DeviceCreateRenderPipeline = nullptr;
     // WGPUProcDeviceCreateRenderPipelineAsync DeviceCreateRenderPipelineAsync = nullptr;
-    // WGPUProcDeviceCreateSampler DeviceCreateSampler = nullptr;
+    WGPUProcDeviceCreateSampler DeviceCreateSampler = nullptr;
     WGPUProcDeviceCreateShaderModule DeviceCreateShaderModule = nullptr;
     WGPUProcDeviceCreateTexture DeviceCreateTexture = nullptr;
     WGPUProcDeviceDestroy DeviceDestroy = nullptr;
@@ -120,7 +120,7 @@ struct WebGPUAPI
     // WGPUProcQueueSetLabel QueueSetLabel = nullptr;
     WGPUProcQueueSubmit QueueSubmit = nullptr;
     WGPUProcQueueWriteBuffer QueueWriteBuffer = nullptr;
-    // WGPUProcQueueWriteTexture QueueWriteTexture = nullptr;
+    WGPUProcQueueWriteTexture QueueWriteTexture = nullptr;
     // WGPUProcQueueAddRef QueueAddRef = nullptr;
     WGPUProcQueueRelease QueueRelease = nullptr;
     // WGPUProcRenderBundleSetLabel RenderBundleSetLabel = nullptr;
@@ -169,7 +169,7 @@ struct WebGPUAPI
     WGPUProcRenderPipelineRelease RenderPipelineRelease = nullptr;
     // WGPUProcSamplerSetLabel SamplerSetLabel = nullptr;
     // WGPUProcSamplerAddRef SamplerAddRef = nullptr;
-    // WGPUProcSamplerRelease SamplerRelease = nullptr;
+    WGPUProcSamplerRelease SamplerRelease = nullptr;
     // WGPUProcShaderModuleGetCompilationInfo ShaderModuleGetCompilationInfo = nullptr;
     // WGPUProcShaderModuleSetLabel ShaderModuleSetLabel = nullptr;
     // WGPUProcShaderModuleAddRef ShaderModuleAddRef = nullptr;

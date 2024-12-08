@@ -51,9 +51,12 @@ extern void procBufferRelease(WGPUBuffer buffer);
 extern void procRenderPassEncoderSetViewport(WGPURenderPassEncoder renderPassEncoder, float x, float y, float width, float height, float minDepth, float maxDepth);
 extern void procRenderPassEncoderSetScissorRect(WGPURenderPassEncoder renderPassEncoder, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 extern void procQueueWriteBuffer(WGPUQueue queue, WGPUBuffer buffer, uint64_t bufferOffset, void const* data, size_t size);
+extern void procQueueWriteTexture(WGPUQueue queue, WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize);
 extern void procRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets);
 extern void procBindGroupRelease(WGPUBindGroup bindGroup);
 extern void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout);
+extern WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor);
+extern void procSamplerRelease(WGPUSampler sampler);
 
 } // namespace jipu
 
@@ -301,6 +304,11 @@ extern "C"
         return procQueueWriteBuffer(queue, buffer, bufferOffset, data, size);
     }
 
+    WGPU_EXPORT void wgpuQueueWriteTexture(WGPUQueue queue, WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procQueueWriteTexture(queue, destination, data, dataSize, dataLayout, writeSize);
+    }
+
     WGPU_EXPORT void wgpuRenderPassEncoderSetBindGroup(WGPURenderPassEncoder renderPassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets) WGPU_FUNCTION_ATTRIBUTE
     {
         return procRenderPassEncoderSetBindGroup(renderPassEncoder, groupIndex, group, dynamicOffsetCount, dynamicOffsets);
@@ -314,5 +322,15 @@ extern "C"
     WGPU_EXPORT void wgpuBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout) WGPU_FUNCTION_ATTRIBUTE
     {
         return procBindGroupLayoutRelease(bindGroupLayout);
+    }
+
+    WGPU_EXPORT WGPUSampler wgpuDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateSampler(device, descriptor);
+    }
+
+    WGPU_EXPORT void wgpuSamplerRelease(WGPUSampler sampler) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procSamplerRelease(sampler);
     }
 }

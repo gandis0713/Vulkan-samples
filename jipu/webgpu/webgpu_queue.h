@@ -27,6 +27,7 @@ public:
 public: // WebGPU API
     void submit(size_t commandCount, WGPUCommandBuffer const* commands);
     void writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void const* data, size_t size);
+    void writeTexture(WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize);
 
 public:
     Queue* getQueue() const;
