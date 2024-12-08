@@ -34,16 +34,16 @@ void WGPUTexturedCube::onUpdate()
 {
     WGPUSample::onUpdate();
 
-    auto transformationMatrix = []() -> glm::mat4 {
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    auto transformationMatrix = [&]() -> glm::mat4 {
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), static_cast<float>(m_width) / static_cast<float>(m_height), 0.1f, 100.0f);
 
         glm::mat4 viewMatrix = glm::mat4(1.0f); // Identity matrix
 
         viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 
         auto now = std::chrono::high_resolution_clock::now();
-        auto timeSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        float currentTime = static_cast<float>(timeSinceEpoch) / 1000.0f;
+        std::chrono::duration<double> seconds = now.time_since_epoch();
+        auto currentTime = seconds.count();
 
         glm::vec3 rotationAxis(std::sin(currentTime), std::cos(currentTime), 0.0f);
         viewMatrix = glm::rotate(viewMatrix, 1.0f, rotationAxis);
