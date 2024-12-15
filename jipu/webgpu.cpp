@@ -5,7 +5,7 @@ namespace jipu
 
 extern WGPUProc procGetProcAddress(WGPUStringView procName);
 extern WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor);
-extern void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata);
+extern WGPUFuture procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo);
 extern WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor);
 extern void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
 extern WGPUQueue procDeviceGetQueue(WGPUDevice device);
@@ -57,6 +57,7 @@ extern void procBindGroupRelease(WGPUBindGroup bindGroup);
 extern void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout);
 extern WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor);
 extern void procSamplerRelease(WGPUSampler sampler);
+extern WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS);
 
 } // namespace jipu
 
@@ -74,9 +75,9 @@ extern "C"
         return procCreateInstance(descriptor);
     }
 
-    WGPU_EXPORT void wgpuInstanceRequestAdapter(WGPUInstance instance, WGPU_NULLABLE WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, WGPU_NULLABLE void* userdata) WGPU_FUNCTION_ATTRIBUTE
+    WGPU_EXPORT WGPUFuture wgpuInstanceRequestAdapter(WGPUInstance instance, WGPU_NULLABLE WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo) WGPU_FUNCTION_ATTRIBUTE
     {
-        return procInstanceRequestAdapter(instance, options, callback, userdata);
+        return procInstanceRequestAdapter(instance, options, callbackInfo);
     }
 
     WGPU_EXPORT WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
@@ -332,5 +333,10 @@ extern "C"
     WGPU_EXPORT void wgpuSamplerRelease(WGPUSampler sampler) WGPU_FUNCTION_ATTRIBUTE
     {
         return procSamplerRelease(sampler);
+    }
+
+    WGPU_EXPORT WGPUWaitStatus wgpuInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procInstanceWaitAny(instance, futureCount, futures, timeoutNS);
     }
 }

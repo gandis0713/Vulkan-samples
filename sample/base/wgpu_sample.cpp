@@ -170,14 +170,19 @@ void WGPUSample::createSurface()
 
 void WGPUSample::createAdapter()
 {
-    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata) {
+    auto callback = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata1, WGPU_NULLABLE void* userdata2) {
         if (status != WGPURequestAdapterStatus_Success)
         {
             throw std::runtime_error("Failed to request adapter.");
         }
 
-        *static_cast<WGPUAdapter*>(userdata) = adapter;
+        *static_cast<WGPUAdapter*>(userdata1) = adapter;
     };
+
+    WGPURequestAdapterCallbackInfo2 callbackInfo{ WGPU_REQUEST_ADAPTER_CALLBACK_INFO_2_INIT };
+    callbackInfo.callback = callback;
+    callbackInfo.userdata1 = &m_adapter;
+    callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
 
     WGPURequestAdapterOptions descriptor{
         .compatibleSurface = m_surface,
@@ -194,7 +199,10 @@ void WGPUSample::createAdapter()
         .forceFallbackAdapter = false,
     };
 
-    wgpu.InstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
+    auto future = wgpu.InstanceRequestAdapter(m_instance, &descriptor, callbackInfo);
+
+    WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
+    wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
 
     assert(m_adapter);
 }

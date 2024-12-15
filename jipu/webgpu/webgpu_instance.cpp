@@ -1,5 +1,6 @@
 #include "webgpu_instance.h"
 
+#include "event/request_adapter_event.h"
 #include "webgpu_adapter.h"
 #include "webgpu_surface.h"
 
@@ -23,22 +24,22 @@ WebGPUInstance* WebGPUInstance::create(WGPUInstanceDescriptor const* wgpuDescrip
 WebGPUInstance::WebGPUInstance(std::unique_ptr<Instance> instance, const WGPUInstanceDescriptor& wgpuDescriptor)
     : m_wgpuDescriptor(wgpuDescriptor)
     , m_instance(std::move(instance))
+    , m_eventManager(std::make_unique<EventManager>())
 {
 }
 
-void WebGPUInstance::requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata)
+WGPUWaitStatus WebGPUInstance::waitAny(const uint64_t waitCount, WGPUFutureWaitInfo* waitInfos, uint64_t timeoutNS)
+{
+    // TODO: timeout
+    return m_eventManager->waitAny(waitCount, waitInfos);
+}
+
+WGPUFuture WebGPUInstance::requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo)
 {
     auto adapter = WebGPUAdapter::create(this, options);
-    if (adapter)
-    {
-        std::string message = "Succeed to create adapter";
-        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Success, reinterpret_cast<WGPUAdapter>(adapter), WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
-    }
-    else
-    {
-        std::string message = "Failed to create adapter";
-        callback(WGPURequestAdapterStatus::WGPURequestAdapterStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
-    }
+    auto event = RequestAdapterEvent::create(adapter, callbackInfo);
+
+    return WGPUFuture{ .id = static_cast<uint64_t>(m_eventManager->addEvent(std::move(event))) };
 }
 
 WebGPUSurface* WebGPUInstance::createSurface(WGPUSurfaceDescriptor const* descriptor)

@@ -1,10 +1,6 @@
 #pragma once
 
-#if defined(USE_DAWN_HEADER)
-#include <dawn/webgpu.h>
-#else
-#include <webgpu.h>
-#endif
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {
@@ -103,8 +99,8 @@ struct WebGPUAPI
     WGPUProcInstanceCreateSurface InstanceCreateSurface = nullptr;
     // WGPUProcInstanceHasWGSLLanguageFeature InstanceHasWGSLLanguageFeature = nullptr;
     // WGPUProcInstanceProcessEvents InstanceProcessEvents = nullptr;
-    WGPUProcInstanceRequestAdapter InstanceRequestAdapter = nullptr;
-    // WGPUProcInstanceWaitAny InstanceWaitAny = nullptr;
+    WGPUProcInstanceRequestAdapter2 InstanceRequestAdapter = nullptr;
+    WGPUProcInstanceWaitAny InstanceWaitAny = nullptr;
     // WGPUProcInstanceAddRef InstanceAddRef = nullptr;
     WGPUProcInstanceRelease InstanceRelease = nullptr;
     // WGPUProcPipelineLayoutSetLabel PipelineLayoutSetLabel = nullptr;

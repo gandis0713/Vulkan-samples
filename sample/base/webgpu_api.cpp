@@ -114,7 +114,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(InstanceHasWGSLLanguageFeature);
     // GET_PROC(InstanceProcessEvents);
     GET_PROC(InstanceRequestAdapter);
-    // GET_PROC(InstanceWaitAny);
+    GET_PROC(InstanceWaitAny);
     // GET_PROC(InstanceAddRef);
     GET_PROC(InstanceRelease);
     // GET_PROC(PipelineLayoutSetLabel);

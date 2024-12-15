@@ -28,10 +28,10 @@ WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
     return reinterpret_cast<WGPUInstance>(WebGPUInstance::create(wgpuDescriptor));
 }
 
-void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata)
+WGPUFuture procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo)
 {
     WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
-    return webgpuInstance->requestAdapter(options, callback, userdata);
+    return webgpuInstance->requestAdapter(options, callbackInfo);
 }
 
 WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor)
@@ -344,6 +344,12 @@ void procSamplerRelease(WGPUSampler sampler)
     return webgpuSampler->release();
 }
 
+WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS)
+{
+    WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
+    return webgpuInstance->waitAny(futureCount, futures, timeoutNS);
+}
+
 namespace
 {
 
@@ -401,6 +407,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuBindGroupLayoutRelease", reinterpret_cast<WGPUProc>(procBindGroupLayoutRelease) },
     { "wgpuDeviceCreateSampler", reinterpret_cast<WGPUProc>(procDeviceCreateSampler) },
     { "wgpuSamplerRelease", reinterpret_cast<WGPUProc>(procSamplerRelease) },
+    { "wgpuInstanceWaitAny", reinterpret_cast<WGPUProc>(procInstanceWaitAny) },
 };
 
 } // namespace
