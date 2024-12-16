@@ -26,6 +26,7 @@ public:
 
 public: // WebGPU API
     void submit(size_t commandCount, WGPUCommandBuffer const* commands);
+    WGPUFuture onSubmittedWorkDone(WGPUQueueWorkDoneCallbackInfo2 callbackInfo);
     void writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void const* data, size_t size);
     void writeTexture(WGPUImageCopyTexture const* destination, void const* data, size_t dataSize, WGPUTextureDataLayout const* dataLayout, WGPUExtent3D const* writeSize);
 
@@ -33,7 +34,7 @@ public:
     Queue* getQueue() const;
 
 private:
-    [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
+    WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUQueueDescriptor m_descriptor{};
 
 private:

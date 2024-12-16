@@ -100,6 +100,11 @@ WebGPUSampler* WebGPUDevice::createSampler(WGPU_NULLABLE WGPUSamplerDescriptor c
     return WebGPUSampler::create(this, descriptor);
 }
 
+WebGPUAdapter* WebGPUDevice::getAdapter() const
+{
+    return m_wgpuAdapter;
+}
+
 Device* WebGPUDevice::getDevice() const
 {
     return m_device.get();

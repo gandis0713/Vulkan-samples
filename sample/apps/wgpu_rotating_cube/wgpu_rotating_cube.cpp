@@ -101,6 +101,13 @@ void WGPURotatingCube::onDraw()
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
 
     wgpu.QueueSubmit(m_queue, 1, &commandBuffer);
+
+    WGPUQueueWorkDoneCallbackInfo2 callbackInfo{};
+    callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+    callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* userData1, void* userData2) {
+        spdlog::info("QueueWorkDoneStatus: {}", static_cast<uint32_t>(status));
+    };
+    wgpu.QueueOnSubmittedWorkDone2(m_queue, callbackInfo);
     wgpu.SurfacePresent(m_surface);
 
     wgpu.CommandBufferRelease(commandBuffer);

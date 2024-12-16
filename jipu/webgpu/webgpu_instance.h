@@ -5,6 +5,8 @@
 
 #include "jipu/native/instance.h"
 
+#include "jipu/webgpu/event/event_manager.h"
+
 namespace jipu
 {
 
@@ -21,17 +23,21 @@ public:
     WebGPUInstance& operator=(const WebGPUInstance&) = delete;
 
 public: // WebGPU API
-    void requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata);
+    WGPUWaitStatus waitAny(const uint64_t waitCount, WGPUFutureWaitInfo* waitInfos, uint64_t timeoutNS);
+    void processEvents();
+    WGPUFuture requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo);
     WebGPUSurface* createSurface(WGPUSurfaceDescriptor const* descriptor);
 
 public:
     Instance* getInstance() const;
+    EventManager* getEventManager() const;
 
 private:
     [[maybe_unused]] const WGPUInstanceDescriptor m_wgpuDescriptor{};
 
 private:
     std::unique_ptr<Instance> m_instance = nullptr;
+    std::unique_ptr<EventManager> m_eventManager = nullptr;
 
 private:
     explicit WebGPUInstance(std::unique_ptr<Instance> instance, const WGPUInstanceDescriptor& wgpuDescriptor);

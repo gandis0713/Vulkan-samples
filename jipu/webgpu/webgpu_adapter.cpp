@@ -4,6 +4,8 @@
 #include "webgpu_device.h"
 #include "webgpu_instance.h"
 
+#include "event/request_device_event.h"
+
 namespace jipu
 {
 
@@ -32,19 +34,16 @@ WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Adapt
 {
 }
 
-void WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata)
+WGPUFuture WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallbackInfo2 callbackInfo)
 {
     auto device = WebGPUDevice::create(this, descriptor);
-    if (device)
-    {
-        std::string message = "Succeed to create device";
-        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(device), WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
-    }
-    else
-    {
-        std::string message = "Failed to create device";
-        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Error, nullptr, WGPUStringView{ .data = message.data(), .length = message.size() }, userdata);
-    }
+
+    return WGPUFuture{ .id = m_wgpuInstance->getEventManager()->addEvent(RequestDeviceEvent::create(device, callbackInfo)) };
+}
+
+WebGPUInstance* WebGPUAdapter::getInstance() const
+{
+    return m_wgpuInstance;
 }
 
 std::shared_ptr<Adapter> WebGPUAdapter::getAdapter() const

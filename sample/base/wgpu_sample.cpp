@@ -170,14 +170,17 @@ void WGPUSample::createSurface()
 
 void WGPUSample::createAdapter()
 {
-    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata) {
+    WGPURequestAdapterCallbackInfo2 callbackInfo{ WGPU_REQUEST_ADAPTER_CALLBACK_INFO_2_INIT };
+    callbackInfo.callback = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata1, WGPU_NULLABLE void* userdata2) {
         if (status != WGPURequestAdapterStatus_Success)
         {
             throw std::runtime_error("Failed to request adapter.");
         }
 
-        *static_cast<WGPUAdapter*>(userdata) = adapter;
+        *static_cast<WGPUAdapter*>(userdata1) = adapter;
     };
+    callbackInfo.userdata1 = &m_adapter;
+    callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
 
     WGPURequestAdapterOptions descriptor{
         .compatibleSurface = m_surface,
@@ -194,32 +197,67 @@ void WGPUSample::createAdapter()
         .forceFallbackAdapter = false,
     };
 
-    wgpu.InstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
+    auto future = wgpu.InstanceRequestAdapter2(m_instance, &descriptor, callbackInfo);
+
+    WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
+    wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
 
     assert(m_adapter);
 }
 
 void WGPUSample::createDevice()
 {
-    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata) {
+    WGPUUncapturedErrorCallbackInfo2 errorCallbackInfo{};
+    errorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) {
+        std::string msg(message.data, message.length);
+
+        switch (type)
+        {
+        case WGPUErrorType_Validation:
+            spdlog::error("Validation error: {}", msg.data());
+            break;
+        case WGPUErrorType_OutOfMemory:
+            spdlog::error("Out of memory error: {}", msg.data());
+            break;
+        case WGPUErrorType_Unknown:
+            spdlog::error("Unknown error: {}", msg.data());
+            break;
+        case WGPUErrorType_DeviceLost:
+            spdlog::error("Device lost error: {}", msg.data());
+            break;
+        case WGPUErrorType_Internal:
+            spdlog::error("Internal error: {}", msg.data());
+            break;
+        case WGPUErrorType_NoError:
+        default:
+            spdlog::error("No error: {}", msg.data());
+            break;
+        }
+    };
+
+    WGPUDeviceDescriptor deviceDescriptor{};
+    deviceDescriptor.uncapturedErrorCallbackInfo2 = errorCallbackInfo;
+
+    WGPURequestDeviceCallbackInfo2 callbackInfo{};
+    callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+    // callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+    // callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+    callbackInfo.userdata1 = &m_device;
+    callbackInfo.callback = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata1, void* userdata2) {
         if (status != WGPURequestDeviceStatus_Success)
         {
             throw std::runtime_error("Failed to request device.");
         }
 
-        *static_cast<WGPUDevice*>(userdata) = device;
+        *static_cast<WGPUDevice*>(userdata1) = device;
     };
 
-    WGPUUncapturedErrorCallbackInfo errorCallbackInfo{};
-    errorCallbackInfo.callback = [](WGPUErrorType type, WGPUStringView message, void* userdata) {
-        std::string msg(message.data, message.length);
-        spdlog::error("Uncaptured error: {}", msg.data());
-    };
+    auto future = wgpu.AdapterRequestDevice2(m_adapter, &deviceDescriptor, callbackInfo);
 
-    WGPUDeviceDescriptor deviceDescriptor{};
-    deviceDescriptor.uncapturedErrorCallbackInfo = errorCallbackInfo;
+    // WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
+    // wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
 
-    wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
+    // wgpu.InstanceProcessEvents(m_instance);
 
     assert(m_device);
 }

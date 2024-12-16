@@ -1,8 +1,11 @@
 #include "webgpu_queue.h"
 
+#include "event/queue_work_done_event.h"
+#include "webgpu_adapter.h"
 #include "webgpu_buffer.h"
 #include "webgpu_command_buffer.h"
 #include "webgpu_device.h"
+#include "webgpu_instance.h"
 #include "webgpu_texture.h"
 #include "webgpu_texture_view.h"
 
@@ -38,6 +41,15 @@ void WebGPUQueue::submit(size_t commandCount, WGPUCommandBuffer const* commands)
     }
 
     m_queue->submit(commandBuffers);
+}
+
+WGPUFuture WebGPUQueue::onSubmittedWorkDone(WGPUQueueWorkDoneCallbackInfo2 callbackInfo)
+{
+    m_queue->waitIdle();
+
+    auto eventManager = m_wgpuDevice->getAdapter()->getInstance()->getEventManager();
+
+    return WGPUFuture{ .id = eventManager->addEvent(QueueWorkDoneEvent::create(callbackInfo)) };
 }
 
 void WebGPUQueue::writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void const* data, size_t size)

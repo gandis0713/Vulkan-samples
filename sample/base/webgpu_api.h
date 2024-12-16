@@ -1,10 +1,6 @@
 #pragma once
 
-#if defined(USE_DAWN_HEADER)
-#include <dawn/webgpu.h>
-#else
-#include <webgpu.h>
-#endif
+#include "jipu/webgpu/webgpu_header.h"
 
 namespace jipu
 {
@@ -21,7 +17,8 @@ struct WebGPUAPI
     // WGPUProcAdapterGetInfo AdapterGetInfo = nullptr;
     // WGPUProcAdapterGetLimits AdapterGetLimits = nullptr;
     // WGPUProcAdapterHasFeature AdapterHasFeature = nullptr;
-    WGPUProcAdapterRequestDevice AdapterRequestDevice = nullptr;
+    // WGPUProcAdapterRequestDevice AdapterRequestDevice = nullptr;
+    WGPUProcAdapterRequestDevice2 AdapterRequestDevice2 = nullptr;
     // WGPUProcAdapterAddRef AdapterAddRef = nullptr;
     WGPUProcAdapterRelease AdapterRelease = nullptr;
     // WGPUProcAdapterInfoFreeMembers AdapterInfoFreeMembers = nullptr;
@@ -102,9 +99,10 @@ struct WebGPUAPI
     WGPUProcDeviceRelease DeviceRelease = nullptr;
     WGPUProcInstanceCreateSurface InstanceCreateSurface = nullptr;
     // WGPUProcInstanceHasWGSLLanguageFeature InstanceHasWGSLLanguageFeature = nullptr;
-    // WGPUProcInstanceProcessEvents InstanceProcessEvents = nullptr;
-    WGPUProcInstanceRequestAdapter InstanceRequestAdapter = nullptr;
-    // WGPUProcInstanceWaitAny InstanceWaitAny = nullptr;
+    WGPUProcInstanceProcessEvents InstanceProcessEvents = nullptr;
+    // WGPUProcInstanceRequestAdapter InstanceRequestAdapter = nullptr;
+    WGPUProcInstanceRequestAdapter2 InstanceRequestAdapter2 = nullptr;
+    WGPUProcInstanceWaitAny InstanceWaitAny = nullptr;
     // WGPUProcInstanceAddRef InstanceAddRef = nullptr;
     WGPUProcInstanceRelease InstanceRelease = nullptr;
     // WGPUProcPipelineLayoutSetLabel PipelineLayoutSetLabel = nullptr;
@@ -117,6 +115,7 @@ struct WebGPUAPI
     // WGPUProcQuerySetAddRef QuerySetAddRef = nullptr;
     // WGPUProcQuerySetRelease QuerySetRelease = nullptr;
     // WGPUProcQueueOnSubmittedWorkDone QueueOnSubmittedWorkDone = nullptr;
+    WGPUProcQueueOnSubmittedWorkDone2 QueueOnSubmittedWorkDone2 = nullptr;
     // WGPUProcQueueSetLabel QueueSetLabel = nullptr;
     WGPUProcQueueSubmit QueueSubmit = nullptr;
     WGPUProcQueueWriteBuffer QueueWriteBuffer = nullptr;

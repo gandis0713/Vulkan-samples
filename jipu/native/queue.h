@@ -6,6 +6,7 @@
 #include "swapchain.h"
 
 #include <functional>
+#include <future>
 #include <stdint.h>
 #include <vector>
 
@@ -26,6 +27,7 @@ public:
 
 public:
     virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
+    virtual void waitIdle() = 0;
 
 protected:
     Queue() = default;

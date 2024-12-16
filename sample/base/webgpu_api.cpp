@@ -31,7 +31,8 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(AdapterGetInfo);
     // GET_PROC(AdapterGetLimits);
     // GET_PROC(AdapterHasFeature);
-    GET_PROC(AdapterRequestDevice);
+    // GET_PROC(AdapterRequestDevice);
+    GET_PROC(AdapterRequestDevice2);
     // GET_PROC(AdapterAddRef);
     GET_PROC(AdapterRelease);
     // GET_PROC(AdapterInfoFreeMembers);
@@ -112,9 +113,10 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(DeviceRelease);
     GET_PROC(InstanceCreateSurface);
     // GET_PROC(InstanceHasWGSLLanguageFeature);
-    // GET_PROC(InstanceProcessEvents);
-    GET_PROC(InstanceRequestAdapter);
-    // GET_PROC(InstanceWaitAny);
+    GET_PROC(InstanceProcessEvents);
+    // GET_PROC(InstanceRequestAdapter);
+    GET_PROC(InstanceRequestAdapter2);
+    GET_PROC(InstanceWaitAny);
     // GET_PROC(InstanceAddRef);
     GET_PROC(InstanceRelease);
     // GET_PROC(PipelineLayoutSetLabel);
@@ -127,6 +129,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(QuerySetAddRef);
     // GET_PROC(QuerySetRelease);
     // GET_PROC(QueueOnSubmittedWorkDone);
+    GET_PROC(QueueOnSubmittedWorkDone2);
     // GET_PROC(QueueSetLabel);
     GET_PROC(QueueSubmit);
     GET_PROC(QueueWriteBuffer);
