@@ -15,6 +15,8 @@ WGPUWaitStatus EventManager::waitAny(const uint64_t waitCount, WGPUFutureWaitInf
         {
             event->second->complete();
             waitInfo.completed = true;
+
+            m_events.erase(waitInfo.future.id);
         }
     }
 
@@ -24,11 +26,16 @@ WGPUWaitStatus EventManager::waitAny(const uint64_t waitCount, WGPUFutureWaitInf
 
 void EventManager::processEvents()
 {
-    for (auto& [_, event] : m_events)
+    for (auto it = m_events.begin(); it != m_events.end();)
     {
-        if (event->getMode() == WGPUCallbackMode_AllowProcessEvents)
+        if (it->second->getMode() == WGPUCallbackMode_AllowProcessEvents)
         {
-            event->complete();
+            it->second->complete();
+            it = m_events.erase(it);
+        }
+        else
+        {
+            ++it;
         }
     }
 }
@@ -36,6 +43,13 @@ void EventManager::processEvents()
 FutureID EventManager::addEvent(std::unique_ptr<Event> event)
 {
     FutureID id = generateId();
+
+    if (event->getMode() == WGPUCallbackMode_AllowSpontaneous)
+    {
+        event->complete();
+        return id;
+    }
+
     m_events[id] = std::move(event);
     return id;
 }
