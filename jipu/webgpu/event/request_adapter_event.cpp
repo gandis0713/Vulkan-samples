@@ -19,6 +19,11 @@ RequestAdapterEvent::RequestAdapterEvent(WebGPUAdapter* adapter, WGPURequestAdap
 
 void RequestAdapterEvent::complete()
 {
+    if (m_isCompleted.load())
+    {
+        return;
+    }
+
     if (m_adapter == nullptr)
     {
         std::string message{ "Failed to request adapter." };
@@ -27,6 +32,7 @@ void RequestAdapterEvent::complete()
     }
 
     m_callbackInfo.callback(WGPURequestAdapterStatus_Success, reinterpret_cast<WGPUAdapter>(m_adapter), WGPUStringView{ .data = nullptr, .length = 0 }, m_callbackInfo.userdata1, m_callbackInfo.userdata2);
+    m_isCompleted.store(true);
 }
 
 } // namespace jipu

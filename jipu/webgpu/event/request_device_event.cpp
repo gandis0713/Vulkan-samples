@@ -19,6 +19,11 @@ RequestDeviceEvent::RequestDeviceEvent(WebGPUDevice* device, WGPURequestDeviceCa
 
 void RequestDeviceEvent::complete()
 {
+    if (m_isCompleted.load())
+    {
+        return;
+    }
+
     if (m_device == nullptr)
     {
         std::string message{ "Failed to request device." };
@@ -27,6 +32,7 @@ void RequestDeviceEvent::complete()
     }
 
     m_callbackInfo.callback(WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(m_device), WGPUStringView{ .data = nullptr, .length = 0 }, m_callbackInfo.userdata1, m_callbackInfo.userdata2);
+    m_isCompleted.store(true);
 }
 
 } // namespace jipu
