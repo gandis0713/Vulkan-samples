@@ -7,7 +7,7 @@ extern WGPUProc procGetProcAddress(WGPUStringView procName);
 extern WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor);
 extern WGPUFuture procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo);
 extern WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor);
-extern void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
+extern WGPUFuture procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallbackInfo2 callbackInfo);
 extern WGPUQueue procDeviceGetQueue(WGPUDevice device);
 extern WGPUStatus procSurfaceGetCapabilities(WGPUSurface surface, WGPUAdapter adapter, WGPUSurfaceCapabilities* capabilities);
 extern void procSurfaceConfigure(WGPUSurface surface, WGPUSurfaceConfiguration const* config);
@@ -85,9 +85,9 @@ extern "C"
         return procInstanceCreateSurface(instance, descriptor);
     }
 
-    WGPU_EXPORT void wgpuAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata) WGPU_FUNCTION_ATTRIBUTE
+    WGPU_EXPORT WGPUFuture wgpuAdapterRequestDevice2(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* options, WGPURequestDeviceCallbackInfo2 callbackInfo) WGPU_FUNCTION_ATTRIBUTE
     {
-        return procAdapterRequestDevice(adapter, descriptor, callback, userdata);
+        return procAdapterRequestDevice(adapter, options, callbackInfo);
     }
 
     WGPU_EXPORT WGPUQueue wgpuDeviceGetQueue(WGPUDevice device) WGPU_FUNCTION_ATTRIBUTE

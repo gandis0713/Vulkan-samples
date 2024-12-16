@@ -40,10 +40,10 @@ WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescript
     return reinterpret_cast<WGPUSurface>(webgpuInstance->createSurface(descriptor));
 }
 
-void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata)
+WGPUFuture procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallbackInfo2 callbackInfo)
 {
     WebGPUAdapter* webgpuAdapter = reinterpret_cast<WebGPUAdapter*>(adapter);
-    return webgpuAdapter->requestDevice(descriptor, callback, userdata);
+    return webgpuAdapter->requestDevice(descriptor, callbackInfo);
 }
 
 WGPUQueue procDeviceGetQueue(WGPUDevice device)

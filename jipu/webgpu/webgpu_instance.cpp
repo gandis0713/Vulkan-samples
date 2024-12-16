@@ -52,4 +52,9 @@ Instance* WebGPUInstance::getInstance() const
     return m_instance.get();
 }
 
+EventManager* WebGPUInstance::getEventManager() const
+{
+    return m_eventManager.get();
+}
+
 } // namespace jipu

@@ -17,7 +17,7 @@ struct WebGPUAPI
     // WGPUProcAdapterGetInfo AdapterGetInfo = nullptr;
     // WGPUProcAdapterGetLimits AdapterGetLimits = nullptr;
     // WGPUProcAdapterHasFeature AdapterHasFeature = nullptr;
-    WGPUProcAdapterRequestDevice AdapterRequestDevice = nullptr;
+    WGPUProcAdapterRequestDevice2 AdapterRequestDevice = nullptr;
     // WGPUProcAdapterAddRef AdapterAddRef = nullptr;
     WGPUProcAdapterRelease AdapterRelease = nullptr;
     // WGPUProcAdapterInfoFreeMembers AdapterInfoFreeMembers = nullptr;

@@ -24,7 +24,7 @@ public:
     WebGPUAdapter& operator=(const WebGPUAdapter&) = delete;
 
 public: // WebGPU API
-    void requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
+    WGPUFuture requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallbackInfo2 callbackInfo);
 
 public:
     std::shared_ptr<Adapter> getAdapter() const;

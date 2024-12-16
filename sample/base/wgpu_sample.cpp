@@ -209,25 +209,53 @@ void WGPUSample::createAdapter()
 
 void WGPUSample::createDevice()
 {
-    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata) {
+    WGPUUncapturedErrorCallbackInfo2 errorCallbackInfo{};
+    errorCallbackInfo.callback = [](WGPUDevice const* device, WGPUErrorType type, WGPUStringView message, void* userdata1, void* userdata2) {
+        std::string msg(message.data, message.length);
+
+        switch (type)
+        {
+        case WGPUErrorType_Validation:
+            spdlog::error("Validation error: {}", msg.data());
+            break;
+        case WGPUErrorType_OutOfMemory:
+            spdlog::error("Out of memory error: {}", msg.data());
+            break;
+        case WGPUErrorType_Unknown:
+            spdlog::error("Unknown error: {}", msg.data());
+            break;
+        case WGPUErrorType_DeviceLost:
+            spdlog::error("Device lost error: {}", msg.data());
+            break;
+        case WGPUErrorType_Internal:
+            spdlog::error("Internal error: {}", msg.data());
+            break;
+        case WGPUErrorType_NoError:
+        default:
+            spdlog::error("No error: {}", msg.data());
+            break;
+        }
+    };
+
+    WGPUDeviceDescriptor deviceDescriptor{};
+    deviceDescriptor.uncapturedErrorCallbackInfo2 = errorCallbackInfo;
+
+    WGPURequestDeviceCallbackInfo2 callbackInfo{};
+    callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+    callbackInfo.userdata1 = &m_device;
+    callbackInfo.callback = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata1, void* userdata2) {
         if (status != WGPURequestDeviceStatus_Success)
         {
             throw std::runtime_error("Failed to request device.");
         }
 
-        *static_cast<WGPUDevice*>(userdata) = device;
+        *static_cast<WGPUDevice*>(userdata1) = device;
     };
 
-    WGPUUncapturedErrorCallbackInfo errorCallbackInfo{};
-    errorCallbackInfo.callback = [](WGPUErrorType type, WGPUStringView message, void* userdata) {
-        std::string msg(message.data, message.length);
-        spdlog::error("Uncaptured error: {}", msg.data());
-    };
+    auto future = wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, callbackInfo);
 
-    WGPUDeviceDescriptor deviceDescriptor{};
-    deviceDescriptor.uncapturedErrorCallbackInfo = errorCallbackInfo;
-
-    wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
+    WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
+    wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
 
     assert(m_device);
 }

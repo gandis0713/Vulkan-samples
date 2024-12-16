@@ -29,6 +29,7 @@ public: // WebGPU API
 
 public:
     Instance* getInstance() const;
+    EventManager* getEventManager() const;
 
 private:
     [[maybe_unused]] const WGPUInstanceDescriptor m_wgpuDescriptor{};
