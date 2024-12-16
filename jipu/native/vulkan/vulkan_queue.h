@@ -26,6 +26,7 @@ public:
 
 public:
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
+    void waitIdle() override;
 
 public:
     void present(VulkanPresentInfo presentInfo);
@@ -40,6 +41,7 @@ private:
 private:
     std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSignalSemaphores{};
     std::unordered_map<uint32_t, std::future<void>> m_presentTasks{};
+    std::vector<std::future<void>> m_notPresentTasks{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);

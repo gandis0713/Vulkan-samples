@@ -20,10 +20,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
 VulkanQueue::~VulkanQueue()
 {
-    for (auto& [_, task] : m_presentTasks)
-    {
-        task.get();
-    }
+    waitIdle();
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
@@ -40,36 +37,50 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     // set present semaphores.
     {
-        std::vector<VulkanSubmit::Info> presentSubmitInfos{};
+        std::optional<VulkanSubmit::Info> presentSubmitInfo{ std::nullopt };
         for (const auto& submit : submits)
         {
-            switch (submit.info.type)
+            if (submit.info.type == SubmitType::kPresent)
             {
-            case SubmitType::kCompute:
-            case SubmitType::kGraphics:
-            case SubmitType::kTransfer:
-                break;
-            case SubmitType::kPresent:
-                presentSubmitInfos.push_back(submit.info);
-                break;
-            case SubmitType::kNone:
-            default:
-                spdlog::error("Failed to collect submit. The kNone submit type is not supported.");
+                presentSubmitInfo = submit.info;
                 break;
             }
         }
 
-        for (auto presentSubmitInfo : presentSubmitInfos)
+        if (presentSubmitInfo.has_value())
         {
-            auto& index = presentSubmitInfo.swapchainIndex;
+            auto& submitInfo = presentSubmitInfo.value();
+            auto& index = submitInfo.swapchainIndex;
 
             if (m_presentTasks.contains(index))
+            {
                 m_presentTasks[index].get(); // wait previous present task.
+                m_presentTasks.erase(index);
+            }
 
             m_presentTasks[index] = std::move(future);
-            m_presentSignalSemaphores[index].insert(m_presentSignalSemaphores[index].end(), presentSubmitInfo.signalSemaphores.begin(), presentSubmitInfo.signalSemaphores.end());
+            m_presentSignalSemaphores[index].insert(m_presentSignalSemaphores[index].end(), submitInfo.signalSemaphores.begin(), submitInfo.signalSemaphores.end());
+        }
+        else
+        {
+            m_notPresentTasks.push_back(std::move(future));
         }
     }
+}
+
+void VulkanQueue::waitIdle()
+{
+    for (auto& task : m_notPresentTasks)
+    {
+        task.get();
+    }
+    m_notPresentTasks.clear();
+
+    for (auto& [_, task] : m_presentTasks)
+    {
+        task.get();
+    }
+    m_presentTasks.clear();
 }
 
 void VulkanQueue::present(VulkanPresentInfo presentInfo)

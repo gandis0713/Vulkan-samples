@@ -49,11 +49,14 @@ public: // WebGPU API
     WebGPUSampler* createSampler(WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor);
 
 public:
+    WebGPUAdapter* getAdapter() const;
+
+public:
     Device* getDevice() const;
     Swapchain* getOrCreateSwapchain(const SwapchainDescriptor& descriptor);
 
 private:
-    [[maybe_unused]] WebGPUAdapter* m_wgpuAdapter = nullptr;
+    WebGPUAdapter* m_wgpuAdapter = nullptr;
     WebGPUQueue* m_wgpuQueue = nullptr;
     const WGPUDeviceDescriptor m_descriptor{};
 

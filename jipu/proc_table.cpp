@@ -356,6 +356,12 @@ void procInstanceProcessEvents(WGPUInstance instance)
     return webgpuInstance->processEvents();
 }
 
+WGPUFuture procQueueOnSubmittedWorkDone(WGPUQueue queue, WGPUQueueWorkDoneCallbackInfo2 callbackInfo)
+{
+    WebGPUQueue* webgpuQueue = reinterpret_cast<WebGPUQueue*>(queue);
+    return webgpuQueue->onSubmittedWorkDone(callbackInfo);
+}
+
 namespace
 {
 
@@ -415,6 +421,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuSamplerRelease", reinterpret_cast<WGPUProc>(procSamplerRelease) },
     { "wgpuInstanceWaitAny", reinterpret_cast<WGPUProc>(procInstanceWaitAny) },
     { "wgpuInstanceProcessEvents", reinterpret_cast<WGPUProc>(procInstanceProcessEvents) },
+    { "wgpuQueueOnSubmittedWorkDone2", reinterpret_cast<WGPUProc>(procQueueOnSubmittedWorkDone) },
 };
 
 } // namespace

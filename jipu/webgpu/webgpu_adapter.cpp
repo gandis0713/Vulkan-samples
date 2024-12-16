@@ -41,6 +41,11 @@ WGPUFuture WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, 
     return WGPUFuture{ .id = m_wgpuInstance->getEventManager()->addEvent(RequestDeviceEvent::create(device, callbackInfo)) };
 }
 
+WebGPUInstance* WebGPUAdapter::getInstance() const
+{
+    return m_wgpuInstance;
+}
+
 std::shared_ptr<Adapter> WebGPUAdapter::getAdapter() const
 {
     return m_adapter;

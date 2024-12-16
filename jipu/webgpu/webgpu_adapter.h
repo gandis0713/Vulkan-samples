@@ -27,11 +27,14 @@ public: // WebGPU API
     WGPUFuture requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallbackInfo2 callbackInfo);
 
 public:
+    WebGPUInstance* getInstance() const;
+
+public:
     std::shared_ptr<Adapter> getAdapter() const;
     PhysicalDevice* getPhysicalDevice() const;
 
 private:
-    [[maybe_unused]] WebGPUInstance* m_wgpuInstance = nullptr;
+    WebGPUInstance* m_wgpuInstance = nullptr;
     [[maybe_unused]] const WGPURequestAdapterOptions m_options{};
 
 private:

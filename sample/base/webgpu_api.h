@@ -115,6 +115,7 @@ struct WebGPUAPI
     // WGPUProcQuerySetAddRef QuerySetAddRef = nullptr;
     // WGPUProcQuerySetRelease QuerySetRelease = nullptr;
     // WGPUProcQueueOnSubmittedWorkDone QueueOnSubmittedWorkDone = nullptr;
+    WGPUProcQueueOnSubmittedWorkDone2 QueueOnSubmittedWorkDone2 = nullptr;
     // WGPUProcQueueSetLabel QueueSetLabel = nullptr;
     WGPUProcQueueSubmit QueueSubmit = nullptr;
     WGPUProcQueueWriteBuffer QueueWriteBuffer = nullptr;

@@ -59,6 +59,7 @@ extern WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPU
 extern void procSamplerRelease(WGPUSampler sampler);
 extern WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS);
 extern void procInstanceProcessEvents(WGPUInstance instance);
+extern WGPUFuture procQueueOnSubmittedWorkDone(WGPUQueue queue, WGPUQueueWorkDoneCallbackInfo2 callbackInfo);
 
 } // namespace jipu
 
@@ -344,5 +345,10 @@ extern "C"
     WGPU_EXPORT void wgpuInstanceProcessEvents(WGPUInstance instance) WGPU_FUNCTION_ATTRIBUTE
     {
         return procInstanceProcessEvents(instance);
+    }
+
+    WGPU_EXPORT WGPUFuture wgpuQueueOnSubmittedWorkDone2(WGPUQueue queue, WGPUQueueWorkDoneCallbackInfo2 callbackInfo) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procQueueOnSubmittedWorkDone(queue, callbackInfo);
     }
 }

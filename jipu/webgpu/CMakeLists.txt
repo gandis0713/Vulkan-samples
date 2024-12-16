@@ -52,6 +52,8 @@ set(WEBGPU_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/event/request_adapter_event.h
   ${CMAKE_CURRENT_SOURCE_DIR}/event/request_device_event.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/event/request_device_event.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/event/queue_work_done_event.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/event/queue_work_done_event.h
 )
 
 set(LIB_TYPE STATIC)
