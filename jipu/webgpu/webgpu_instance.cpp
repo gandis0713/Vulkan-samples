@@ -34,6 +34,11 @@ WGPUWaitStatus WebGPUInstance::waitAny(const uint64_t waitCount, WGPUFutureWaitI
     return m_eventManager->waitAny(waitCount, waitInfos);
 }
 
+void WebGPUInstance::processEvents()
+{
+    m_eventManager->processEvents();
+}
+
 WGPUFuture WebGPUInstance::requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo)
 {
     auto adapter = WebGPUAdapter::create(this, options);

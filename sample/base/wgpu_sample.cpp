@@ -241,7 +241,8 @@ void WGPUSample::createDevice()
     deviceDescriptor.uncapturedErrorCallbackInfo2 = errorCallbackInfo;
 
     WGPURequestDeviceCallbackInfo2 callbackInfo{};
-    callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+    callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+    // callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
     callbackInfo.userdata1 = &m_device;
     callbackInfo.callback = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata1, void* userdata2) {
         if (status != WGPURequestDeviceStatus_Success)
@@ -254,8 +255,10 @@ void WGPUSample::createDevice()
 
     auto future = wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, callbackInfo);
 
-    WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
-    wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
+    // WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
+    // wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
+
+    wgpu.InstanceProcessEvents(m_instance);
 
     assert(m_device);
 }

@@ -350,6 +350,12 @@ WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCount, WG
     return webgpuInstance->waitAny(futureCount, futures, timeoutNS);
 }
 
+void procInstanceProcessEvents(WGPUInstance instance)
+{
+    WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
+    return webgpuInstance->processEvents();
+}
+
 namespace
 {
 
@@ -408,6 +414,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuDeviceCreateSampler", reinterpret_cast<WGPUProc>(procDeviceCreateSampler) },
     { "wgpuSamplerRelease", reinterpret_cast<WGPUProc>(procSamplerRelease) },
     { "wgpuInstanceWaitAny", reinterpret_cast<WGPUProc>(procInstanceWaitAny) },
+    { "wgpuInstanceProcessEvents", reinterpret_cast<WGPUProc>(procInstanceProcessEvents) },
 };
 
 } // namespace

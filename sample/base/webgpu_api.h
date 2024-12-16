@@ -98,7 +98,7 @@ struct WebGPUAPI
     WGPUProcDeviceRelease DeviceRelease = nullptr;
     WGPUProcInstanceCreateSurface InstanceCreateSurface = nullptr;
     // WGPUProcInstanceHasWGSLLanguageFeature InstanceHasWGSLLanguageFeature = nullptr;
-    // WGPUProcInstanceProcessEvents InstanceProcessEvents = nullptr;
+    WGPUProcInstanceProcessEvents InstanceProcessEvents = nullptr;
     WGPUProcInstanceRequestAdapter2 InstanceRequestAdapter = nullptr;
     WGPUProcInstanceWaitAny InstanceWaitAny = nullptr;
     // WGPUProcInstanceAddRef InstanceAddRef = nullptr;

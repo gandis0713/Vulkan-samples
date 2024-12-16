@@ -58,6 +58,7 @@ extern void procBindGroupLayoutRelease(WGPUBindGroupLayout bindGroupLayout);
 extern WGPUSampler procDeviceCreateSampler(WGPUDevice device, WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor);
 extern void procSamplerRelease(WGPUSampler sampler);
 extern WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS);
+extern void procInstanceProcessEvents(WGPUInstance instance);
 
 } // namespace jipu
 
@@ -338,5 +339,10 @@ extern "C"
     WGPU_EXPORT WGPUWaitStatus wgpuInstanceWaitAny(WGPUInstance instance, size_t futureCount, WGPUFutureWaitInfo* futures, uint64_t timeoutNS) WGPU_FUNCTION_ATTRIBUTE
     {
         return procInstanceWaitAny(instance, futureCount, futures, timeoutNS);
+    }
+
+    WGPU_EXPORT void wgpuInstanceProcessEvents(WGPUInstance instance) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procInstanceProcessEvents(instance);
     }
 }

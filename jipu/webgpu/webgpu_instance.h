@@ -24,6 +24,7 @@ public:
 
 public: // WebGPU API
     WGPUWaitStatus waitAny(const uint64_t waitCount, WGPUFutureWaitInfo* waitInfos, uint64_t timeoutNS);
+    void processEvents();
     WGPUFuture requestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallbackInfo2 callbackInfo);
     WebGPUSurface* createSurface(WGPUSurfaceDescriptor const* descriptor);
 
