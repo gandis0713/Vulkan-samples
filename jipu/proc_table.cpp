@@ -361,9 +361,9 @@ namespace
 
 std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuCreateInstance", reinterpret_cast<WGPUProc>(procCreateInstance) },
-    { "wgpuInstanceRequestAdapter", reinterpret_cast<WGPUProc>(procInstanceRequestAdapter) },
+    { "wgpuInstanceRequestAdapter2", reinterpret_cast<WGPUProc>(procInstanceRequestAdapter) },
     { "wgpuInstanceCreateSurface", reinterpret_cast<WGPUProc>(procInstanceCreateSurface) },
-    { "wgpuAdapterRequestDevice", reinterpret_cast<WGPUProc>(procAdapterRequestDevice) },
+    { "wgpuAdapterRequestDevice2", reinterpret_cast<WGPUProc>(procAdapterRequestDevice) },
     { "wgpuDeviceGetQueue", reinterpret_cast<WGPUProc>(procDeviceGetQueue) },
     { "wgpuSurfaceGetCapabilities", reinterpret_cast<WGPUProc>(procSurfaceGetCapabilities) },
     { "wgpuSurfaceConfigure", reinterpret_cast<WGPUProc>(procSurfaceConfigure) },

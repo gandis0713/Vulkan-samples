@@ -31,7 +31,8 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(AdapterGetInfo);
     // GET_PROC(AdapterGetLimits);
     // GET_PROC(AdapterHasFeature);
-    GET_PROC(AdapterRequestDevice);
+    // GET_PROC(AdapterRequestDevice);
+    GET_PROC(AdapterRequestDevice2);
     // GET_PROC(AdapterAddRef);
     GET_PROC(AdapterRelease);
     // GET_PROC(AdapterInfoFreeMembers);
@@ -113,7 +114,8 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(InstanceCreateSurface);
     // GET_PROC(InstanceHasWGSLLanguageFeature);
     GET_PROC(InstanceProcessEvents);
-    GET_PROC(InstanceRequestAdapter);
+    // GET_PROC(InstanceRequestAdapter);
+    GET_PROC(InstanceRequestAdapter2);
     GET_PROC(InstanceWaitAny);
     // GET_PROC(InstanceAddRef);
     GET_PROC(InstanceRelease);

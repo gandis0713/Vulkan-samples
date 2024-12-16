@@ -170,7 +170,8 @@ void WGPUSample::createSurface()
 
 void WGPUSample::createAdapter()
 {
-    auto callback = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata1, WGPU_NULLABLE void* userdata2) {
+    WGPURequestAdapterCallbackInfo2 callbackInfo{ WGPU_REQUEST_ADAPTER_CALLBACK_INFO_2_INIT };
+    callbackInfo.callback = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, WGPU_NULLABLE void* userdata1, WGPU_NULLABLE void* userdata2) {
         if (status != WGPURequestAdapterStatus_Success)
         {
             throw std::runtime_error("Failed to request adapter.");
@@ -178,9 +179,6 @@ void WGPUSample::createAdapter()
 
         *static_cast<WGPUAdapter*>(userdata1) = adapter;
     };
-
-    WGPURequestAdapterCallbackInfo2 callbackInfo{ WGPU_REQUEST_ADAPTER_CALLBACK_INFO_2_INIT };
-    callbackInfo.callback = callback;
     callbackInfo.userdata1 = &m_adapter;
     callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
 
@@ -199,7 +197,7 @@ void WGPUSample::createAdapter()
         .forceFallbackAdapter = false,
     };
 
-    auto future = wgpu.InstanceRequestAdapter(m_instance, &descriptor, callbackInfo);
+    auto future = wgpu.InstanceRequestAdapter2(m_instance, &descriptor, callbackInfo);
 
     WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
     wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
@@ -241,7 +239,8 @@ void WGPUSample::createDevice()
     deviceDescriptor.uncapturedErrorCallbackInfo2 = errorCallbackInfo;
 
     WGPURequestDeviceCallbackInfo2 callbackInfo{};
-    callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+    callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+    // callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
     // callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
     callbackInfo.userdata1 = &m_device;
     callbackInfo.callback = [](WGPURequestDeviceStatus status, WGPUDevice device, struct WGPUStringView message, void* userdata1, void* userdata2) {
@@ -253,12 +252,12 @@ void WGPUSample::createDevice()
         *static_cast<WGPUDevice*>(userdata1) = device;
     };
 
-    auto future = wgpu.AdapterRequestDevice(m_adapter, &deviceDescriptor, callbackInfo);
+    auto future = wgpu.AdapterRequestDevice2(m_adapter, &deviceDescriptor, callbackInfo);
 
     // WGPUFutureWaitInfo waitInfo{ .future = future, .completed = false };
     // wgpu.InstanceWaitAny(m_instance, 1, &waitInfo, 0);
 
-    wgpu.InstanceProcessEvents(m_instance);
+    // wgpu.InstanceProcessEvents(m_instance);
 
     assert(m_device);
 }
