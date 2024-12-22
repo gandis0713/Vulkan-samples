@@ -32,9 +32,6 @@ public:
     void present(VulkanPresentInfo presentInfo);
 
 private:
-    std::vector<VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
-
-private:
     VulkanDevice* m_device = nullptr;
     std::unique_ptr<VulkanSubmitter> m_submitter = nullptr;
 

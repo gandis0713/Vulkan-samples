@@ -97,7 +97,10 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
 
 std::unique_ptr<CommandBuffer> VulkanCommandEncoder::finish(const CommandBufferDescriptor& descriptor)
 {
-    return std::make_unique<VulkanCommandBuffer>(this, descriptor);
+    auto commandBuffer = std::make_unique<VulkanCommandBuffer>(this, descriptor);
+    commandBuffer->recordToVkCommandBuffer();
+
+    return std::move(commandBuffer);
 }
 
 VulkanDevice* VulkanCommandEncoder::getDevice() const

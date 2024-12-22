@@ -9,7 +9,6 @@ namespace jipu
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
-    , m_commandEncodingResult(m_commandEncoder->result())
 {
 }
 
@@ -28,18 +27,18 @@ VulkanCommandEncoder* VulkanCommandBuffer::getCommandEncoder() const
     return m_commandEncoder;
 }
 
-const CommandEncodingResult& VulkanCommandBuffer::getCommandEncodingResult() const
-{
-    return m_commandEncodingResult;
-}
-
-VulkanCommandRecordResult VulkanCommandBuffer::recordToVkCommandBuffer()
+void VulkanCommandBuffer::recordToVkCommandBuffer()
 {
     createVkCommandBuffer();
 
     auto commandRecorder = createCommandRecorder();
 
-    return commandRecorder->record();
+    m_commandRecordResult = commandRecorder->record();
+}
+
+const VulkanCommandRecordResult& VulkanCommandBuffer::result()
+{
+    return m_commandRecordResult;
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
@@ -49,7 +48,7 @@ VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
 
 std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
 {
-    return std::make_unique<VulkanCommandRecorder>(this);
+    return std::make_unique<VulkanCommandRecorder>(this, VulkanCommandRecorderDescriptor{ .commandEncodingResult = m_commandEncoder->result() });
 }
 
 void VulkanCommandBuffer::createVkCommandBuffer()

@@ -81,7 +81,7 @@ public:
     ~VulkanSubmitContext() = default;
 
 public:
-    static VulkanSubmitContext create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results);
+    static VulkanSubmitContext create(VulkanDevice* device, const std::vector<CommandBuffer*>& commandBuffers);
 
 public:
     const std::vector<VulkanSubmit>& getSubmits() const;

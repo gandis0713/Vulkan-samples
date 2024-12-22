@@ -22,9 +22,10 @@
 namespace jipu
 {
 
-VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
+VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
-    , m_commandResourceSyncronizer(this, { commandBuffer->getCommandEncodingResult().operationResourceInfos })
+    , m_descriptor(std::move(descriptor))
+    , m_commandResourceSyncronizer(this, VulkanCommandResourceSynchronizerDescriptor{ .operationResourceInfos = m_descriptor.commandEncodingResult.operationResourceInfos })
 {
 }
 
@@ -37,7 +38,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    auto& commands = m_commandBuffer->getCommandEncodingResult().commands;
+    auto& commands = m_descriptor.commandEncodingResult.commands;
 
     for (const auto& command : commands)
     {
@@ -688,7 +689,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::result()
 {
     VulkanCommandRecordResult result{};
 
-    result.commandBuffer = m_commandBuffer;
+    result.commands = std::move(m_descriptor.commandEncodingResult.commands);
     result.commandResourceSyncResult = m_commandResourceSyncronizer.result();
 
     return result;

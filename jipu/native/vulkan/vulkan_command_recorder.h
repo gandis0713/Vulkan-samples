@@ -16,15 +16,20 @@ class VulkanComputePipeline;
 
 struct VulkanCommandRecordResult
 {
-    CommandBuffer* commandBuffer = nullptr;
+    std::vector<std::unique_ptr<Command>> commands{};
     CommandResourceSyncResult commandResourceSyncResult{};
+};
+
+struct VulkanCommandRecorderDescriptor
+{
+    CommandEncodingResult commandEncodingResult{};
 };
 
 class VULKAN_EXPORT VulkanCommandRecorder final
 {
 public:
     VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
+    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor);
     ~VulkanCommandRecorder();
 
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
@@ -76,6 +81,7 @@ private:
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandRecorderDescriptor m_descriptor{};
     VulkanCommandResourceSynchronizer m_commandResourceSyncronizer{};
 
 private:

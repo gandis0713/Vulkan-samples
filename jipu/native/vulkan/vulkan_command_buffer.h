@@ -28,10 +28,10 @@ public:
 public:
     VulkanDevice* getDevice() const;
     VulkanCommandEncoder* getCommandEncoder() const;
-    const CommandEncodingResult& getCommandEncodingResult() const;
 
 public:
-    VulkanCommandRecordResult recordToVkCommandBuffer();
+    void recordToVkCommandBuffer();
+    const VulkanCommandRecordResult& result();
 
 public:
     VkCommandBuffer getVkCommandBuffer();
@@ -45,7 +45,7 @@ private:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-    CommandEncodingResult m_commandEncodingResult{};
+    VulkanCommandRecordResult m_commandRecordResult{};
 
 private:
     // store VkCommandBuffer to reuse it as secondary command buffer if need.
