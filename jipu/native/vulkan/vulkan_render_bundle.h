@@ -25,7 +25,7 @@ private:
 
 private:
     // Secondary command buffer.
-    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
+    [[maybe_unused]] VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
 };
 
 } // namespace jipu

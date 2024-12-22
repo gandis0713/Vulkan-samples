@@ -16,13 +16,13 @@ namespace jipu
 VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandRecorder* commandRecorder, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
     : m_commandRecorder(commandRecorder)
     , m_descriptor(descriptor)
-    , m_currentPassIndex(-1)
+    , m_currentOperationIndex(-1)
 {
 }
 
 void VulkanCommandResourceSynchronizer::beginComputePass(BeginComputePassCommand* command)
 {
-    increasePassIndex();
+    increaseOperationIndex();
 }
 
 void VulkanCommandResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* command)
@@ -62,16 +62,16 @@ void VulkanCommandResourceSynchronizer::endComputePass(EndComputePassCommand* co
 
 void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
 {
-    increasePassIndex();
+    increaseOperationIndex();
 
     // all dst buffer resources in a render pass are active
-    for (auto& [buffer, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.buffers)
+    for (auto& [buffer, _] : m_descriptor.operationResourceInfos[currentOperationIndex()].dst.buffers)
     {
         m_activatedDstResource.buffers.insert(buffer);
     }
 
     // all dst texture resources in a render pass are active
-    for (auto& [texture, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.textures)
+    for (auto& [texture, _] : m_descriptor.operationResourceInfos[currentOperationIndex()].dst.textures)
     {
         m_activatedDstResource.textures.insert(texture);
     }
@@ -177,7 +177,7 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
 
 CommandResourceSyncResult VulkanCommandResourceSynchronizer::result()
 {
-    return CommandResourceSyncResult{ .notSyncedPassResourceInfos = m_descriptor.passResourceInfos };
+    return CommandResourceSyncResult{ .notSyncedOperationResourceInfos = m_descriptor.operationResourceInfos };
 }
 
 void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
@@ -206,12 +206,12 @@ void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier
 
 bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 {
-    auto& passResourceInfos = m_descriptor.passResourceInfos;
+    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
 
-    auto begin = passResourceInfos.begin();
-    auto end = passResourceInfos.begin() + currentPassIndex();
-    auto it = std::find_if(begin, end, [buffer](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.src.buffers.contains(buffer);
+    auto begin = operationResourceInfos.begin();
+    auto end = operationResourceInfos.begin() + currentOperationIndex();
+    auto it = std::find_if(begin, end, [buffer](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.buffers.contains(buffer);
     });
 
     return it != end;
@@ -219,12 +219,12 @@ bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 
 bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
 {
-    auto& passResourceInfos = m_descriptor.passResourceInfos;
+    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
 
-    auto begin = passResourceInfos.begin();
-    auto end = passResourceInfos.begin() + currentPassIndex();
-    auto it = std::find_if(begin, end, [texture](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.src.textures.find(texture) != passResourceInfo.src.textures.end();
+    auto begin = operationResourceInfos.begin();
+    auto end = operationResourceInfos.begin() + currentOperationIndex();
+    auto it = std::find_if(begin, end, [texture](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.textures.find(texture) != operationResourceInfo.src.textures.end();
     });
 
     return it != end;
@@ -232,12 +232,12 @@ bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
 
 BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
 {
-    auto& passResourceInfos = m_descriptor.passResourceInfos;
+    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
 
-    auto begin = passResourceInfos.begin();
-    auto end = passResourceInfos.begin() + currentPassIndex();
-    auto it = std::find_if(begin, end, [buffer](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.src.buffers.find(buffer) != passResourceInfo.src.buffers.end();
+    auto begin = operationResourceInfos.begin();
+    auto end = operationResourceInfos.begin() + currentOperationIndex();
+    auto it = std::find_if(begin, end, [buffer](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.buffers.find(buffer) != operationResourceInfo.src.buffers.end();
     });
 
     auto bufferUsageInfo = it->src.buffers.at(buffer);
@@ -248,12 +248,12 @@ BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buf
 
 TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
 {
-    auto& passResourceInfos = m_descriptor.passResourceInfos;
+    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
 
-    auto begin = passResourceInfos.begin();
-    auto end = passResourceInfos.begin() + currentPassIndex();
-    auto it = std::find_if(begin, end, [texture](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.src.textures.find(texture) != passResourceInfo.src.textures.end();
+    auto begin = operationResourceInfos.begin();
+    auto end = operationResourceInfos.begin() + currentOperationIndex();
+    auto it = std::find_if(begin, end, [texture](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.textures.find(texture) != operationResourceInfo.src.textures.end();
     });
 
     auto textureUsageInfo = it->src.textures.at(texture);
@@ -262,19 +262,19 @@ TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(T
     return textureUsageInfo;
 }
 
-PassResourceInfo& VulkanCommandResourceSynchronizer::getCurrentPassResourceInfo()
+OperationResourceInfo& VulkanCommandResourceSynchronizer::getCurrentOperationResourceInfo()
 {
-    return m_descriptor.passResourceInfos[currentPassIndex()];
+    return m_descriptor.operationResourceInfos[currentOperationIndex()];
 }
 
-void VulkanCommandResourceSynchronizer::increasePassIndex()
+void VulkanCommandResourceSynchronizer::increaseOperationIndex()
 {
-    ++m_currentPassIndex;
+    ++m_currentOperationIndex;
 }
 
-int32_t VulkanCommandResourceSynchronizer::currentPassIndex() const
+int32_t VulkanCommandResourceSynchronizer::currentOperationIndex() const
 {
-    return m_currentPassIndex;
+    return m_currentOperationIndex;
 }
 
 void VulkanCommandResourceSynchronizer::sync()
@@ -285,17 +285,17 @@ void VulkanCommandResourceSynchronizer::sync()
         .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
     };
 
-    auto& currentPassResourceInfo = getCurrentPassResourceInfo();
+    auto& currentOperationResourceInfo = getCurrentOperationResourceInfo();
 
-    // spdlog::trace("current pass buffers src: {}", currentPassResourceInfo.src.buffers.size());
-    // spdlog::trace("current pass textures src: {}", currentPassResourceInfo.src.textures.size());
+    // spdlog::trace("current operation buffers src: {}", currentOperationResourceInfo.src.buffers.size());
+    // spdlog::trace("current operation textures src: {}", currentOperationResourceInfo.src.textures.size());
 
-    // spdlog::trace("current pass buffers dst: {}", currentPassResourceInfo.dst.buffers.size());
-    // spdlog::trace("current pass textures dst: {}", currentPassResourceInfo.dst.textures.size());
+    // spdlog::trace("current operation buffers dst: {}", currentOperationResourceInfo.dst.buffers.size());
+    // spdlog::trace("current operation textures dst: {}", currentOperationResourceInfo.dst.textures.size());
 
     // buffers
-    auto& currentDstPassBuffers = currentPassResourceInfo.dst.buffers;
-    for (auto it = currentDstPassBuffers.begin(); it != currentDstPassBuffers.end();)
+    auto& currentDstOperationBuffers = currentOperationResourceInfo.dst.buffers;
+    for (auto it = currentDstOperationBuffers.begin(); it != currentDstOperationBuffers.end();)
     {
         auto buffer = it->first;
         auto dstBufferUsageInfo = it->second;
@@ -320,7 +320,7 @@ void VulkanCommandResourceSynchronizer::sync()
                     .size = downcast(buffer)->getSize(),
                 });
 
-                it = currentDstPassBuffers.erase(it); // extract dst resource
+                it = currentDstOperationBuffers.erase(it); // extract dst resource
                 continue;
             }
         }
@@ -329,8 +329,8 @@ void VulkanCommandResourceSynchronizer::sync()
     }
 
     // textures
-    auto& currentDstPassTextures = currentPassResourceInfo.dst.textures;
-    for (auto it = currentDstPassTextures.begin(); it != currentDstPassTextures.end();)
+    auto& currentDstOperationTextures = currentOperationResourceInfo.dst.textures;
+    for (auto it = currentDstOperationTextures.begin(); it != currentDstOperationTextures.end();)
     {
         auto texture = it->first;
         auto dstTextureUsageInfo = it->second;
@@ -362,7 +362,7 @@ void VulkanCommandResourceSynchronizer::sync()
                     },
                 });
 
-                it = currentDstPassTextures.erase(it); // extract dst resource
+                it = currentDstOperationTextures.erase(it); // extract dst resource
                 continue;
             }
         }

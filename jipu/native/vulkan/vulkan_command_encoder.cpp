@@ -114,7 +114,7 @@ CommandEncodingResult VulkanCommandEncoder::result()
 {
     CommandEncodingResult result{};
     result.commands = std::move(m_commandEncodingContext.commands);
-    result.passResourceInfos = m_commandEncodingContext.commandResourceTracker.result();
+    result.operationResourceInfos = m_commandEncodingContext.commandResourceTracker.result();
 
     return result;
 }

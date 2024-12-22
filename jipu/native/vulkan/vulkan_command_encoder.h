@@ -27,7 +27,7 @@ struct CommandEncodingContext
 struct CommandEncodingResult
 {
     std::vector<std::unique_ptr<Command>> commands{};
-    std::vector<PassResourceInfo> passResourceInfos{};
+    std::vector<OperationResourceInfo> operationResourceInfos{};
 };
 
 class VulkanDevice;

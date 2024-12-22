@@ -24,7 +24,7 @@ namespace jipu
 
 VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
     : m_commandBuffer(commandBuffer)
-    , m_commandResourceSyncronizer(this, { commandBuffer->getCommandEncodingResult().passResourceInfos })
+    , m_commandResourceSyncronizer(this, { commandBuffer->getCommandEncodingResult().operationResourceInfos })
 {
 }
 

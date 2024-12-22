@@ -32,7 +32,7 @@ struct ResourceInfo
     std::unordered_map<Texture*, TextureUsageInfo> textures;
 };
 
-struct PassResourceInfo
+struct OperationResourceInfo
 {
     ResourceInfo dst{};
     ResourceInfo src{};
@@ -79,11 +79,11 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    std::vector<PassResourceInfo> result();
+    std::vector<OperationResourceInfo> result();
 
 private:
-    std::vector<PassResourceInfo> m_passResourceInfos;
-    PassResourceInfo m_currentPassResourceInfo;
+    std::vector<OperationResourceInfo> m_operationResourceInfos;
+    OperationResourceInfo m_currentOperationResourceInfo;
 };
 
 } // namespace jipu
