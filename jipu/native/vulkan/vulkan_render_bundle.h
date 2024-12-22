@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render_bundle.h"
+#include "vulkan_api.h"
 
 #include <memory>
 
@@ -21,6 +22,10 @@ public:
 
 private:
     VulkanRenderBundle(const RenderBundleDescriptor& descriptor);
+
+private:
+    // Secondary command buffer.
+    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
 };
 
 } // namespace jipu

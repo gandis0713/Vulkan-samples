@@ -66,6 +66,8 @@ public:
                      uint32_t vertexOffset,
                      uint32_t firstInstance) override;
 
+    void executeBundles(const std::vector<RenderBundle*> bundles) override;
+
     void beginOcclusionQuery(uint32_t queryIndex) override;
     void endOcclusionQuery() override;
 
@@ -79,10 +81,6 @@ private:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-    // VulkanRenderPipeline* m_pipeline = nullptr;
-
-    // uint32_t m_passIndex = 0;
-
     const VulkanRenderPassEncoderDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);

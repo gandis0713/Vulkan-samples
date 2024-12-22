@@ -6,6 +6,13 @@
 namespace jipu
 {
 
+enum IndexFormat
+{
+    kUndefined = 0,
+    kUint16,
+    kUint32,
+};
+
 struct BufferUsageFlagBits
 {
     static constexpr uint32_t kUndefined = 1 << 0;    // 0x00000000

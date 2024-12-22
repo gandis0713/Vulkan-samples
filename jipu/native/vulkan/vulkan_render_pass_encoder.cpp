@@ -403,6 +403,17 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
     commandEncodingContext.commands.push_back(std::make_unique<DrawIndexedCommand>(std::move(command)));
 }
 
+void VulkanRenderPassEncoder::executeBundles(const std::vector<RenderBundle*> bundles)
+{
+    ExecuteBundleCommand command{
+        { .type = CommandType::kExecuteBundle },
+        .bundles = bundles
+    };
+
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
+    commandEncodingContext.commands.push_back(std::make_unique<ExecuteBundleCommand>(std::move(command)));
+}
+
 void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
 {
     if (m_descriptor.occlusionQuerySet == nullptr)

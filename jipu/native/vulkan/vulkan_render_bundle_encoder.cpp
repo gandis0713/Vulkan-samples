@@ -16,6 +16,37 @@ VulkanRenderBundleEncoder::VulkanRenderBundleEncoder(const RenderBundleEncoderDe
 {
 }
 
+void VulkanRenderBundleEncoder::setPipeline(RenderPipeline* pipeline)
+{
+}
+
+void VulkanRenderBundleEncoder::setBindGroup(uint32_t index, BindGroup* bindGroup, std::vector<uint32_t> dynamicOffset)
+{
+}
+
+void VulkanRenderBundleEncoder::setVertexBuffer(uint32_t slot, Buffer* buffer)
+{
+}
+
+void VulkanRenderBundleEncoder::setIndexBuffer(Buffer* buffer, IndexFormat format)
+{
+}
+
+void VulkanRenderBundleEncoder::draw(uint32_t vertexCount,
+                                     uint32_t instanceCount,
+                                     uint32_t firstVertex,
+                                     uint32_t firstInstance)
+{
+}
+
+void VulkanRenderBundleEncoder::drawIndexed(uint32_t indexCount,
+                                            uint32_t instanceCount,
+                                            uint32_t indexOffset,
+                                            uint32_t vertexOffset,
+                                            uint32_t firstInstance)
+{
+}
+
 std::unique_ptr<RenderBundle> VulkanRenderBundleEncoder::finish(const RenderBundleDescriptor& descriptor)
 {
     return VulkanRenderBundle::create(descriptor);
