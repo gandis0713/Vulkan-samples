@@ -15,7 +15,7 @@ namespace jipu
 {
 VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandRecorder* commandRecorder, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
     : m_commandRecorder(commandRecorder)
-    , m_descriptor(descriptor)
+    , m_operationResourceInfos(descriptor.operationResourceInfos)
     , m_currentOperationIndex(-1)
 {
 }
@@ -65,13 +65,13 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
     increaseOperationIndex();
 
     // all dst buffer resources in a render pass are active
-    for (auto& [buffer, _] : m_descriptor.operationResourceInfos[currentOperationIndex()].dst.buffers)
+    for (auto& [buffer, _] : m_operationResourceInfos[currentOperationIndex()].dst.buffers)
     {
         m_activatedDstResource.buffers.insert(buffer);
     }
 
     // all dst texture resources in a render pass are active
-    for (auto& [texture, _] : m_descriptor.operationResourceInfos[currentOperationIndex()].dst.textures)
+    for (auto& [texture, _] : m_operationResourceInfos[currentOperationIndex()].dst.textures)
     {
         m_activatedDstResource.textures.insert(texture);
     }
@@ -175,9 +175,9 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
     // do nothing.
 }
 
-CommandResourceSyncResult VulkanCommandResourceSynchronizer::result()
+ResourceSyncResult VulkanCommandResourceSynchronizer::finish()
 {
-    return CommandResourceSyncResult{ .notSyncedOperationResourceInfos = m_descriptor.operationResourceInfos };
+    return ResourceSyncResult{ .notSyncedOperationResourceInfos = m_operationResourceInfos };
 }
 
 void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
@@ -206,7 +206,7 @@ void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier
 
 bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 {
-    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
+    auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
@@ -219,7 +219,7 @@ bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 
 bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
 {
-    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
+    auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
@@ -232,7 +232,7 @@ bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
 
 BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
 {
-    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
+    auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
@@ -248,7 +248,7 @@ BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buf
 
 TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
 {
-    auto& operationResourceInfos = m_descriptor.operationResourceInfos;
+    auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
@@ -264,7 +264,7 @@ TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(T
 
 OperationResourceInfo& VulkanCommandResourceSynchronizer::getCurrentOperationResourceInfo()
 {
-    return m_descriptor.operationResourceInfos[currentOperationIndex()];
+    return m_operationResourceInfos[currentOperationIndex()];
 }
 
 void VulkanCommandResourceSynchronizer::increaseOperationIndex()

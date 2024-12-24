@@ -21,7 +21,7 @@ struct VulkanCommandResourceSynchronizerDescriptor
     std::vector<OperationResourceInfo> operationResourceInfos{};
 };
 
-struct CommandResourceSyncResult
+struct ResourceSyncResult
 {
     std::vector<OperationResourceInfo> notSyncedOperationResourceInfos{};
 };
@@ -67,8 +67,7 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    // result that not synchronized resources in this command.
-    CommandResourceSyncResult result();
+    ResourceSyncResult finish();
 
 private:
     bool findSrcBuffer(Buffer* buffer) const;
@@ -98,7 +97,7 @@ private:
 
 private:
     VulkanCommandRecorder* m_commandRecorder = nullptr;
-    VulkanCommandResourceSynchronizerDescriptor m_descriptor{};
+    std::vector<OperationResourceInfo> m_operationResourceInfos{};
     int32_t m_currentOperationIndex = -1;
 
     struct

@@ -38,6 +38,17 @@ struct OperationResourceInfo
     ResourceInfo src{};
 };
 
+struct CommandResourceInfo
+{
+    ResourceInfo dst{};
+    ResourceInfo src{};
+};
+
+struct VulkanResourceTrackingResult
+{
+    std::vector<OperationResourceInfo> operationResourceInfos{};
+};
+
 class VulkanCommandEncoder;
 class VulkanCommandResourceTracker final
 {
@@ -79,7 +90,7 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    std::vector<OperationResourceInfo> result();
+    VulkanResourceTrackingResult finish();
 
 private:
     std::vector<OperationResourceInfo> m_operationResourceInfos;

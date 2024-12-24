@@ -27,7 +27,7 @@ struct CommandEncodingContext
 struct CommandEncodingResult
 {
     std::vector<std::unique_ptr<Command>> commands{};
-    std::vector<OperationResourceInfo> operationResourceInfos{};
+    VulkanResourceTrackingResult resourceTrackingResult{};
 };
 
 class VulkanDevice;
@@ -65,13 +65,18 @@ public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor);
 
 public:
+    void addCommand(std::unique_ptr<Command> command);
+    CommandEncodingResult finish();
+
+public:
     VulkanDevice* getDevice() const;
-    CommandEncodingContext& context();
-    CommandEncodingResult result();
 
 private:
     VulkanDevice* m_device = nullptr;
-    CommandEncodingContext m_commandEncodingContext{};
+
+private:
+    std::vector<std::unique_ptr<Command>> m_commands{};
+    VulkanCommandResourceTracker m_commandResourceTracker{};
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

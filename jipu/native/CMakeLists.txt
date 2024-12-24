@@ -14,7 +14,6 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.cpp
@@ -52,7 +51,6 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.h

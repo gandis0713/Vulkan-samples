@@ -25,7 +25,7 @@ namespace jipu
 VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(std::move(descriptor))
-    , m_commandResourceSyncronizer(this, VulkanCommandResourceSynchronizerDescriptor{ .operationResourceInfos = m_descriptor.commandEncodingResult.operationResourceInfos })
+    , m_commandResourceSyncronizer(this, VulkanCommandResourceSynchronizerDescriptor{ .operationResourceInfos = m_descriptor.commandEncodingResult.resourceTrackingResult.operationResourceInfos })
 {
 }
 
@@ -38,9 +38,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    auto& commands = m_descriptor.commandEncodingResult.commands;
-
-    for (const auto& command : commands)
+    for (const auto& command : m_descriptor.commandEncodingResult.commands)
     {
         switch (command->type)
         {
@@ -134,9 +132,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
         }
     }
 
-    endRecord();
-
-    return result();
+    return endRecord();
 }
 
 void VulkanCommandRecorder::beginRecord()
@@ -152,12 +148,17 @@ void VulkanCommandRecorder::beginRecord()
     }
 }
 
-void VulkanCommandRecorder::endRecord()
+VulkanCommandRecordResult VulkanCommandRecorder::endRecord()
 {
     if (m_commandBuffer->getDevice()->vkAPI.EndCommandBuffer(m_commandBuffer->getVkCommandBuffer()) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to end command buffer.");
     }
+
+    return VulkanCommandRecordResult{
+        .commands = std::move(m_descriptor.commandEncodingResult.commands),
+        .resourceSyncResult = m_commandResourceSyncronizer.finish()
+    };
 }
 
 void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
@@ -683,16 +684,6 @@ void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
 VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 {
     return m_commandBuffer;
-}
-
-VulkanCommandRecordResult VulkanCommandRecorder::result()
-{
-    VulkanCommandRecordResult result{};
-
-    result.commands = std::move(m_descriptor.commandEncodingResult.commands);
-    result.commandResourceSyncResult = m_commandResourceSyncronizer.result();
-
-    return result;
 }
 
 // Generator

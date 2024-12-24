@@ -114,11 +114,10 @@ void VulkanSubmit::addDstImage(VulkanTextureResource image)
 bool findSrcBuffer(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, Buffer* buffer)
 {
     auto it = std::find_if(submittedCommandBuffers.begin(), submittedCommandBuffers.end(), [buffer](VulkanCommandBuffer* commandBuffer) {
-        const auto& result = commandBuffer->result();
-        const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-        return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [buffer](const OperationResourceInfo& info) {
+        const auto& commandResourceInfos = commandBuffer->getCommandResourceInfos();
+        return std::find_if(commandResourceInfos.begin(), commandResourceInfos.end(), [buffer](const OperationResourceInfo& info) {
                    return info.src.buffers.contains(buffer);
-               }) != notSyncedInfos.end();
+               }) != commandResourceInfos.end();
     });
 
     return it != submittedCommandBuffers.end();
@@ -127,19 +126,18 @@ bool findSrcBuffer(const std::vector<VulkanCommandBuffer*>& submittedCommandBuff
 bool findSrcTexture(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, Texture* texture)
 {
     auto it = std::find_if(submittedCommandBuffers.begin(), submittedCommandBuffers.end(), [texture](VulkanCommandBuffer* commandBuffer) {
-        const auto& result = commandBuffer->result();
-        const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-        return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [texture](const OperationResourceInfo& info) {
+        const auto& commandResourceInfos = commandBuffer->getCommandResourceInfos();
+        return std::find_if(commandResourceInfos.begin(), commandResourceInfos.end(), [texture](const OperationResourceInfo& info) {
                    return info.src.textures.contains(texture);
-               }) != notSyncedInfos.end();
+               }) != commandResourceInfos.end();
     });
 
     return it != submittedCommandBuffers.end();
 };
 
-bool findSrcResource(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, const std::vector<OperationResourceInfo>& notSyncedInfos)
+bool findSrcResource(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, const std::vector<OperationResourceInfo>& commandResourceInfos)
 {
-    for (const auto& info : notSyncedInfos)
+    for (const auto& info : commandResourceInfos)
     {
         for (const auto& [buffer, _] : info.dst.buffers)
         {
@@ -165,9 +163,8 @@ BufferUsageInfo getSrcBufferUsageInfo(const std::vector<VulkanCommandBuffer*>& s
 {
     for (auto resultIter = submittedCommandBuffers.rbegin(); resultIter != submittedCommandBuffers.rend(); ++resultIter)
     {
-        const auto& result = (*resultIter)->result();
-        const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-        for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
+        const auto& commandResourceInfos = (*resultIter)->getCommandResourceInfos();
+        for (auto infoIter = commandResourceInfos.rbegin(); infoIter != commandResourceInfos.rend(); ++infoIter)
         {
             const auto& info = *infoIter;
             if (info.src.buffers.contains(buffer))
@@ -185,9 +182,8 @@ TextureUsageInfo getSrcTextureUsageInfo(const std::vector<VulkanCommandBuffer*>&
 {
     for (auto resultIter = submittedCommandBuffers.rbegin(); resultIter != submittedCommandBuffers.rend(); ++resultIter)
     {
-        const auto& result = (*resultIter)->result();
-        const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-        for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
+        const auto& commandResourceInfos = (*resultIter)->getCommandResourceInfos();
+        for (auto infoIter = commandResourceInfos.rbegin(); infoIter != commandResourceInfos.rend(); ++infoIter)
         {
             const auto& info = *infoIter;
             if (info.src.textures.contains(texture))
@@ -201,11 +197,11 @@ TextureUsageInfo getSrcTextureUsageInfo(const std::vector<VulkanCommandBuffer*>&
     return {};
 };
 
-ResourceInfo getSrcResourceUsageInfo(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, const std::vector<OperationResourceInfo>& notSyncedInfos)
+ResourceInfo getSrcResourceUsageInfo(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, const std::vector<OperationResourceInfo>& commandResourceInfos)
 {
     ResourceInfo srcResourceInfo{};
 
-    for (const auto& info : notSyncedInfos)
+    for (const auto& info : commandResourceInfos)
     {
         for (const auto& [buffer, _] : info.dst.buffers)
         {
@@ -273,15 +269,15 @@ std::vector<VkSemaphore> getSrcTextureSemaphores(std::vector<VulkanSubmit>& subm
     return semaphores;
 };
 
-SubmitType getSubmitType(const VulkanCommandRecordResult& result)
+SubmitType getSubmitType(VulkanCommandBuffer* commandBuffer)
 {
-    const auto& notSyncedInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-    if (notSyncedInfos.empty())
+    const auto& commandResourceInfos = commandBuffer->getCommandResourceInfos();
+    if (commandResourceInfos.empty())
     {
         // assumed copied resources.
         return SubmitType::kTransfer;
     }
-    const auto& info = notSyncedInfos[notSyncedInfos.size() - 1]; // only last operation resource info
+    const auto& info = commandResourceInfos[commandResourceInfos.size() - 1]; // only last operation resource info
 
     const auto& src = info.src;
 
@@ -348,10 +344,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
     for (const auto commandBuffer : commandBuffers)
     {
         auto vulkanCommandBuffer = downcast(commandBuffer);
-        const auto& result = vulkanCommandBuffer->result();
         // generate submit info
         {
-            auto hasSrcDependency = findSrcResource(submittedCommandBuffers, result.commandResourceSyncResult.notSyncedOperationResourceInfos);
+            auto hasSrcDependency = findSrcResource(submittedCommandBuffers, vulkanCommandBuffer->getCommandResourceInfos());
 
             if (hasSrcDependency)
             {
@@ -373,11 +368,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                     std::vector<VkPipelineStageFlags> waitStages{};
                     std::vector<VkSemaphore> waitSemaphores{};
 
-                    auto& notSynedOperationResourceInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
+                    const auto& commandResourceInfos = vulkanCommandBuffer->getCommandResourceInfos();
 
-                    for (const auto& notSynedOperationResourceInfo : notSynedOperationResourceInfos)
+                    for (const auto& commandResourceInfo : commandResourceInfos)
                     {
-                        for (const auto& [dstBuffer, dstBufferUsageInfo] : notSynedOperationResourceInfo.dst.buffers)
+                        for (const auto& [dstBuffer, dstBufferUsageInfo] : commandResourceInfo.dst.buffers)
                         {
                             if (findSrcBuffer(submittedCommandBuffers, dstBuffer))
                             {
@@ -388,7 +383,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                             }
                         }
 
-                        for (const auto& [dstTexture, dstTextureUsageInfo] : notSynedOperationResourceInfo.dst.textures)
+                        for (const auto& [dstTexture, dstTextureUsageInfo] : commandResourceInfo.dst.textures)
                         {
                             if (findSrcTexture(submittedCommandBuffers, dstTexture))
                             {
@@ -405,12 +400,12 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
                 // set wait semaphore and image index for swapchain image
                 {
-                    if (getSubmitType(result) == SubmitType::kPresent)
+                    if (getSubmitType(vulkanCommandBuffer) == SubmitType::kPresent)
                     {
-                        auto& notSynedOperationResourceInfos = result.commandResourceSyncResult.notSyncedOperationResourceInfos;
-                        for (const auto& notSynedOperationResourceInfo : notSynedOperationResourceInfos)
+                        auto& commandResourceInfos = vulkanCommandBuffer->getCommandResourceInfos();
+                        for (const auto& commandResourceInfo : commandResourceInfos)
                         {
-                            for (const auto& [srcTexture, _] : notSynedOperationResourceInfo.src.textures)
+                            for (const auto& [srcTexture, _] : commandResourceInfo.src.textures)
                             {
                                 VulkanTexture* vulkanTexture = downcast(srcTexture);
                                 if (vulkanTexture->getOwner() == VulkanTextureOwner::kSwapchain)
@@ -437,14 +432,13 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
             // set submit type
             {
-                currentSubmit.info.type = getSubmitType(result);
+                currentSubmit.info.type = getSubmitType(vulkanCommandBuffer);
             }
         }
 
         // generate submit objects
         {
-            auto& commands = result.commands;
-            for (auto& command : commands)
+            for (auto& command : vulkanCommandBuffer->getCommands())
             {
                 switch (command->type)
                 {

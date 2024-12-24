@@ -17,7 +17,7 @@ class VulkanComputePipeline;
 struct VulkanCommandRecordResult
 {
     std::vector<std::unique_ptr<Command>> commands{};
-    CommandResourceSyncResult commandResourceSyncResult{};
+    ResourceSyncResult resourceSyncResult{};
 };
 
 struct VulkanCommandRecorderDescriptor
@@ -42,7 +42,7 @@ public:
 
 private:
     void beginRecord();
-    void endRecord();
+    VulkanCommandRecordResult endRecord();
 
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
@@ -75,9 +75,6 @@ private:
 
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
-
-private:
-    VulkanCommandRecordResult result();
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;

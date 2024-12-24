@@ -313,9 +313,11 @@ void VulkanCommandResourceTracker::resolveQuerySet(ResolveQuerySetCommand* comma
     // do nothing.
 }
 
-std::vector<OperationResourceInfo> VulkanCommandResourceTracker::result()
+VulkanResourceTrackingResult VulkanCommandResourceTracker::finish()
 {
-    return m_operationResourceInfos;
+    m_currentOperationResourceInfo = {};
+
+    return VulkanResourceTrackingResult{ .operationResourceInfos = std::move(m_operationResourceInfos) };
 }
 
 } // namespace jipu

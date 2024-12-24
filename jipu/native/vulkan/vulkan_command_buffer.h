@@ -30,18 +30,17 @@ public:
     VulkanCommandEncoder* getCommandEncoder() const;
 
 public:
-    void recordToVkCommandBuffer();
-    const VulkanCommandRecordResult& result();
+    const std::vector<std::unique_ptr<Command>>& getCommands();
+    const std::vector<OperationResourceInfo>& getCommandResourceInfos();
 
 public:
     VkCommandBuffer getVkCommandBuffer();
 
 private:
-    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
-
-private:
     void createVkCommandBuffer();
     void releaseVkCommandBuffer();
+
+    void recordToVkCommandBuffer();
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
