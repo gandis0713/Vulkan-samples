@@ -38,12 +38,6 @@ struct OperationResourceInfo
     ResourceInfo src{};
 };
 
-struct CommandResourceInfo
-{
-    ResourceInfo dst{};
-    ResourceInfo src{};
-};
-
 struct VulkanResourceTrackingResult
 {
     std::vector<OperationResourceInfo> operationResourceInfos{};
