@@ -2,6 +2,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <vector>
 
 namespace jipu
@@ -21,10 +22,11 @@ public:
     void initializeContext() override;
     void finalizeContext() override;
 
-    void createCubeBuffer();
     void createDepthTexture();
-    void createImageTexture();
-    void createImageTextureView();
+    void createMoonImageTexture();
+    void createMoonImageTextureView();
+    void createPlanetImageTexture();
+    void createPlanetImageTextureView();
     void createSampler();
     void createUniformBuffer();
     void createBindingGroupLayout();
@@ -33,81 +35,32 @@ public:
     void createPipelineLayout();
     void createPipeline();
 
-private:
+public:
+    struct Renderable
+    {
+        WGPUBuffer vertexBuffer;
+        WGPUBuffer indexBuffer;
+        size_t indexCount;
+        WGPUBindGroup bindGroup;
+    };
+
     struct Vertex
     {
         glm::vec3 pos;
         glm::vec3 color;
     };
 
-    // // TODO: Dawn only supports multiple of 4.
-    // using IndexType = uint16_t;
-    // std::vector<IndexType> m_indices{
-    //     0,
-    //     1,
-    //     2,
-    //     0 /* padding */
-    // };
-    // std::vector<Vertex>
-    //     m_vertices{
-    //         { { 0.0, -1.0, 0.0 }, { 1.0, 0.0, 0.0 } },
-    //         { { -1.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 } },
-    //         { { 1.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 } },
-    //     };
-
-    // clang-format off
-    const std::vector<float> m_cube{
-        // float4 position, float4 color, float2 uv,
-        1, -1, 1, 1,   1, 0, 1, 1,  0, 1,
-        -1, -1, 1, 1,  0, 0, 1, 1,  1, 1,
-        -1, -1, -1, 1, 0, 0, 0, 1,  1, 0,
-        1, -1, -1, 1,  1, 0, 0, 1,  0, 0,
-        1, -1, 1, 1,   1, 0, 1, 1,  0, 1,
-        -1, -1, -1, 1, 0, 0, 0, 1,  1, 0,
-
-        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
-        1, -1, 1, 1,   1, 0, 1, 1,  1, 1,
-        1, -1, -1, 1,  1, 0, 0, 1,  1, 0,
-        1, 1, -1, 1,   1, 1, 0, 1,  0, 0,
-        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
-        1, -1, -1, 1,  1, 0, 0, 1,  1, 0,
-
-        -1, 1, 1, 1,   0, 1, 1, 1,  0, 1,
-        1, 1, 1, 1,    1, 1, 1, 1,  1, 1,
-        1, 1, -1, 1,   1, 1, 0, 1,  1, 0,
-        -1, 1, -1, 1,  0, 1, 0, 1,  0, 0,
-        -1, 1, 1, 1,   0, 1, 1, 1,  0, 1,
-        1, 1, -1, 1,   1, 1, 0, 1,  1, 0,
-
-        -1, -1, 1, 1,  0, 0, 1, 1,  0, 1,
-        -1, 1, 1, 1,   0, 1, 1, 1,  1, 1,
-        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
-        -1, -1, -1, 1, 0, 0, 0, 1,  0, 0,
-        -1, -1, 1, 1,  0, 0, 1, 1,  0, 1,
-        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
-
-        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
-        -1, 1, 1, 1,   0, 1, 1, 1,  1, 1,
-        -1, -1, 1, 1,  0, 0, 1, 1,  1, 0,
-        -1, -1, 1, 1,  0, 0, 1, 1,  1, 0,
-        1, -1, 1, 1,   1, 0, 1, 1,  0, 0,
-        1, 1, 1, 1,    1, 1, 1, 1,  0, 1,
-
-        1, -1, -1, 1,  1, 0, 0, 1,  0, 1,
-        -1, -1, -1, 1, 0, 0, 0, 1,  1, 1,
-        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
-        1, 1, -1, 1,   1, 1, 0, 1,  0, 0,
-        1, -1, -1, 1,  1, 0, 0, 1,  0, 1,
-        -1, 1, -1, 1,  0, 1, 0, 1,  1, 0,
-    };
-    // clang-format on
+private:
+    Renderable createSphereRenderable(float radius, int widthSegments = 32, int heightSegments = 16, float randomness = 0.0f);
+    WGPUBindGroup createSphereBindGroup(WGPUTextureView textureView, const glm::mat4& transform);
+    void ensureEnoughAsteroids();
 
 private:
-    WGPUBuffer m_cubeVertexBuffer = nullptr;
-    // WGPUBuffer m_cubeIndexBuffer = nullptr;
     WGPUTexture m_depthTexture = nullptr;
-    WGPUTexture m_imageTexture = nullptr;
-    WGPUTextureView m_imageTextureView = nullptr;
+    WGPUTexture m_moonImageTexture = nullptr;
+    WGPUTextureView m_moonImageTextureView = nullptr;
+    WGPUTexture m_planetImageTexture = nullptr;
+    WGPUTextureView m_planetImageTextureView = nullptr;
     WGPUSampler m_sampler = nullptr;
     WGPUBuffer m_uniformBuffer = nullptr;
     WGPUBindGroup m_bindGroup = nullptr;
@@ -116,6 +69,18 @@ private:
     WGPURenderPipeline m_renderPipeline = nullptr;
     WGPUShaderModule m_vertWGSLShaderModule = nullptr;
     WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+
+    std::vector<Renderable> m_renderables{};
+    std::vector<Renderable> m_asteroids{};
+
+    Renderable m_planet{};
+
+    glm::mat4 m_transform{ glm::mat4(1.0) };
+
+    glm::mat4 m_projectionMatrix{ glm::mat4(1.0) };
+
+    // Model-View-Projection Matrix
+    glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
 };
 
 } // namespace jipu

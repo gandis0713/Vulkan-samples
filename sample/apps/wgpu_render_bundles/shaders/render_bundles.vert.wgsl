@@ -1,22 +1,27 @@
 struct Uniforms {
-  modelViewProjectionMatrix : mat4x4f,
+  viewProjectionMatrix : mat4x4f
 }
-@binding(0) @group(0) var<uniform> uniforms : Uniforms;
+@group(0) @binding(0) var<uniform> uniforms : Uniforms;
+
+@group(1) @binding(0) var<uniform> modelMatrix : mat4x4f;
+
+struct VertexInput {
+  @location(0) position : vec4f,
+  @location(1) normal : vec3f,
+  @location(2) uv : vec2f
+}
 
 struct VertexOutput {
-  @builtin(position) Position : vec4f,
-  @location(0) fragUV : vec2f,
-  @location(1) fragPosition: vec4f,
+  @builtin(position) position : vec4f,
+  @location(0) normal: vec3f,
+  @location(1) uv : vec2f,
 }
 
 @vertex
-fn main(
-  @location(0) position : vec4f,
-  @location(1) uv : vec2f
-) -> VertexOutput {
+fn main(input: VertexInput) -> VertexOutput {
   var output : VertexOutput;
-  output.Position = uniforms.modelViewProjectionMatrix * position;
-  output.fragUV = uv;
-  output.fragPosition = 0.5 * (position + vec4(1.0, 1.0, 1.0, 1.0));
+  output.position = uniforms.viewProjectionMatrix * modelMatrix * input.position;
+  output.normal = normalize((modelMatrix * vec4(input.normal, 0)).xyz);
+  output.uv = input.uv;
   return output;
 }
