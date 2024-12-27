@@ -33,6 +33,11 @@ void WebGPUBuffer::unmap()
     m_buffer->unmap();
 }
 
+uint64_t WebGPUBuffer::getSize() const
+{
+    return m_buffer->getSize();
+}
+
 Buffer* WebGPUBuffer::getBuffer() const
 {
     return m_buffer.get();

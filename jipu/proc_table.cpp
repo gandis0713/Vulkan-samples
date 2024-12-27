@@ -362,6 +362,12 @@ WGPUFuture procQueueOnSubmittedWorkDone(WGPUQueue queue, WGPUQueueWorkDoneCallba
     return webgpuQueue->onSubmittedWorkDone(callbackInfo);
 }
 
+uint64_t procBufferGetSize(WGPUBuffer buffer)
+{
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuBuffer->getSize();
+}
+
 namespace
 {
 
@@ -422,6 +428,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuInstanceWaitAny", reinterpret_cast<WGPUProc>(procInstanceWaitAny) },
     { "wgpuInstanceProcessEvents", reinterpret_cast<WGPUProc>(procInstanceProcessEvents) },
     { "wgpuQueueOnSubmittedWorkDone2", reinterpret_cast<WGPUProc>(procQueueOnSubmittedWorkDone) },
+    { "wgpuBufferGetSize", reinterpret_cast<WGPUProc>(procBufferGetSize) },
 };
 
 } // namespace

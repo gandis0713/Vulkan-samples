@@ -32,7 +32,7 @@ struct WebGPUAPI
     // WGPUProcBufferGetConstMappedRange BufferGetConstMappedRange = nullptr;
     // WGPUProcBufferGetMapState BufferGetMapState = nullptr;
     WGPUProcBufferGetMappedRange BufferGetMappedRange = nullptr;
-    // WGPUProcBufferGetSize BufferGetSize = nullptr;
+    WGPUProcBufferGetSize BufferGetSize = nullptr;
     // WGPUProcBufferGetUsage BufferGetUsage = nullptr;
     // WGPUProcBufferMapAsync BufferMapAsync = nullptr;
     // WGPUProcBufferSetLabel BufferSetLabel = nullptr;
