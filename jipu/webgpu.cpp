@@ -70,6 +70,8 @@ extern void procRenderBundleEncoderSetBindGroup(WGPURenderBundleEncoder renderBu
 extern void procRenderBundleEncoderSetIndexBuffer(WGPURenderBundleEncoder renderBundleEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size);
 extern void procRenderBundleEncoderSetPipeline(WGPURenderBundleEncoder renderBundleEncoder, WGPURenderPipeline pipeline);
 extern void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundleEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size);
+extern void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles);
+
 } // namespace jipu
 
 extern "C"
@@ -409,5 +411,10 @@ extern "C"
     WGPU_EXPORT void wgpuRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundleEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size) WGPU_FUNCTION_ATTRIBUTE
     {
         return procRenderBundleEncoderSetVertexBuffer(renderBundleEncoder, slot, buffer, offset, size);
+    }
+
+    WGPU_EXPORT void wgpuRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderPassEncoderExecuteBundles(renderPassEncoder, bundleCount, bundles);
     }
 }

@@ -31,9 +31,12 @@ public:
     void createUniformBuffer();
     void createBindingGroupLayout();
     void createBindingGroup();
+    void createSphereBindGroupLayout();
     void createShaderModule();
     void createPipelineLayout();
     void createPipeline();
+    void createRenderBundle();
+    void renderScene(WGPURenderPassEncoder passEncoder);
 
 public:
     struct Renderable
@@ -41,6 +44,7 @@ public:
         WGPUBuffer vertexBuffer;
         WGPUBuffer indexBuffer;
         size_t indexCount;
+        WGPUBuffer uniformBuffer;
         WGPUBindGroup bindGroup;
     };
 
@@ -52,7 +56,8 @@ public:
 
 private:
     Renderable createSphereRenderable(float radius, int widthSegments = 32, int heightSegments = 16, float randomness = 0.0f);
-    WGPUBindGroup createSphereBindGroup(WGPUTextureView textureView, const glm::mat4& transform);
+    WGPUBindGroup createSphereBindGroup(WGPUBuffer uniformBuffer, WGPUTextureView textureView, const glm::mat4& transform);
+    WGPUBuffer createSphereUniformBuffer(const glm::mat4& transform);
     void ensureEnoughAsteroids();
 
 private:
@@ -65,10 +70,12 @@ private:
     WGPUBuffer m_uniformBuffer = nullptr;
     WGPUBindGroup m_bindGroup = nullptr;
     WGPUBindGroupLayout m_bindGroupLayout = nullptr;
+    WGPUBindGroupLayout m_sphereBindGroupLayout = nullptr;
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
     WGPUShaderModule m_vertWGSLShaderModule = nullptr;
     WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+    WGPURenderBundle m_renderBundle = nullptr;
 
     std::vector<Renderable> m_renderables{};
     std::vector<Renderable> m_asteroids{};
@@ -81,6 +88,9 @@ private:
 
     // Model-View-Projection Matrix
     glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
+
+    uint32_t m_asteroidCount = 10000; // TODO: by settings
+    bool m_useRenderBundles = false;
 };
 
 } // namespace jipu

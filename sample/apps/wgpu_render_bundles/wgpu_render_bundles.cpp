@@ -10,6 +10,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp> // glm::pi
+#include <glm/gtc/matrix_transform.hpp>
+#include <random>
+
 namespace jipu
 {
 
@@ -36,25 +41,31 @@ void WGPURenderBundles::onUpdate()
     WGPUSample::onUpdate();
 
     {
-        // const viewMatrix = mat4.identity();
-        auto viewMatrix = glm::identity<glm::mat4>();
+        // 1. 단위 행렬로 초기화
+        glm::mat4 viewMatrix = glm::mat4(1.0f);
 
-        // mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+        // 2. z축 방향으로 -4만큼 평행 이동
         viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 
-        // const now = Date.now() / 1000;
-        auto now = std::chrono::high_resolution_clock::now();
+        // 3. 행성을 살짝 기울여 보이도록 Z축, X축 순서로 회전
+        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(0.0f, 0.0f, 1.0f)); // 약 18도
+        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(1.0f, 0.0f, 0.0f)); // 약 18도
 
-        // Tilt the view matrix so the planet looks like it's off-axis.
-        // mat4.rotateZ(viewMatrix, Math.PI * 0.1, viewMatrix);
-        viewMatrix = glm::rotate(viewMatrix, glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        // mat4.rotateX(viewMatrix, Math.PI * 0.1, viewMatrix);
-        viewMatrix = glm::rotate(viewMatrix, glm::radians(10.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        // Rotate the view matrix slowly so the planet appears to spin.
-        // mat4.rotateY(viewMatrix, now * 0.05, viewMatrix);
-        viewMatrix = glm::rotate(viewMatrix, static_cast<float>(now.time_since_epoch().count() * 0.05), glm::vec3(0.0f, 1.0f, 0.0f));
+        // 4. 현재 시간을 구해 Y축 회전값에 반영(행성이 천천히 자전)
+        // auto now = std::chrono::system_clock::now().time_since_epoch();
+        // double currentTime = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(now).count()) / 1000.0f;
+        // viewMatrix = glm::rotate(viewMatrix, static_cast<float>(currentTime) * 0.00000005f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // mat4.multiply(projectionMatrix, viewMatrix, modelViewProjectionMatrix);
+        static float totalAngle = 0.0f;
+        auto now = std::chrono::system_clock::now();
+        static auto lastTime = now; // 프로그램 시작 시점
+        float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count() / 1000.0f;
+        lastTime = now;
+        float rotateSpeed = 0.05f;
+        totalAngle += rotateSpeed * deltaTime;
+        viewMatrix = glm::rotate(viewMatrix, totalAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // 5. projectionMatrix * viewMatrix = 최종 MVP 행렬
         m_modelViewProjectionMatrix = m_projectionMatrix * viewMatrix;
     }
 
@@ -77,7 +88,7 @@ void WGPURenderBundles::onDraw()
     colorAttachment.loadOp = WGPULoadOp_Clear;
     colorAttachment.storeOp = WGPUStoreOp_Store;
     colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-    colorAttachment.clearValue = { .r = 0.5f, .g = 0.5f, .b = 0.5f, .a = 1.0f };
+    colorAttachment.clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
 
     WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
     depthStencilAttachment.view = depthTextureView;
@@ -92,12 +103,18 @@ void WGPURenderBundles::onDraw()
 
     WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
 
-    wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
-    wgpu.RenderPassEncoderSetViewport(renderPassEncoder, 0.0f, 0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f, 1.0f);
-    wgpu.RenderPassEncoderSetScissorRect(renderPassEncoder, 0, 0, m_width, m_height);
-    // wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_cubeVertexBuffer, 0, m_cube.size() * sizeof(float));
-    wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_bindGroup, 0, nullptr);
-    wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
+    if (m_useRenderBundles)
+    {
+        wgpu.RenderPassEncoderExecuteBundles(renderPassEncoder, 1, &m_renderBundle);
+    }
+    else
+    {
+        // Alternatively, the same render commands can be encoded manually, which
+        // can take longer since each command needs to be interpreted by the
+        // JavaScript virtual machine and re-validated each time.
+        renderScene(renderPassEncoder);
+    }
+
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
 
@@ -127,19 +144,21 @@ void WGPURenderBundles::initializeContext()
     createUniformBuffer();
     createBindingGroupLayout();
     createBindingGroup();
+    createSphereBindGroupLayout();
     createShaderModule();
     createPipelineLayout();
     createPipeline();
 
     {
         m_projectionMatrix = glm::perspective(
-            glm::radians(72.0f),                    // FOV in radians (72 degrees = (2 * PI) / 5)
-            m_width / static_cast<float>(m_height), // Aspect ratio
-            1.0f,                                   // Near plane
-            100.0f                                  // Far plane
+            (2.0f * glm::pi<float>()) / 5.0f,                           // FOV in radians (72 degrees = (2 * PI) / 5)
+            static_cast<float>(m_width) / static_cast<float>(m_height), // Aspect ratio
+            1.0f,                                                       // Near plane
+            100.0f                                                      // Far plane
         );
         m_planet = createSphereRenderable(1.0);
-        m_planet.bindGroup = createSphereBindGroup(m_planetImageTextureView, m_transform);
+        m_planet.uniformBuffer = createSphereUniformBuffer(m_transform);
+        m_planet.bindGroup = createSphereBindGroup(m_planet.uniformBuffer, m_planetImageTextureView, m_transform);
 
         m_asteroids = {
             createSphereRenderable(0.01, 8, 6, 0.15),
@@ -153,6 +172,8 @@ void WGPURenderBundles::initializeContext()
 
         ensureEnoughAsteroids();
     }
+
+    createRenderBundle();
 }
 
 void WGPURenderBundles::finalizeContext()
@@ -213,6 +234,12 @@ void WGPURenderBundles::finalizeContext()
         m_bindGroupLayout = nullptr;
     }
 
+    if (m_sphereBindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_sphereBindGroupLayout);
+        m_sphereBindGroupLayout = nullptr;
+    }
+
     if (m_renderPipeline)
     {
         wgpu.RenderPipelineRelease(m_renderPipeline);
@@ -235,6 +262,12 @@ void WGPURenderBundles::finalizeContext()
     {
         wgpu.ShaderModuleRelease(m_fragWGSLShaderModule);
         m_fragWGSLShaderModule = nullptr;
+    }
+
+    if (m_renderBundle)
+    {
+        wgpu.RenderBundleRelease(m_renderBundle);
+        m_renderBundle = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -396,13 +429,21 @@ void WGPURenderBundles::createSampler()
 
 void WGPURenderBundles::createUniformBuffer()
 {
+    auto uniformBufferSize = sizeof(glm::mat4);
+
     WGPUBufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(glm::mat4);
+    bufferDescriptor.size = uniformBufferSize;
     bufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
     bufferDescriptor.mappedAtCreation = false;
 
     m_uniformBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
     assert(m_uniformBuffer);
+
+    // void* mappedVertexPtr = wgpu.BufferGetMappedRange(m_uniformBuffer, 0, uniformBufferSize);
+    // memcpy(mappedVertexPtr, &transform, uniformBufferSize);
+    // wgpu.BufferUnmap(m_uniformBuffer);
+
+    wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &m_transform, uniformBufferSize);
 }
 void WGPURenderBundles::createBindingGroupLayout()
 {
@@ -420,9 +461,33 @@ void WGPURenderBundles::createBindingGroupLayout()
     assert(m_bindGroupLayout);
 }
 
+void WGPURenderBundles::createSphereBindGroupLayout()
+{
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries = {
+        WGPUBindGroupLayoutEntry{ .binding = 0,
+                                  .visibility = WGPUShaderStage_Vertex,
+                                  .buffer = { .type = WGPUBufferBindingType_Uniform } },
+        WGPUBindGroupLayoutEntry{ .binding = 1,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .sampler = { .type = WGPUSamplerBindingType_Filtering } },
+        WGPUBindGroupLayoutEntry{ .binding = 2,
+                                  .visibility = WGPUShaderStage_Fragment,
+                                  .texture = { .sampleType = WGPUTextureSampleType_Float,
+                                               .viewDimension = WGPUTextureViewDimension_2D,
+                                               .multisampled = WGPUOptionalBool_False } },
+    };
+
+    WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
+    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
+
+    m_sphereBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_sphereBindGroupLayout);
+}
+
 void WGPURenderBundles::createBindingGroup()
 {
-    std::array<WGPUBindGroupEntry, 3> bindGroupEntries = {
+    std::array<WGPUBindGroupEntry, 1> bindGroupEntries = {
         WGPUBindGroupEntry{ .binding = 0, .buffer = m_uniformBuffer, .offset = 0, .size = sizeof(glm::mat4) },
     };
 
@@ -468,9 +533,10 @@ void WGPURenderBundles::createShaderModule()
 
 void WGPURenderBundles::createPipelineLayout()
 {
+    std::array<WGPUBindGroupLayout, 2> bindGroupLayouts = { m_bindGroupLayout, m_sphereBindGroupLayout };
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
-    pipelineLayoutDescriptor.bindGroupLayouts = &m_bindGroupLayout;
+    pipelineLayoutDescriptor.bindGroupLayoutCount = bindGroupLayouts.size();
+    pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts.data();
 
     m_pipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
     assert(m_pipelineLayout);
@@ -487,7 +553,7 @@ void WGPURenderBundles::createPipeline()
     std::vector<WGPUVertexAttribute> attributes{};
     {
         WGPUVertexAttribute attribute{};
-        attribute.format = WGPUVertexFormat_Float32x4;
+        attribute.format = WGPUVertexFormat_Float32x3;
         attribute.offset = 0;
         attribute.shaderLocation = 0;
 
@@ -496,7 +562,7 @@ void WGPURenderBundles::createPipeline()
     {
         WGPUVertexAttribute attribute{};
         attribute.format = WGPUVertexFormat_Float32x3;
-        attribute.offset = sizeof(float) * 4;
+        attribute.offset = sizeof(float) * 3;
         attribute.shaderLocation = 1;
 
         attributes.push_back(attribute);
@@ -504,7 +570,7 @@ void WGPURenderBundles::createPipeline()
     {
         WGPUVertexAttribute attribute{};
         attribute.format = WGPUVertexFormat_Float32x2;
-        attribute.offset = sizeof(float) * 7;
+        attribute.offset = sizeof(float) * 6;
         attribute.shaderLocation = 2;
 
         attributes.push_back(attribute);
@@ -514,7 +580,7 @@ void WGPURenderBundles::createPipeline()
     vertexBufferLayout[0].stepMode = WGPUVertexStepMode_Vertex;
     vertexBufferLayout[0].attributes = attributes.data();
     vertexBufferLayout[0].attributeCount = static_cast<uint32_t>(attributes.size());
-    vertexBufferLayout[0].arrayStride = sizeof(float) * 9;
+    vertexBufferLayout[0].arrayStride = sizeof(float) * 8;
 
     std::string entryPoint = "main";
     WGPUVertexState vertexState{};
@@ -553,6 +619,66 @@ void WGPURenderBundles::createPipeline()
     m_renderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
 
     assert(m_renderPipeline);
+}
+
+void WGPURenderBundles::createRenderBundle()
+{
+    WGPURenderBundleEncoderDescriptor renderBundleEncoderDescriptor{};
+    renderBundleEncoderDescriptor.colorFormatCount = 1;
+    renderBundleEncoderDescriptor.colorFormats = &m_surfaceCapabilities.formats[0];
+    renderBundleEncoderDescriptor.depthStencilFormat = WGPUTextureFormat_Depth24Plus;
+    renderBundleEncoderDescriptor.depthReadOnly = false;
+    renderBundleEncoderDescriptor.stencilReadOnly = false;
+    renderBundleEncoderDescriptor.sampleCount = 1;
+
+    auto renderBundleEncoder = wgpu.DeviceCreateRenderBundleEncoder(m_device, &renderBundleEncoderDescriptor);
+
+    {
+        wgpu.RenderBundleEncoderSetPipeline(renderBundleEncoder, m_renderPipeline);
+        wgpu.RenderBundleEncoderSetBindGroup(renderBundleEncoder, 0, m_bindGroup, 0, nullptr);
+
+        auto count = 0;
+        for (const auto& renderable : m_renderables)
+        {
+            wgpu.RenderBundleEncoderSetBindGroup(renderBundleEncoder, 1, renderable.bindGroup, 0, nullptr);
+            wgpu.RenderBundleEncoderSetVertexBuffer(renderBundleEncoder, 0, renderable.vertexBuffer, 0, 0);
+
+            uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
+            wgpu.RenderBundleEncoderSetIndexBuffer(renderBundleEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, indexBufferSize);
+
+            wgpu.RenderBundleEncoderDrawIndexed(renderBundleEncoder, renderable.indexCount, 1, 0, 0, 0);
+
+            if (++count > m_asteroidCount)
+            {
+                break;
+            }
+        }
+    }
+
+    WGPURenderBundleDescriptor renderBundleDescriptor{};
+    m_renderBundle = wgpu.RenderBundleEncoderFinish(renderBundleEncoder, &renderBundleDescriptor);
+}
+
+void WGPURenderBundles::renderScene(WGPURenderPassEncoder passEncoder)
+{
+    wgpu.RenderPassEncoderSetPipeline(passEncoder, m_renderPipeline);
+    wgpu.RenderPassEncoderSetBindGroup(passEncoder, 0, m_bindGroup, 0, nullptr);
+
+    auto count = 0;
+    for (const auto& renderable : m_renderables)
+    {
+        wgpu.RenderPassEncoderSetBindGroup(passEncoder, 1, renderable.bindGroup, 0, nullptr);
+        wgpu.RenderPassEncoderSetVertexBuffer(passEncoder, 0, renderable.vertexBuffer, 0, 0);
+
+        uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
+        wgpu.RenderPassEncoderSetIndexBuffer(passEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, indexBufferSize);
+        wgpu.RenderPassEncoderDrawIndexed(passEncoder, renderable.indexCount, 1, 0, 0, 0);
+
+        if (++count > m_asteroidCount)
+        {
+            break;
+        }
+    }
 }
 
 WGPURenderBundles::Renderable WGPURenderBundles::createSphereRenderable(float radius, int widthSegments, int heightSegments, float randomness)
@@ -598,11 +724,33 @@ WGPURenderBundles::Renderable WGPURenderBundles::createSphereRenderable(float ra
         .vertexBuffer = vertexBuffer,
         .indexBuffer = indexBuffer,
         .indexCount = sphereMesh.indices.size(),
-        .bindGroup = nullptr
+        .uniformBuffer = nullptr,
+        .bindGroup = nullptr,
     };
 }
 
-WGPUBindGroup WGPURenderBundles::createSphereBindGroup(WGPUTextureView textureView, const glm::mat4& transform)
+WGPUBindGroup WGPURenderBundles::createSphereBindGroup(WGPUBuffer uniformBuffer, WGPUTextureView textureView, const glm::mat4& transform)
+{
+    auto uniformBufferSize = wgpu.BufferGetSize(uniformBuffer);
+
+    std::array<WGPUBindGroupEntry, 3> bindGroupEntries = {
+        WGPUBindGroupEntry{ .binding = 0, .buffer = uniformBuffer, .offset = 0, .size = uniformBufferSize },
+        WGPUBindGroupEntry{ .binding = 1, .sampler = m_sampler },
+        WGPUBindGroupEntry{ .binding = 2, .textureView = textureView },
+    };
+
+    WGPUBindGroupDescriptor bindGroupDescriptor{};
+    bindGroupDescriptor.layout = m_sphereBindGroupLayout;
+    bindGroupDescriptor.entryCount = bindGroupEntries.size();
+    bindGroupDescriptor.entries = bindGroupEntries.data();
+
+    auto bindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
+    assert(bindGroup);
+
+    return bindGroup;
+}
+
+WGPUBuffer WGPURenderBundles::createSphereUniformBuffer(const glm::mat4& transform)
 {
     auto uniformBufferSize = sizeof(glm::mat4); // 4x4 matrix
 
@@ -620,43 +768,57 @@ WGPUBindGroup WGPURenderBundles::createSphereBindGroup(WGPUTextureView textureVi
 
     wgpu.QueueWriteBuffer(m_queue, uniformBuffer, 0, &transform, uniformBufferSize);
 
-    std::array<WGPUBindGroupEntry, 3> bindGroupEntries = {
-        WGPUBindGroupEntry{ .binding = 0, .buffer = uniformBuffer, .offset = 0, .size = uniformBufferSize },
-        WGPUBindGroupEntry{ .binding = 1, .sampler = m_sampler },
-        WGPUBindGroupEntry{ .binding = 2, .textureView = textureView },
-    };
-
-    WGPUBindGroupDescriptor bindGroupDescriptor{};
-    bindGroupDescriptor.layout = m_bindGroupLayout;
-    bindGroupDescriptor.entryCount = bindGroupEntries.size();
-    bindGroupDescriptor.entries = bindGroupEntries.data();
-
-    auto bindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
-    assert(bindGroup);
-
-    return bindGroup;
+    return uniformBuffer;
 }
 
 void WGPURenderBundles::ensureEnoughAsteroids()
 {
-    auto asteroidCount = 1000; // TODO: by settings
-
     auto transform = glm::identity<glm::mat4>();
-    for (size_t i = m_renderables.size(); i <= asteroidCount; ++i)
+    for (size_t i = m_renderables.size(); i <= m_asteroidCount; ++i)
     {
         // Place copies of the asteroid in a ring.
-        float radius = static_cast<float>(rand()) / RAND_MAX * 1.7f + 1.25f;
-        float angle = static_cast<float>(rand()) / RAND_MAX * glm::two_pi<float>();
+        // float radius = static_cast<float>(rand()) / RAND_MAX * 1.7f + 1.25f;
+        // float angle = static_cast<float>(rand()) / RAND_MAX * glm::two_pi<float>();
+        // float x = std::sin(angle) * radius;
+        // float y = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.015f;
+        // float z = std::cos(angle) * radius;
+
+        // transform = glm::translate(transform, glm::vec3(x, y, z));
+        // transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
+        // transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // 난수 엔진과 분포를 준비합니다.
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+        // 1) radius, angle 계산 (JS: Math.random() * 1.7 + 1.25, Math.random() * Math.PI * 2)
+        float radius = dist(gen) * 1.7f + 1.25f;
+        float angle = dist(gen) * 2.0f * glm::pi<float>();
+
+        // 2) x, y, z 계산
         float x = std::sin(angle) * radius;
-        float y = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.015f;
+        float y = (dist(gen) - 0.5f) * 0.015f;
         float z = std::cos(angle) * radius;
 
+        // 3) 기본 단위 행렬 (identity) 준비
+        glm::mat4 transform = glm::mat4(1.0f);
+
+        // 4) translate 적용 (JS: mat4.translate(transform, [x, y, z], transform))
         transform = glm::translate(transform, glm::vec3(x, y, z));
-        transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-        transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // 5) rotateX, rotateY (JS: mat4.rotateX / rotateY(transform, Math.random() * Math.PI))
+        float angleX = dist(gen) * glm::pi<float>();
+        float angleY = dist(gen) * glm::pi<float>();
+
+        // X축 회전
+        transform = glm::rotate(transform, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
+        // Y축 회전
+        transform = glm::rotate(transform, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
 
         auto renderable = m_asteroids[i % m_asteroids.size()];
-        renderable.bindGroup = createSphereBindGroup(m_moonImageTextureView, transform);
+        renderable.uniformBuffer = createSphereUniformBuffer(transform);
+        renderable.bindGroup = createSphereBindGroup(renderable.uniformBuffer, m_moonImageTextureView, transform);
         m_renderables.push_back(renderable);
     }
 }

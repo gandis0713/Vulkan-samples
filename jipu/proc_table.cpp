@@ -420,6 +420,11 @@ void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundle
     // TODO
 }
 
+void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles)
+{
+    // TODO
+}
+
 namespace
 {
 
@@ -490,6 +495,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderBundleEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetIndexBuffer) },
     { "wgpuRenderBundleEncoderSetPipeline", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetPipeline) },
     { "wgpuRenderBundleEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetVertexBuffer) },
+    { "wgpuRenderPassEncoderExecuteBundles", reinterpret_cast<WGPUProc>(procRenderPassEncoderExecuteBundles) },
 };
 
 } // namespace

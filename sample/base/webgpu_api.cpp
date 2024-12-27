@@ -138,7 +138,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(QueueRelease);
     // GET_PROC(RenderBundleSetLabel);
     // GET_PROC(RenderBundleAddRef);
-    // GET_PROC(RenderBundleRelease);
+    GET_PROC(RenderBundleRelease);
     GET_PROC(RenderBundleEncoderDraw);
     GET_PROC(RenderBundleEncoderDrawIndexed);
     // GET_PROC(RenderBundleEncoderDrawIndexedIndirect);
@@ -161,7 +161,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(RenderPassEncoderDrawIndirect);
     GET_PROC(RenderPassEncoderEnd);
     // GET_PROC(RenderPassEncoderEndOcclusionQuery);
-    // GET_PROC(RenderPassEncoderExecuteBundles);
+    GET_PROC(RenderPassEncoderExecuteBundles);
     // GET_PROC(RenderPassEncoderInsertDebugMarker);
     // GET_PROC(RenderPassEncoderPopDebugGroup);
     // GET_PROC(RenderPassEncoderPushDebugGroup);

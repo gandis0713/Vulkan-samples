@@ -2,6 +2,7 @@
 
 struct SphereMesh
 {
+    // (x, y, z, nx, ny, nz, u, v)
     std::vector<float> vertices;
     std::vector<uint16_t> indices;
 };

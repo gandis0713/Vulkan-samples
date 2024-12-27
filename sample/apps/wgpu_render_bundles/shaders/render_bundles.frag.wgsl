@@ -6,6 +6,12 @@ const lightDir = vec3f(1, 1, 1);
 const dirColor = vec3(1);
 const ambientColor = vec3f(0.05);
 
+struct VertexOutput {
+  @builtin(position) position : vec4f,
+  @location(0) normal: vec3f,
+  @location(1) uv : vec2f,
+}
+
 @fragment
 fn main(input: VertexOutput) -> @location(0) vec4f {
   let textureColor = textureSample(meshTexture, meshSampler, input.uv);
