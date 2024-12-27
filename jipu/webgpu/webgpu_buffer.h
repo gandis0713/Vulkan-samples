@@ -30,6 +30,7 @@ public:
 public: // WebGPU API
     void* getMappedRange(size_t offset, size_t size);
     void unmap();
+    uint64_t getSize() const;
 
 public:
     Buffer* getBuffer() const;

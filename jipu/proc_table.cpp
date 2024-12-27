@@ -372,18 +372,52 @@ WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, W
 {
     // WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
     // return reinterpret_cast<WGPURenderBundleEncoder>(webgpuDevice->createRenderBundleEncoder(descriptor));
+
+    return nullptr;
 }
 
 WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor)
 {
     // WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
     // return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
+
+    return nullptr;
 }
 
 void procRenderBundleRelease(WGPURenderBundle renderBundle)
 {
     // WebGPURenderBundle* webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(renderBundle);
     // return webgpuRenderBundle->release();
+}
+
+void procRenderBundleEncoderDraw(WGPURenderBundleEncoder renderBundleEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    // TODO
+}
+
+void procRenderBundleEncoderDrawIndexed(WGPURenderBundleEncoder renderBundleEncoder, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
+{
+    // TODO
+}
+
+void procRenderBundleEncoderSetBindGroup(WGPURenderBundleEncoder renderBundleEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
+{
+    // TODO
+}
+
+void procRenderBundleEncoderSetIndexBuffer(WGPURenderBundleEncoder renderBundleEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
+{
+    // TODO
+}
+
+void procRenderBundleEncoderSetPipeline(WGPURenderBundleEncoder renderBundleEncoder, WGPURenderPipeline pipeline)
+{
+    // TODO
+}
+
+void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundleEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size)
+{
+    // TODO
 }
 
 namespace
@@ -450,6 +484,12 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuDeviceCreateRenderBundleEncoder", reinterpret_cast<WGPUProc>(procDeviceCreateRenderBundleEncoder) },
     { "wgpuRenderBundleEncoderFinish", reinterpret_cast<WGPUProc>(procRenderBundleEncoderFinish) },
     { "wgpuRenderBundleRelease", reinterpret_cast<WGPUProc>(procRenderBundleRelease) },
+    { "wgpuRenderBundleEncoderDraw", reinterpret_cast<WGPUProc>(procRenderBundleEncoderDraw) },
+    { "wgpuRenderBundleEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderBundleEncoderDrawIndexed) },
+    { "wgpuRenderBundleEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetBindGroup) },
+    { "wgpuRenderBundleEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetIndexBuffer) },
+    { "wgpuRenderBundleEncoderSetPipeline", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetPipeline) },
+    { "wgpuRenderBundleEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetVertexBuffer) },
 };
 
 } // namespace
