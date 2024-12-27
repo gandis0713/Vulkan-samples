@@ -368,6 +368,24 @@ uint64_t procBufferGetSize(WGPUBuffer buffer)
     return webgpuBuffer->getSize();
 }
 
+WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, WGPURenderBundleEncoderDescriptor const* descriptor)
+{
+    // WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    // return reinterpret_cast<WGPURenderBundleEncoder>(webgpuDevice->createRenderBundleEncoder(descriptor));
+}
+
+WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor)
+{
+    // WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    // return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
+}
+
+void procRenderBundleRelease(WGPURenderBundle renderBundle)
+{
+    // WebGPURenderBundle* webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(renderBundle);
+    // return webgpuRenderBundle->release();
+}
+
 namespace
 {
 
@@ -429,6 +447,9 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuInstanceProcessEvents", reinterpret_cast<WGPUProc>(procInstanceProcessEvents) },
     { "wgpuQueueOnSubmittedWorkDone2", reinterpret_cast<WGPUProc>(procQueueOnSubmittedWorkDone) },
     { "wgpuBufferGetSize", reinterpret_cast<WGPUProc>(procBufferGetSize) },
+    { "wgpuDeviceCreateRenderBundleEncoder", reinterpret_cast<WGPUProc>(procDeviceCreateRenderBundleEncoder) },
+    { "wgpuRenderBundleEncoderFinish", reinterpret_cast<WGPUProc>(procRenderBundleEncoderFinish) },
+    { "wgpuRenderBundleRelease", reinterpret_cast<WGPUProc>(procRenderBundleRelease) },
 };
 
 } // namespace

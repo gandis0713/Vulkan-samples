@@ -95,7 +95,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(DeviceCreateComputePipelineAsync);
     GET_PROC(DeviceCreatePipelineLayout);
     // GET_PROC(DeviceCreateQuerySet);
-    // GET_PROC(DeviceCreateRenderBundleEncoder);
+    GET_PROC(DeviceCreateRenderBundleEncoder);
     GET_PROC(DeviceCreateRenderPipeline);
     // GET_PROC(DeviceCreateRenderPipelineAsync);
     GET_PROC(DeviceCreateSampler);
@@ -143,7 +143,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(RenderBundleEncoderDrawIndexed);
     // GET_PROC(RenderBundleEncoderDrawIndexedIndirect);
     // GET_PROC(RenderBundleEncoderDrawIndirect);
-    // GET_PROC(RenderBundleEncoderFinish);
+    GET_PROC(RenderBundleEncoderFinish);
     // GET_PROC(RenderBundleEncoderInsertDebugMarker);
     // GET_PROC(RenderBundleEncoderPopDebugGroup);
     // GET_PROC(RenderBundleEncoderPushDebugGroup);

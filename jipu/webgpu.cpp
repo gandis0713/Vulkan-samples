@@ -61,6 +61,9 @@ extern WGPUWaitStatus procInstanceWaitAny(WGPUInstance instance, size_t futureCo
 extern void procInstanceProcessEvents(WGPUInstance instance);
 extern WGPUFuture procQueueOnSubmittedWorkDone(WGPUQueue queue, WGPUQueueWorkDoneCallbackInfo2 callbackInfo);
 extern uint64_t procBufferGetSize(WGPUBuffer buffer);
+extern WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, WGPURenderBundleEncoderDescriptor const* descriptor);
+extern WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor);
+extern void procRenderBundleRelease(WGPURenderBundle renderBundle);
 
 } // namespace jipu
 
@@ -356,5 +359,20 @@ extern "C"
     WGPU_EXPORT uint64_t wgpuBufferGetSize(WGPUBuffer buffer) WGPU_FUNCTION_ATTRIBUTE
     {
         return procBufferGetSize(buffer);
+    }
+
+    WGPU_EXPORT WGPURenderBundleEncoder wgpuDeviceCreateRenderBundleEncoder(WGPUDevice device, WGPURenderBundleEncoderDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateRenderBundleEncoder(device, descriptor);
+    }
+
+    WGPU_EXPORT WGPURenderBundle wgpuRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderBundleEncoderFinish(renderBundleEncoder, descriptor);
+    }
+
+    WGPU_EXPORT void wgpuRenderBundleRelease(WGPURenderBundle renderBundle) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderBundleRelease(renderBundle);
     }
 }

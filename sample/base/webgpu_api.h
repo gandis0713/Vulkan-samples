@@ -81,7 +81,7 @@ struct WebGPUAPI
     // WGPUProcDeviceCreateComputePipelineAsync DeviceCreateComputePipelineAsync = nullptr;
     WGPUProcDeviceCreatePipelineLayout DeviceCreatePipelineLayout = nullptr;
     // WGPUProcDeviceCreateQuerySet DeviceCreateQuerySet = nullptr;
-    // WGPUProcDeviceCreateRenderBundleEncoder DeviceCreateRenderBundleEncoder = nullptr;
+    WGPUProcDeviceCreateRenderBundleEncoder DeviceCreateRenderBundleEncoder = nullptr;
     WGPUProcDeviceCreateRenderPipeline DeviceCreateRenderPipeline = nullptr;
     // WGPUProcDeviceCreateRenderPipelineAsync DeviceCreateRenderPipelineAsync = nullptr;
     WGPUProcDeviceCreateSampler DeviceCreateSampler = nullptr;
@@ -124,12 +124,12 @@ struct WebGPUAPI
     WGPUProcQueueRelease QueueRelease = nullptr;
     // WGPUProcRenderBundleSetLabel RenderBundleSetLabel = nullptr;
     // WGPUProcRenderBundleAddRef RenderBundleAddRef = nullptr;
-    // WGPUProcRenderBundleRelease RenderBundleRelease = nullptr;
+    WGPUProcRenderBundleRelease RenderBundleRelease = nullptr;
     // WGPUProcRenderBundleEncoderDraw RenderBundleEncoderDraw = nullptr;
     // WGPUProcRenderBundleEncoderDrawIndexed RenderBundleEncoderDrawIndexed = nullptr;
     // WGPUProcRenderBundleEncoderDrawIndexedIndirect RenderBundleEncoderDrawIndexedIndirect = nullptr;
     // WGPUProcRenderBundleEncoderDrawIndirect RenderBundleEncoderDrawIndirect = nullptr;
-    // WGPUProcRenderBundleEncoderFinish RenderBundleEncoderFinish = nullptr;
+    WGPUProcRenderBundleEncoderFinish RenderBundleEncoderFinish = nullptr;
     // WGPUProcRenderBundleEncoderInsertDebugMarker RenderBundleEncoderInsertDebugMarker = nullptr;
     // WGPUProcRenderBundleEncoderPopDebugGroup RenderBundleEncoderPopDebugGroup = nullptr;
     // WGPUProcRenderBundleEncoderPushDebugGroup RenderBundleEncoderPushDebugGroup = nullptr;
