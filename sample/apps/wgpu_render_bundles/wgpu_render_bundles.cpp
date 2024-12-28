@@ -41,17 +41,13 @@ void WGPURenderBundles::onUpdate()
     WGPUSample::onUpdate();
 
     {
-        // 1. 단위 행렬로 초기화
         glm::mat4 viewMatrix = glm::mat4(1.0f);
 
-        // 2. z축 방향으로 -4만큼 평행 이동
         viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 
-        // 3. 행성을 살짝 기울여 보이도록 Z축, X축 순서로 회전
         viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(0.0f, 0.0f, 1.0f)); // 약 18도
         viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(1.0f, 0.0f, 0.0f)); // 약 18도
 
-        // 4. 현재 시간을 구해 Y축 회전값에 반영(행성이 천천히 자전)
         // auto now = std::chrono::system_clock::now().time_since_epoch();
         // double currentTime = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(now).count()) / 1000.0f;
         // viewMatrix = glm::rotate(viewMatrix, static_cast<float>(currentTime) * 0.00000005f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -65,7 +61,6 @@ void WGPURenderBundles::onUpdate()
         totalAngle += rotateSpeed * deltaTime;
         viewMatrix = glm::rotate(viewMatrix, totalAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // 5. projectionMatrix * viewMatrix = 최종 MVP 행렬
         m_modelViewProjectionMatrix = m_projectionMatrix * viewMatrix;
     }
 
@@ -157,8 +152,9 @@ void WGPURenderBundles::initializeContext()
             100.0f                                                      // Far plane
         );
         m_planet = createSphereRenderable(1.0);
-        m_planet.uniformBuffer = createSphereUniformBuffer(m_transform);
-        m_planet.bindGroup = createSphereBindGroup(m_planet.uniformBuffer, m_planetImageTextureView, m_transform);
+        glm::mat4 transform{ glm::mat4(1.0) };
+        m_planet.uniformBuffer = createSphereUniformBuffer(transform);
+        m_planet.bindGroup = createSphereBindGroup(m_planet.uniformBuffer, m_planetImageTextureView, transform);
 
         m_asteroids = {
             createSphereRenderable(0.01, 8, 6, 0.15),
@@ -443,7 +439,7 @@ void WGPURenderBundles::createUniformBuffer()
     // memcpy(mappedVertexPtr, &transform, uniformBufferSize);
     // wgpu.BufferUnmap(m_uniformBuffer);
 
-    wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &m_transform, uniformBufferSize);
+    // wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &transform, uniformBufferSize);
 }
 void WGPURenderBundles::createBindingGroupLayout()
 {
@@ -773,47 +769,27 @@ WGPUBuffer WGPURenderBundles::createSphereUniformBuffer(const glm::mat4& transfo
 
 void WGPURenderBundles::ensureEnoughAsteroids()
 {
-    auto transform = glm::identity<glm::mat4>();
+    glm::mat4 transform;
     for (size_t i = m_renderables.size(); i <= m_asteroidCount; ++i)
     {
-        // Place copies of the asteroid in a ring.
-        // float radius = static_cast<float>(rand()) / RAND_MAX * 1.7f + 1.25f;
-        // float angle = static_cast<float>(rand()) / RAND_MAX * glm::two_pi<float>();
-        // float x = std::sin(angle) * radius;
-        // float y = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.015f;
-        // float z = std::cos(angle) * radius;
-
-        // transform = glm::translate(transform, glm::vec3(x, y, z));
-        // transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-        // transform = glm::rotate(transform, static_cast<float>(rand()) / RAND_MAX * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-
-        // 난수 엔진과 분포를 준비합니다.
         static std::random_device rd;
         static std::mt19937 gen(rd());
         static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-        // 1) radius, angle 계산 (JS: Math.random() * 1.7 + 1.25, Math.random() * Math.PI * 2)
         float radius = dist(gen) * 1.7f + 1.25f;
         float angle = dist(gen) * 2.0f * glm::pi<float>();
 
-        // 2) x, y, z 계산
         float x = std::sin(angle) * radius;
         float y = (dist(gen) - 0.5f) * 0.015f;
         float z = std::cos(angle) * radius;
 
-        // 3) 기본 단위 행렬 (identity) 준비
-        glm::mat4 transform = glm::mat4(1.0f);
-
-        // 4) translate 적용 (JS: mat4.translate(transform, [x, y, z], transform))
+        transform = glm::mat4(1.0f);
         transform = glm::translate(transform, glm::vec3(x, y, z));
 
-        // 5) rotateX, rotateY (JS: mat4.rotateX / rotateY(transform, Math.random() * Math.PI))
         float angleX = dist(gen) * glm::pi<float>();
         float angleY = dist(gen) * glm::pi<float>();
 
-        // X축 회전
         transform = glm::rotate(transform, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-        // Y축 회전
         transform = glm::rotate(transform, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
 
         auto renderable = m_asteroids[i % m_asteroids.size()];

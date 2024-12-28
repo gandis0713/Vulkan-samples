@@ -77,20 +77,15 @@ private:
     WGPUShaderModule m_fragWGSLShaderModule = nullptr;
     WGPURenderBundle m_renderBundle = nullptr;
 
+    Renderable m_planet{};
     std::vector<Renderable> m_renderables{};
     std::vector<Renderable> m_asteroids{};
 
-    Renderable m_planet{};
-
-    glm::mat4 m_transform{ glm::mat4(1.0) };
-
     glm::mat4 m_projectionMatrix{ glm::mat4(1.0) };
-
-    // Model-View-Projection Matrix
     glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
 
     uint32_t m_asteroidCount = 10000; // TODO: by settings
-    bool m_useRenderBundles = false;
+    bool m_useRenderBundles = true;
 };
 
 } // namespace jipu
