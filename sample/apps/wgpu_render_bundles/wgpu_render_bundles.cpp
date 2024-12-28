@@ -639,8 +639,8 @@ void WGPURenderBundles::createRenderBundle()
             wgpu.RenderBundleEncoderSetBindGroup(renderBundleEncoder, 1, renderable.bindGroup, 0, nullptr);
             wgpu.RenderBundleEncoderSetVertexBuffer(renderBundleEncoder, 0, renderable.vertexBuffer, 0, 0);
 
-            uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
-            wgpu.RenderBundleEncoderSetIndexBuffer(renderBundleEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, indexBufferSize);
+            // uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
+            wgpu.RenderBundleEncoderSetIndexBuffer(renderBundleEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, renderable.indexBufferSize);
 
             wgpu.RenderBundleEncoderDrawIndexed(renderBundleEncoder, renderable.indexCount, 1, 0, 0, 0);
 
@@ -666,8 +666,8 @@ void WGPURenderBundles::renderScene(WGPURenderPassEncoder passEncoder)
         wgpu.RenderPassEncoderSetBindGroup(passEncoder, 1, renderable.bindGroup, 0, nullptr);
         wgpu.RenderPassEncoderSetVertexBuffer(passEncoder, 0, renderable.vertexBuffer, 0, 0);
 
-        uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
-        wgpu.RenderPassEncoderSetIndexBuffer(passEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, indexBufferSize);
+        // uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
+        wgpu.RenderPassEncoderSetIndexBuffer(passEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, renderable.indexBufferSize);
         wgpu.RenderPassEncoderDrawIndexed(passEncoder, renderable.indexCount, 1, 0, 0, 0);
 
         if (++count > m_asteroidCount)
@@ -720,6 +720,7 @@ WGPURenderBundles::Renderable WGPURenderBundles::createSphereRenderable(float ra
         .vertexBuffer = vertexBuffer,
         .indexBuffer = indexBuffer,
         .indexCount = sphereMesh.indices.size(),
+        .indexBufferSize = indexBufferSize,
         .uniformBuffer = nullptr,
         .bindGroup = nullptr,
     };

@@ -44,6 +44,7 @@ public:
         WGPUBuffer vertexBuffer;
         WGPUBuffer indexBuffer;
         size_t indexCount;
+        size_t indexBufferSize;
         WGPUBuffer uniformBuffer;
         WGPUBindGroup bindGroup;
     };
@@ -85,7 +86,7 @@ private:
     glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
 
     uint32_t m_asteroidCount = 10000; // TODO: by settings
-    bool m_useRenderBundles = true;
+    bool m_useRenderBundles = false;
 };
 
 } // namespace jipu
