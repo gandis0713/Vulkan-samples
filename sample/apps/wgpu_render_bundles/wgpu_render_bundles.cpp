@@ -586,7 +586,7 @@ void WGPURenderBundles::createPipeline()
     vertexState.buffers = vertexBufferLayout.data();
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
@@ -621,7 +621,7 @@ void WGPURenderBundles::createRenderBundle()
 {
     WGPURenderBundleEncoderDescriptor renderBundleEncoderDescriptor{};
     renderBundleEncoderDescriptor.colorFormatCount = 1;
-    renderBundleEncoderDescriptor.colorFormats = &m_surfaceCapabilities.formats[0];
+    renderBundleEncoderDescriptor.colorFormats = &m_surfaceConfigure.format;
     renderBundleEncoderDescriptor.depthStencilFormat = WGPUTextureFormat_Depth24Plus;
     renderBundleEncoderDescriptor.depthReadOnly = false;
     renderBundleEncoderDescriptor.stencilReadOnly = false;

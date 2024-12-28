@@ -482,7 +482,7 @@ void WGPUTexturedCube::createPipeline()
     vertexState.buffers = vertexBufferLayout.data();
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};

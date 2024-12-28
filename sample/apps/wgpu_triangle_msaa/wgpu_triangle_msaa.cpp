@@ -140,7 +140,7 @@ void WGPUTriangleSampleMSAA::createRenderTexture()
     descriptor.size.height = m_height;
     descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = m_sampleCount;
-    descriptor.format = m_surfaceCapabilities.formats[0]; // TODO
+    descriptor.format = m_surfaceConfigure.format;
     descriptor.mipLevelCount = 1;
     descriptor.usage = WGPUTextureUsage_RenderAttachment;
 
@@ -157,7 +157,7 @@ void WGPUTriangleSampleMSAA::createRenderTextureView()
     }
 
     WGPUTextureViewDescriptor descriptor{};
-    descriptor.format = m_surfaceCapabilities.formats[0]; // TODO
+    descriptor.format = m_surfaceConfigure.format;
     descriptor.dimension = WGPUTextureViewDimension_2D;
     descriptor.aspect = WGPUTextureAspect_All;
     descriptor.usage = WGPUTextureUsage_RenderAttachment;
@@ -222,7 +222,7 @@ void WGPUTriangleSampleMSAA::createRenderPipeline()
     vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
