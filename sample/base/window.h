@@ -29,6 +29,8 @@ public:
 
     uint32_t getWidth() const;
     uint32_t getHeight() const;
+    uint32_t getWindowWidth() const;
+    uint32_t getWindowHeight() const;
 
     virtual void init();
     virtual void onUpdate() = 0;
@@ -42,8 +44,10 @@ protected:
     void* m_handle = nullptr;
     bool m_initialized = false;
 
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
+    uint32_t m_width = 0;  // render target width
+    uint32_t m_height = 0; // render target height
+    uint32_t m_windowWidth = 0;
+    uint32_t m_windowHeight = 0;
 
     bool m_leftMouseButton = false;
     bool m_rightMouseButton = false;

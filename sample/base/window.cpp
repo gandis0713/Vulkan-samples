@@ -30,4 +30,14 @@ uint32_t Window::getHeight() const
     return m_height;
 }
 
+uint32_t Window::getWindowWidth() const
+{
+    return m_windowWidth;
+}
+
+uint32_t Window::getWindowHeight() const
+{
+    return m_windowHeight;
+}
+
 } // namespace jipu
