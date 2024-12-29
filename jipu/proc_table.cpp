@@ -10,6 +10,8 @@
 #include "webgpu/webgpu_instance.h"
 #include "webgpu/webgpu_pipeline_layout.h"
 #include "webgpu/webgpu_queue.h"
+#include "webgpu/webgpu_render_bundle.h"
+#include "webgpu/webgpu_render_bundle_encoder.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_render_pipeline.h"
 #include "webgpu/webgpu_sampler.h"
@@ -378,46 +380,60 @@ WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, W
 
 WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor)
 {
-    // WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
-    // return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
 
     return nullptr;
 }
 
 void procRenderBundleRelease(WGPURenderBundle renderBundle)
 {
-    // WebGPURenderBundle* webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(renderBundle);
-    // return webgpuRenderBundle->release();
+    WebGPURenderBundle* webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(renderBundle);
+    return webgpuRenderBundle->release();
 }
 
 void procRenderBundleEncoderDraw(WGPURenderBundleEncoder renderBundleEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return webgpuRenderBundleEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
 void procRenderBundleEncoderDrawIndexed(WGPURenderBundleEncoder renderBundleEncoder, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return webgpuRenderBundleEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
 }
 
 void procRenderBundleEncoderSetBindGroup(WGPURenderBundleEncoder renderBundleEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBindGroup* webgpuBindGroup = reinterpret_cast<WebGPUBindGroup*>(group);
+
+    return webgpuRenderBundleEncoder->setBindGroup(groupIndex, webgpuBindGroup, dynamicOffsetCount, dynamicOffsets);
 }
 
 void procRenderBundleEncoderSetIndexBuffer(WGPURenderBundleEncoder renderBundleEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+
+    return webgpuRenderBundleEncoder->setIndexBuffer(webgpuBuffer, format, offset, size);
 }
 
 void procRenderBundleEncoderSetPipeline(WGPURenderBundleEncoder renderBundleEncoder, WGPURenderPipeline pipeline)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPURenderPipeline* webgpuRenderPipeline = reinterpret_cast<WebGPURenderPipeline*>(pipeline);
+
+    return webgpuRenderBundleEncoder->setPipeline(webgpuRenderPipeline);
 }
 
 void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundleEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size)
 {
-    // TODO
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+
+    return webgpuRenderBundleEncoder->setVertexBuffer(slot, webgpuBuffer, offset, size);
 }
 
 void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles)
