@@ -67,6 +67,8 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
 void VulkanQueue::waitIdle()
 {
+    m_submitter->waitIdle();
+
     for (auto& task : m_notPresentTasks)
     {
         task.get();

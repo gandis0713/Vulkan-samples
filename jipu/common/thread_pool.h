@@ -19,6 +19,7 @@ public:
 
 public:
     std::future<void> enqueue(std::function<void()> func);
+    void stop();
 
 private:
     std::vector<std::thread> m_threads;

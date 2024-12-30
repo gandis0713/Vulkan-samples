@@ -32,6 +32,7 @@ public:
     std::future<void> submitAsync(const std::vector<VulkanSubmit>& submits);
 
     void present(VulkanPresentInfo presentInfo);
+    void waitIdle();
 
 private:
     // we use only one queue family to avoid ownership transfer between queue families.

@@ -76,13 +76,7 @@ VulkanSubmitter::VulkanSubmitter(VulkanDevice* device)
 
 VulkanSubmitter::~VulkanSubmitter()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    // wait idle state before destroy semaphore.
-    for (auto queue : m_queueFamily.graphicsQueues)
-        vkAPI.QueueWaitIdle(queue);
-    vkAPI.QueueWaitIdle(m_queueFamily.transferQueue);
+    waitIdle();
 
     // Doesn't need to destroy VkQueue.
 }
@@ -158,6 +152,19 @@ void VulkanSubmitter::present(VulkanPresentInfo presentInfo)
 
     auto queue = getVkQueue(SubmitType::kPresent);
     vkAPI.QueuePresentKHR(queue, &info);
+}
+
+void VulkanSubmitter::waitIdle()
+{
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    // wait idle state before destroy semaphore.
+    for (auto queue : m_queueFamily.graphicsQueues)
+        vkAPI.QueueWaitIdle(queue);
+    vkAPI.QueueWaitIdle(m_queueFamily.transferQueue);
+
+    m_threadPool.stop();
 }
 
 VkQueue VulkanSubmitter::getVkQueue(SubmitType type) const
