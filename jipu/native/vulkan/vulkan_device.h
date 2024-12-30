@@ -9,6 +9,7 @@
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_pool.h"
 #include "vulkan_deleter.h"
+#include "vulkan_descriptor_pool.h"
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
@@ -71,6 +72,7 @@ public:
     std::shared_ptr<VulkanResourceAllocator> getResourceAllocator();
     std::shared_ptr<VulkanSemaphorePool> getSemaphorePool();
     std::shared_ptr<VulkanFencePool> getFencePool();
+    std::shared_ptr<VulkanDescriptorPool> getDescriptorPool();
     std::shared_ptr<VulkanRenderPassCache> getRenderPassCache();
     std::shared_ptr<VulkanFramebufferCache> getFramebufferCache();
     std::shared_ptr<VulkanCommandPool> getCommandPool();
@@ -80,7 +82,6 @@ public:
 public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
-    VkDescriptorPool getVkDescriptorPool();
     const std::vector<VkQueueFamilyProperties>& getActivatedQueueFamilies() const;
 
 public:
@@ -96,11 +97,11 @@ private:
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;
-    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
 
     std::shared_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
     std::shared_ptr<VulkanFencePool> m_fencePool = nullptr;
     std::shared_ptr<VulkanCommandPool> m_commandBufferPool = nullptr;
+    std::shared_ptr<VulkanDescriptorPool> m_descriptorPool = nullptr;
 
     std::shared_ptr<VulkanRenderPassCache> m_renderPassCache = nullptr;
     std::shared_ptr<VulkanFramebufferCache> m_frameBufferCache = nullptr;

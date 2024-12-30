@@ -122,6 +122,17 @@ std::vector<TextureBindingLayout> VulkanBindGroupLayout::getTextureBindingLayout
     return layouts;
 }
 
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getDescriptorSetLayouts() const
+{
+    std::vector<VkDescriptorSetLayoutBinding> bindings{};
+
+    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
+    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
+    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+
+    return bindings;
+}
+
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getBufferDescriptorSetLayouts() const
 {
     return m_descriptor.buffers;

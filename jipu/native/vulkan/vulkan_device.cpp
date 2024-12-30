@@ -54,9 +54,9 @@ VulkanDevice::~VulkanDevice()
 
     m_inflightObjects.reset();
 
-    vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
     m_resourceAllocator.reset();
 
+    m_descriptorPool.reset();
     m_commandBufferPool.reset();
     m_semaphorePool.reset();
     m_fencePool.reset();
@@ -179,6 +179,11 @@ std::shared_ptr<VulkanFencePool> VulkanDevice::getFencePool()
     return m_fencePool;
 }
 
+std::shared_ptr<VulkanDescriptorPool> VulkanDevice::getDescriptorPool()
+{
+    return m_descriptorPool;
+}
+
 std::shared_ptr<VulkanRenderPassCache> VulkanDevice::getRenderPassCache()
 {
     return m_renderPassCache;
@@ -212,71 +217,6 @@ VkDevice VulkanDevice::getVkDevice() const
 VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
     return m_physicalDevice->getVkPhysicalDevice();
-}
-
-VkDescriptorPool VulkanDevice::getVkDescriptorPool()
-{
-    if (m_descriptorPool == VK_NULL_HANDLE)
-    {
-        const uint32_t maxSets = 32; // TODO: set correct max value.
-        const uint64_t descriptorPoolCount = 8;
-        const uint64_t maxDescriptorSetSize = descriptorPoolCount;
-        std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
-        VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-                                                   .pNext = nullptr,
-                                                   .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                                                   .maxSets = maxSets,
-                                                   .poolSizeCount = descriptorPoolCount,
-                                                   .pPoolSizes = poolSizes.data() };
-
-        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = m_physicalDevice->getVulkanPhysicalDeviceInfo();
-        const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
-
-        uint32_t kDescriptorSetUniformBufferCount = 32;
-        if (devicePropertyLimists.maxDescriptorSetUniformBuffers < kDescriptorSetUniformBufferCount)
-            kDescriptorSetUniformBufferCount = devicePropertyLimists.maxDescriptorSetUniformBuffers;
-
-        uint32_t kDescriptorSetUniformBufferDynamicCount = 32;
-        if (devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic < kDescriptorSetUniformBufferDynamicCount)
-            kDescriptorSetUniformBufferDynamicCount = devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic;
-
-        uint32_t kDescriptorSetSamplers = 32;
-        if (devicePropertyLimists.maxDescriptorSetSamplers < kDescriptorSetSamplers)
-            kDescriptorSetSamplers = devicePropertyLimists.maxDescriptorSetSamplers;
-
-        uint32_t kDescriptorSetSampledImages = 32;
-        if (devicePropertyLimists.maxDescriptorSetSampledImages < kDescriptorSetSampledImages)
-            kDescriptorSetSampledImages = devicePropertyLimists.maxDescriptorSetSampledImages;
-
-        uint32_t kDescriptorSetInputAttachments = 32;
-        if (devicePropertyLimists.maxDescriptorSetInputAttachments < kDescriptorSetInputAttachments)
-            kDescriptorSetInputAttachments = devicePropertyLimists.maxDescriptorSetInputAttachments;
-
-        uint32_t kDescriptorSetStorageBuffers = 32;
-        if (devicePropertyLimists.maxDescriptorSetStorageBuffers < kDescriptorSetStorageBuffers)
-            kDescriptorSetStorageBuffers = devicePropertyLimists.maxDescriptorSetStorageBuffers;
-
-        uint32_t kDescriptorSetStorageBuffersDynamic = 32;
-        if (devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic < kDescriptorSetStorageBuffersDynamic)
-            kDescriptorSetStorageBuffersDynamic = devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic;
-
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kDescriptorSetUniformBufferCount };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, kDescriptorSetUniformBufferDynamicCount };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, kDescriptorSetSamplers };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, kDescriptorSetSampledImages };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kDescriptorSetSampledImages };
-        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, kDescriptorSetInputAttachments };
-        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, kDescriptorSetStorageBuffers };
-        poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, kDescriptorSetStorageBuffersDynamic };
-
-        VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
-        if (result != VK_SUCCESS)
-        {
-            throw std::runtime_error(fmt::format("Failed to create descriptor pool. {}", static_cast<uint32_t>(result)));
-        }
-    }
-
-    return m_descriptorPool;
 }
 
 const std::vector<VkQueueFamilyProperties>& VulkanDevice::getActivatedQueueFamilies() const
@@ -365,6 +305,7 @@ void VulkanDevice::createPools()
 {
     m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
     m_fencePool = std::make_unique<VulkanFencePool>(this);
+    m_descriptorPool = std::make_unique<VulkanDescriptorPool>(this);
 
     // command buffer pool
     {

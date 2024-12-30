@@ -82,19 +82,8 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
     auto vulkanDevice = downcast(device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     auto vulkanBindGroupLayout = downcast(m_descriptor.layout);
-    auto descriptorSetLayout = vulkanBindGroupLayout->getVkDescriptorSetLayout();
 
-    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
-    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.descriptorPool = vulkanDevice->getVkDescriptorPool();
-    descriptorSetAllocateInfo.descriptorSetCount = 1;
-    descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
-
-    VkResult result = vkAPI.AllocateDescriptorSets(vulkanDevice->getVkDevice(), &descriptorSetAllocateInfo, &m_descriptorSet);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to allocate descriptor sets.");
-    }
+    m_descriptorSet = m_device->getDescriptorPool()->allocate(this);
 
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();

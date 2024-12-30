@@ -30,6 +30,8 @@ public:
     std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const override;
     std::vector<TextureBindingLayout> getTextureBindingLayouts() const override;
 
+    std::vector<VkDescriptorSetLayoutBinding> getDescriptorSetLayouts() const;
+
     std::vector<VkDescriptorSetLayoutBinding> getBufferDescriptorSetLayouts() const;
     VkDescriptorSetLayoutBinding getBufferDescriptorSetLayout(uint32_t index) const;
 

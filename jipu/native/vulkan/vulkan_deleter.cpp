@@ -475,7 +475,7 @@ void VulkanDeleter::destroy(VkShaderModule shaderModule)
 
 void VulkanDeleter::destroy(VkDescriptorSet descriptorSet)
 {
-    m_device->vkAPI.FreeDescriptorSets(m_device->getVkDevice(), m_device->getVkDescriptorPool(), 1, &descriptorSet);
+    m_device->getDescriptorPool()->free(descriptorSet);
 }
 
 void VulkanDeleter::destroy(VkDescriptorSetLayout descriptorSetLayout)
