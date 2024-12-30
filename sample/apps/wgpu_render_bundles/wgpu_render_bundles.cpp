@@ -365,11 +365,7 @@ void WGPURenderBundles::createMoonImageTexture()
     WGPUTextureDataLayout dataLayout{};
     dataLayout.offset = 0;
     dataLayout.bytesPerRow = sizeof(unsigned char) * width * channel;
-#if defined(USE_DAWN_HEADER)
     dataLayout.rowsPerImage = height;
-#else
-    dataLayout.rowsPerTexture = height;
-#endif
 
     wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
 }
@@ -425,11 +421,7 @@ void WGPURenderBundles::createPlanetImageTexture()
     WGPUTextureDataLayout dataLayout{};
     dataLayout.offset = 0;
     dataLayout.bytesPerRow = sizeof(unsigned char) * width * channel;
-#if defined(USE_DAWN_HEADER)
     dataLayout.rowsPerImage = height;
-#else
-    dataLayout.rowsPerTexture = height;
-#endif
 
     wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
 }
