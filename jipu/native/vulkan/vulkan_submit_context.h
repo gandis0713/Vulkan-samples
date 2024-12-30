@@ -71,6 +71,19 @@ struct VulkanSubmit
     void addSrcImage(VulkanTextureResource image);
     void addDstBuffer(VulkanBufferResource buffer);
     void addDstImage(VulkanTextureResource image);
+
+    void add(CopyBufferToBufferCommand* command);
+    void add(CopyBufferToTextureCommand* command);
+    void add(CopyTextureToBufferCommand* command);
+    void add(CopyTextureToTextureCommand* command);
+    void add(SetComputePipelineCommand* command);
+    void addComputeBindGroup(SetBindGroupCommand* command);
+    void add(BeginRenderPassCommand* command);
+    void addRenderBindGroup(SetBindGroupCommand* command);
+    void add(SetRenderPipelineCommand* command);
+    void add(SetVertexBufferCommand* command);
+    void add(SetIndexBufferCommand* command);
+    void add(ExecuteBundleCommand* command);
 };
 
 class VulkanDevice;

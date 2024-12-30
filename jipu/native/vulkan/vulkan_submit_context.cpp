@@ -5,6 +5,7 @@
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_sampler.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
@@ -109,6 +110,166 @@ void VulkanSubmit::addDstBuffer(VulkanBufferResource buffer)
 void VulkanSubmit::addDstImage(VulkanTextureResource image)
 {
     object.srcResource.images.insert({ image.image, image.memory });
+}
+
+void VulkanSubmit::add(CopyBufferToBufferCommand* command)
+{
+    addSrcBuffer(downcast(command->src.buffer)->getVulkanBufferResource());
+    addDstBuffer(downcast(command->dst.buffer)->getVulkanBufferResource());
+}
+
+void VulkanSubmit::add(CopyBufferToTextureCommand* command)
+{
+    addSrcBuffer(downcast(command->buffer.buffer)->getVulkanBufferResource());
+    addDstImage(downcast(command->texture.texture)->getVulkanTextureResource());
+}
+
+void VulkanSubmit::add(CopyTextureToBufferCommand* command)
+{
+    addSrcImage(downcast(command->texture.texture)->getVulkanTextureResource());
+    addDstBuffer(downcast(command->buffer.buffer)->getVulkanBufferResource());
+}
+
+void VulkanSubmit::add(CopyTextureToTextureCommand* command)
+{
+    addSrcImage(downcast(command->src.texture)->getVulkanTextureResource());
+    addDstImage(downcast(command->dst.texture)->getVulkanTextureResource());
+}
+
+void VulkanSubmit::add(SetComputePipelineCommand* command)
+{
+    add(downcast(command->pipeline)->getVkPipeline());
+    add(downcast(command->pipeline->getPipelineLayout())->getVkPipelineLayout());
+    add({ downcast(command->pipeline)->getShaderModule() });
+}
+
+void VulkanSubmit::addComputeBindGroup(SetBindGroupCommand* command)
+{
+    add(downcast(command->bindGroup)->getVkDescriptorSet());
+    add(downcast(command->bindGroup->getLayout())->getVkDescriptorSetLayout());
+    for (auto& binding : command->bindGroup->getBufferBindings())
+    {
+        addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+        addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+    }
+    for (auto& binding : command->bindGroup->getSmaplerBindings())
+    {
+        add(downcast(binding.sampler)->getVkSampler());
+    }
+    for (auto& binding : command->bindGroup->getTextureBindings())
+    {
+        addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+        addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+
+        add(downcast(binding.textureView)->getVkImageView());
+    }
+}
+
+void VulkanSubmit::add(BeginRenderPassCommand* command)
+{
+    auto framebuffer = command->framebuffer.lock();
+    if (framebuffer)
+    {
+        for (auto& colorAttachment : framebuffer->getColorAttachments())
+        {
+            addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
+            add(downcast(colorAttachment.renderView)->getVkImageView());
+            if (colorAttachment.resolveView)
+            {
+                addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
+                add(downcast(colorAttachment.resolveView)->getVkImageView());
+            }
+        }
+
+        auto depthStencilAttachment = framebuffer->getDepthStencilAttachment();
+        if (depthStencilAttachment)
+        {
+            addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
+            add(downcast(depthStencilAttachment)->getVkImageView());
+        }
+        add(framebuffer->getVkFrameBuffer());
+    }
+
+    auto renderPass = command->renderPass.lock();
+    if (renderPass)
+    {
+        add(renderPass->getVkRenderPass());
+    }
+}
+
+void VulkanSubmit::addRenderBindGroup(SetBindGroupCommand* command)
+{
+    add(downcast(command->bindGroup)->getVkDescriptorSet());
+    add(downcast(command->bindGroup->getLayout())->getVkDescriptorSetLayout());
+    for (auto& binding : command->bindGroup->getBufferBindings())
+    {
+        addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+        addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
+    }
+    for (auto& binding : command->bindGroup->getSmaplerBindings())
+    {
+        add(downcast(binding.sampler)->getVkSampler());
+    }
+    for (auto& binding : command->bindGroup->getTextureBindings())
+    {
+        addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+        addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
+
+        add(downcast(binding.textureView)->getVkImageView());
+    }
+}
+
+void VulkanSubmit::add(SetRenderPipelineCommand* command)
+{
+    add(downcast(command->pipeline)->getVkPipeline());
+    add(downcast(command->pipeline->getPipelineLayout())->getVkPipelineLayout());
+    add(downcast(command->pipeline)->getShaderModules());
+}
+
+void VulkanSubmit::add(SetVertexBufferCommand* command)
+{
+    addDstBuffer(downcast(command->buffer)->getVulkanBufferResource());
+}
+
+void VulkanSubmit::add(SetIndexBufferCommand* command)
+{
+    addDstBuffer(downcast(command->buffer)->getVulkanBufferResource());
+}
+
+void VulkanSubmit::add(ExecuteBundleCommand* command)
+{
+    for (auto& renderBundle : command->renderBundles)
+    {
+        auto vulkanRenderBundle = downcast(renderBundle);
+        const auto& commands = vulkanRenderBundle->getCommands();
+        for (auto& cmd : commands)
+        {
+            switch (cmd->type)
+            {
+            case CommandType::kSetRenderPipeline:
+                add(reinterpret_cast<SetRenderPipelineCommand*>(cmd.get()));
+                break;
+            case CommandType::kSetVertexBuffer:
+                add(reinterpret_cast<SetVertexBufferCommand*>(cmd.get()));
+                break;
+            case CommandType::kSetIndexBuffer:
+                add(reinterpret_cast<SetIndexBufferCommand*>(cmd.get()));
+                break;
+            case CommandType::kSetRenderBindGroup:
+                addRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(cmd.get()));
+                break;
+            case CommandType::kDraw:
+            case CommandType::kDrawIndexed:
+            case CommandType::kDrawIndirect:
+            case CommandType::kDrawIndexedIndirect:
+                // nothing to do.
+                break;
+            default:
+                throw std::runtime_error("Unknown command type.");
+                break;
+            }
+        }
+    }
 }
 
 bool findSrcBuffer(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, Buffer* buffer)
@@ -442,142 +603,48 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             {
                 switch (command->type)
                 {
-                case CommandType::kCopyBufferToBuffer: {
-                    auto cmd = reinterpret_cast<CopyBufferToBufferCommand*>(command.get());
-                    currentSubmit.addSrcBuffer(downcast(cmd->src.buffer)->getVulkanBufferResource());
-                    currentSubmit.addDstBuffer(downcast(cmd->dst.buffer)->getVulkanBufferResource());
-                }
-                break;
-                case CommandType::kCopyBufferToTexture: {
-                    auto cmd = reinterpret_cast<CopyBufferToTextureCommand*>(command.get());
-                    currentSubmit.addSrcBuffer(downcast(cmd->buffer.buffer)->getVulkanBufferResource());
-                    currentSubmit.addDstImage(downcast(cmd->texture.texture)->getVulkanTextureResource());
-                }
-                break;
-                case CommandType::kCopyTextureToBuffer: {
-                    auto cmd = reinterpret_cast<CopyTextureToBufferCommand*>(command.get());
-                    currentSubmit.addSrcImage(downcast(cmd->texture.texture)->getVulkanTextureResource());
-                    currentSubmit.addDstBuffer(downcast(cmd->buffer.buffer)->getVulkanBufferResource());
-                }
-                break;
-                case CommandType::kCopyTextureToTexture: {
-                    auto cmd = reinterpret_cast<CopyTextureToTextureCommand*>(command.get());
-                    currentSubmit.addSrcImage(downcast(cmd->src.texture)->getVulkanTextureResource());
-                    currentSubmit.addDstImage(downcast(cmd->dst.texture)->getVulkanTextureResource());
-                }
-                break;
+                case CommandType::kCopyBufferToBuffer:
+                    currentSubmit.add(reinterpret_cast<CopyBufferToBufferCommand*>(command.get()));
+                    break;
+                case CommandType::kCopyBufferToTexture:
+                    currentSubmit.add(reinterpret_cast<CopyBufferToTextureCommand*>(command.get()));
+                    break;
+                case CommandType::kCopyTextureToBuffer:
+                    currentSubmit.add(reinterpret_cast<CopyTextureToBufferCommand*>(command.get()));
+                    break;
+                case CommandType::kCopyTextureToTexture:
+                    currentSubmit.add(reinterpret_cast<CopyTextureToTextureCommand*>(command.get()));
+                    break;
                 case CommandType::kBeginComputePass:
-                    // do nothing.
-                    break;
                 case CommandType::kEndComputePass:
-                    // do nothing.
-                    break;
                 case CommandType::kDispatch:
-                    // do nothing.
-                    break;
                 case CommandType::kDispatchIndirect:
                     // do nothing.
                     break;
-                case CommandType::kSetComputePipeline: {
-                    auto cmd = reinterpret_cast<SetComputePipelineCommand*>(command.get());
-                    currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
-                    currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
-                    currentSubmit.add({ downcast(cmd->pipeline)->getShaderModule() });
-                }
-                break;
-                case CommandType::kSetComputeBindGroup: {
-                    auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                    currentSubmit.add(downcast(cmd->bindGroup)->getVkDescriptorSet());
-                    currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
-                    for (auto& binding : cmd->bindGroup->getBufferBindings())
-                    {
-                        currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
-                        currentSubmit.addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
-                    }
-                    for (auto& binding : cmd->bindGroup->getSmaplerBindings())
-                    {
-                        currentSubmit.add(downcast(binding.sampler)->getVkSampler());
-                    }
-                    for (auto& binding : cmd->bindGroup->getTextureBindings())
-                    {
-                        currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
-                        currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
-
-                        currentSubmit.add(downcast(binding.textureView)->getVkImageView());
-                    }
-                }
-                break;
-                case CommandType::kBeginRenderPass: {
-                    auto cmd = reinterpret_cast<BeginRenderPassCommand*>(command.get());
-                    auto framebuffer = cmd->framebuffer.lock();
-                    if (framebuffer)
-                    {
-                        for (auto& colorAttachment : framebuffer->getColorAttachments())
-                        {
-                            currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
-                            currentSubmit.add(downcast(colorAttachment.renderView)->getVkImageView());
-                            if (colorAttachment.resolveView)
-                            {
-                                currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
-                                currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
-                            }
-                        }
-
-                        auto depthStencilAttachment = framebuffer->getDepthStencilAttachment();
-                        if (depthStencilAttachment)
-                        {
-                            currentSubmit.addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
-                            currentSubmit.add(downcast(depthStencilAttachment)->getVkImageView());
-                        }
-                        currentSubmit.add(framebuffer->getVkFrameBuffer());
-                    }
-
-                    auto renderPass = cmd->renderPass.lock();
-                    if (renderPass)
-                    {
-                        currentSubmit.add(renderPass->getVkRenderPass());
-                    }
-                }
-                break;
-                case CommandType::kSetRenderPipeline: {
-                    auto cmd = reinterpret_cast<SetRenderPipelineCommand*>(command.get());
-                    currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
-                    currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
-                    currentSubmit.add(downcast(cmd->pipeline)->getShaderModules());
-                }
-                break;
-                case CommandType::kSetRenderBindGroup: {
-                    auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                    currentSubmit.add(downcast(cmd->bindGroup)->getVkDescriptorSet());
-                    currentSubmit.add(downcast(cmd->bindGroup->getLayout())->getVkDescriptorSetLayout());
-                    for (auto& binding : cmd->bindGroup->getBufferBindings())
-                    {
-                        currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
-                        currentSubmit.addDstBuffer(downcast(binding.buffer)->getVulkanBufferResource());
-                    }
-                    for (auto& binding : cmd->bindGroup->getSmaplerBindings())
-                    {
-                        currentSubmit.add(downcast(binding.sampler)->getVkSampler());
-                    }
-                    for (auto& binding : cmd->bindGroup->getTextureBindings())
-                    {
-                        currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
-                        currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVulkanTextureResource());
-
-                        currentSubmit.add(downcast(binding.textureView)->getVkImageView());
-                    }
-                }
-                break;
-                case CommandType::kSetIndexBuffer: {
-                    auto cmd = reinterpret_cast<SetIndexBufferCommand*>(command.get());
-                    currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVulkanBufferResource());
-                }
-                break;
-                case CommandType::kSetVertexBuffer: {
-                    auto cmd = reinterpret_cast<SetVertexBufferCommand*>(command.get());
-                    currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVulkanBufferResource());
-                }
-                break;
+                case CommandType::kSetComputePipeline:
+                    currentSubmit.add(reinterpret_cast<SetComputePipelineCommand*>(command.get()));
+                    break;
+                case CommandType::kSetComputeBindGroup:
+                    currentSubmit.addComputeBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+                    break;
+                case CommandType::kBeginRenderPass:
+                    currentSubmit.add(reinterpret_cast<BeginRenderPassCommand*>(command.get()));
+                    break;
+                case CommandType::kSetRenderPipeline:
+                    currentSubmit.add(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
+                    break;
+                case CommandType::kSetRenderBindGroup:
+                    currentSubmit.addRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+                    break;
+                case CommandType::kSetIndexBuffer:
+                    currentSubmit.add(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
+                    break;
+                case CommandType::kSetVertexBuffer:
+                    currentSubmit.add(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
+                    break;
+                case CommandType::kExecuteBundle:
+                    currentSubmit.add(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
+                    break;
                 default:
                     // do nothing.
                     break;

@@ -176,6 +176,12 @@ void WGPURenderBundles::finalizeContext()
 {
     // TODO: check ways release and destory.
 
+    if (m_renderBundle)
+    {
+        wgpu.RenderBundleRelease(m_renderBundle);
+        m_renderBundle = nullptr;
+    }
+
     if (m_bindGroup)
     {
         wgpu.BindGroupRelease(m_bindGroup);
@@ -268,12 +274,6 @@ void WGPURenderBundles::finalizeContext()
     }
     m_asteroids.clear();
 
-    if (m_planet.bindGroup)
-    {
-        wgpu.BindGroupRelease(m_planet.bindGroup);
-        m_planet.bindGroup = nullptr;
-    }
-
     if (m_planet.indexBuffer)
     {
         wgpu.BufferRelease(m_planet.indexBuffer);
@@ -284,12 +284,6 @@ void WGPURenderBundles::finalizeContext()
     {
         wgpu.BufferRelease(m_planet.vertexBuffer);
         m_planet.vertexBuffer = nullptr;
-    }
-
-    if (m_planet.uniformBuffer)
-    {
-        wgpu.BufferRelease(m_planet.uniformBuffer);
-        m_planet.uniformBuffer = nullptr;
     }
 
     if (m_renderPipeline)
@@ -314,12 +308,6 @@ void WGPURenderBundles::finalizeContext()
     {
         wgpu.ShaderModuleRelease(m_fragWGSLShaderModule);
         m_fragWGSLShaderModule = nullptr;
-    }
-
-    if (m_renderBundle)
-    {
-        wgpu.RenderBundleRelease(m_renderBundle);
-        m_renderBundle = nullptr;
     }
 
     WGPUSample::finalizeContext();
