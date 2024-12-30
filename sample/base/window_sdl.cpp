@@ -9,6 +9,8 @@ namespace jipu
 
 Window::Window(const WindowDescriptor& descriptor)
     : m_handle(descriptor.handle)
+    , m_width(descriptor.width)
+    , m_height(descriptor.height)
     , m_windowWidth(descriptor.width)
     , m_windowHeight(descriptor.height)
 {
