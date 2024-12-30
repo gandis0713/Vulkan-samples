@@ -22,27 +22,28 @@ VulkanCommandPool::VulkanCommandPool(VulkanDevice* device)
 
 VulkanCommandPool::~VulkanCommandPool()
 {
-    for (auto& commandBuffer : m_commandBuffers)
+    for (auto& [commandBuffer, info] : m_commandBuffers)
     {
-        if (commandBuffer.second)
+        if (info.isUsed)
         {
             spdlog::warn("Command buffer is not released in this command buffer pool.");
         }
 
-        m_device->vkAPI.FreeCommandBuffers(m_device->getVkDevice(), m_commandPool, 1, &commandBuffer.first);
+        m_device->vkAPI.FreeCommandBuffers(m_device->getVkDevice(), m_commandPool, 1, &commandBuffer);
     }
 
     m_device->vkAPI.DestroyCommandPool(m_device->getVkDevice(), m_commandPool, nullptr);
+    m_commandPool = VK_NULL_HANDLE;
 }
 
-VkCommandBuffer VulkanCommandPool::create(/* TODO */)
+VkCommandBuffer VulkanCommandPool::create(const VulkanCommandBufferDescriptor& descriptor)
 {
-    for (auto& commandBuffer : m_commandBuffers)
+    for (auto& [commandBuffer, info] : m_commandBuffers)
     {
-        if (commandBuffer.second == false)
+        if (info.isUsed == false && info.level == descriptor.level)
         {
-            commandBuffer.second = true;
-            return commandBuffer.first;
+            info.isUsed = true;
+            return commandBuffer;
         }
     }
 
@@ -50,7 +51,7 @@ VkCommandBuffer VulkanCommandPool::create(/* TODO */)
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     commandBufferAllocateInfo.pNext = nullptr;
     commandBufferAllocateInfo.commandPool = m_commandPool;
-    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferAllocateInfo.level = descriptor.level;
     commandBufferAllocateInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
@@ -59,7 +60,7 @@ VkCommandBuffer VulkanCommandPool::create(/* TODO */)
         throw std::runtime_error("Failed to create command buffer.");
     }
 
-    m_commandBuffers.insert(std::make_pair(commandBuffer, true));
+    m_commandBuffers.insert(std::make_pair(commandBuffer, CommandBufferInfo{ .level = descriptor.level, .isUsed = true }));
 
     return commandBuffer;
 }
@@ -72,7 +73,7 @@ void VulkanCommandPool::release(VkCommandBuffer commandBuffer)
         return;
     }
 
-    m_commandBuffers[commandBuffer] = false;
+    m_commandBuffers[commandBuffer].isUsed = false;
 }
 
 void VulkanCommandPool::createVkCommandPool()

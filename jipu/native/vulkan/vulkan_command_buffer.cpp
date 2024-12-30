@@ -57,7 +57,8 @@ void VulkanCommandBuffer::createVkCommandBuffer()
 {
     if (!m_commandBuffer)
     {
-        m_commandBuffer = getDevice()->getCommandPool()->create();
+        VulkanCommandBufferDescriptor descriptor{ .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY };
+        m_commandBuffer = getDevice()->getCommandPool()->create(descriptor);
     }
 }
 

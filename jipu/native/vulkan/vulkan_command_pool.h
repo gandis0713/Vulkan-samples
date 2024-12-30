@@ -8,6 +8,11 @@
 namespace jipu
 {
 
+struct VulkanCommandBufferDescriptor
+{
+    VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+};
+
 class VulkanDevice;
 class VulkanCommandPool final
 {
@@ -20,7 +25,7 @@ public:
     ~VulkanCommandPool();
 
 public:
-    VkCommandBuffer create(/* TODO */);
+    VkCommandBuffer create(const VulkanCommandBufferDescriptor& descriptor);
     void release(VkCommandBuffer commandBuffer);
 
 private:
@@ -33,10 +38,12 @@ private:
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
 
 private:
-    std::unordered_map<VkCommandBuffer, bool> m_commandBuffers{};
-
-private:
-    std::unordered_set<VkCommandBuffer> m_releasePendingCommandBuffers{};
+    struct CommandBufferInfo
+    {
+        VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        bool isUsed = false;
+    };
+    std::unordered_map<VkCommandBuffer, CommandBufferInfo> m_commandBuffers{};
 
 private:
     explicit VulkanCommandPool(VulkanDevice* device);
