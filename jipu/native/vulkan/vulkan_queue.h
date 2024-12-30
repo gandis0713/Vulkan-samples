@@ -38,7 +38,7 @@ private:
 private:
     std::unordered_map<uint32_t, std::vector<VkSemaphore>> m_presentSignalSemaphores{};
     std::unordered_map<uint32_t, std::future<void>> m_presentTasks{};
-    std::vector<std::future<void>> m_notPresentTasks{};
+    std::queue<std::future<void>> m_notPresentTasks{}; // TODO: consider it is needed.
 };
 
 DOWN_CAST(VulkanQueue, Queue);

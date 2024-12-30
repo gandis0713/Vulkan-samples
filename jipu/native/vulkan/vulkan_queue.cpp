@@ -60,7 +60,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         }
         else
         {
-            m_notPresentTasks.push_back(std::move(future));
+            m_notPresentTasks.push(std::move(future));
         }
     }
 }
@@ -69,11 +69,13 @@ void VulkanQueue::waitIdle()
 {
     m_submitter->waitIdle();
 
-    for (auto& task : m_notPresentTasks)
+    while (!m_notPresentTasks.empty())
     {
+        auto task = std::move(m_notPresentTasks.front());
+        m_notPresentTasks.pop();
+
         task.get();
     }
-    m_notPresentTasks.clear();
 
     for (auto& [_, task] : m_presentTasks)
     {
