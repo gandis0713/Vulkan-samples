@@ -54,6 +54,7 @@ public:
     std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
     std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
+    std::unique_ptr<RenderBundleEncoder> createRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor) override;
 
 public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);

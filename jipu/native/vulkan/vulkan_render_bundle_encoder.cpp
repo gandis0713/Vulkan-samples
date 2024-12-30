@@ -1,17 +1,19 @@
 #include "vulkan_render_bundle_encoder.h"
 
+#include "vulkan_device.h"
 #include "vulkan_render_bundle.h"
 
 namespace jipu
 {
 
-std::unique_ptr<RenderBundleEncoder> VulkanRenderBundleEncoder::create(const RenderBundleEncoderDescriptor& descriptor)
+std::unique_ptr<RenderBundleEncoder> VulkanRenderBundleEncoder::create(VulkanDevice* device, const RenderBundleEncoderDescriptor& descriptor)
 {
-    return std::unique_ptr<RenderBundleEncoder>(new VulkanRenderBundleEncoder(descriptor));
+    return std::unique_ptr<RenderBundleEncoder>(new VulkanRenderBundleEncoder(device, descriptor));
 }
 
-VulkanRenderBundleEncoder::VulkanRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor)
+VulkanRenderBundleEncoder::VulkanRenderBundleEncoder(VulkanDevice* device, const RenderBundleEncoderDescriptor& descriptor)
     : RenderBundleEncoder()
+    , m_device(device)
     , m_descriptor(descriptor)
 {
 }

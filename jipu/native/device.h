@@ -10,6 +10,7 @@
 #include "pipeline_layout.h"
 #include "query_set.h"
 #include "queue.h"
+#include "render_bundle_encoder.h"
 #include "sampler.h"
 #include "shader_module.h"
 #include "swapchain.h"
@@ -46,6 +47,7 @@ public:
     virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) = 0;
     virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<RenderBundleEncoder> createRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor) = 0;
 
 protected:
     Device() = default;

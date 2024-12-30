@@ -11,17 +11,17 @@
 namespace jipu
 {
 
-WebGPURenderBundleEncoder* WebGPURenderBundleEncoder::create(WebGPUDevice* wgpuDevice, WGPURenderPassDescriptor const* descriptor)
+WebGPURenderBundleEncoder* WebGPURenderBundleEncoder::create(WebGPUDevice* wgpuDevice, WGPURenderBundleEncoderDescriptor const* descriptor)
 {
-    // auto device = wgpuDevice->getDevice();
+    auto device = wgpuDevice->getDevice();
 
-    // RenderBundleEncoderDescriptor renderBundleEncoderDescriptor{};
+    RenderBundleEncoderDescriptor renderBundleEncoderDescriptor{};
+    auto renderBundleEncoder = device->createRenderBundleEncoder(renderBundleEncoderDescriptor);
 
-    // return new WebGPURenderBundleEncoder(wgpuDevice, std::move(renderBundleEncoder), descriptor);
-    return nullptr;
+    return new WebGPURenderBundleEncoder(wgpuDevice, std::move(renderBundleEncoder), descriptor);
 }
 
-WebGPURenderBundleEncoder::WebGPURenderBundleEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<RenderBundleEncoder> renderBundleEncoder, WGPURenderPassDescriptor const* descriptor)
+WebGPURenderBundleEncoder::WebGPURenderBundleEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<RenderBundleEncoder> renderBundleEncoder, WGPURenderBundleEncoderDescriptor const* descriptor)
     : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
     , m_renderBundleEncoder(std::move(renderBundleEncoder))

@@ -8,6 +8,7 @@
 #include "vulkan_physical_device.h"
 #include "vulkan_query_set.h"
 #include "vulkan_queue.h"
+#include "vulkan_render_bundle_encoder.h"
 #include "vulkan_sampler.h"
 
 #include <fmt/format.h>
@@ -147,6 +148,11 @@ std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDe
 std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
     return std::make_unique<VulkanCommandEncoder>(this, descriptor);
+}
+
+std::unique_ptr<RenderBundleEncoder> VulkanDevice::createRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor)
+{
+    return VulkanRenderBundleEncoder::create(this, descriptor);
 }
 
 VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const

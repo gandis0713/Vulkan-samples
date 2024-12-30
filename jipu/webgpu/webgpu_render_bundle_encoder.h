@@ -19,11 +19,11 @@ class WebGPURenderBundleEncoder : public RefCounted
 {
 
 public:
-    static WebGPURenderBundleEncoder* create(WebGPUDevice* wgpuDevice, WGPURenderPassDescriptor const* descriptor);
+    static WebGPURenderBundleEncoder* create(WebGPUDevice* wgpuDevice, WGPURenderBundleEncoderDescriptor const* descriptor);
 
 public:
     WebGPURenderBundleEncoder() = delete;
-    explicit WebGPURenderBundleEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<RenderBundleEncoder> RenderBundleEncoder, WGPURenderPassDescriptor const* descriptor);
+    explicit WebGPURenderBundleEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<RenderBundleEncoder> RenderBundleEncoder, WGPURenderBundleEncoderDescriptor const* descriptor);
 
 public:
     virtual ~WebGPURenderBundleEncoder() = default;
@@ -45,7 +45,7 @@ public:
 
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
-    [[maybe_unused]] const WGPURenderPassDescriptor m_descriptor{};
+    [[maybe_unused]] const WGPURenderBundleEncoderDescriptor m_descriptor{};
 
 private:
     std::unique_ptr<RenderBundleEncoder> m_renderBundleEncoder = nullptr;

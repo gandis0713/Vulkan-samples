@@ -5,10 +5,11 @@
 namespace jipu
 {
 
+class VulkanDevice;
 class VulkanRenderBundleEncoder : public RenderBundleEncoder
 {
 public:
-    static std::unique_ptr<RenderBundleEncoder> create(const RenderBundleEncoderDescriptor& descriptor);
+    static std::unique_ptr<RenderBundleEncoder> create(VulkanDevice* device, const RenderBundleEncoderDescriptor& descriptor);
 
 public:
     VulkanRenderBundleEncoder() = delete;
@@ -37,9 +38,10 @@ public:
     std::unique_ptr<RenderBundle> finish(const RenderBundleDescriptor& descriptor) override;
 
 private:
-    VulkanRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor);
+    VulkanRenderBundleEncoder(VulkanDevice* device, const RenderBundleEncoderDescriptor& descriptor);
 
 private:
+    [[maybe_unused]] VulkanDevice* m_device = nullptr;
     [[maybe_unused]] const RenderBundleEncoderDescriptor m_descriptor;
 };
 

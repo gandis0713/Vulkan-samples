@@ -372,10 +372,8 @@ uint64_t procBufferGetSize(WGPUBuffer buffer)
 
 WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, WGPURenderBundleEncoderDescriptor const* descriptor)
 {
-    // WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
-    // return reinterpret_cast<WGPURenderBundleEncoder>(webgpuDevice->createRenderBundleEncoder(descriptor));
-
-    return nullptr;
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPURenderBundleEncoder>(webgpuDevice->createRenderBundleEncoder(descriptor));
 }
 
 WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor)
