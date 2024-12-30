@@ -45,10 +45,10 @@ struct WebGPUAPI
     // WGPUProcCommandEncoderBeginComputePass CommandEncoderBeginComputePass = nullptr;
     WGPUProcCommandEncoderBeginRenderPass CommandEncoderBeginRenderPass = nullptr;
     // WGPUProcCommandEncoderClearBuffer CommandEncoderClearBuffer = nullptr;
-    // WGPUProcCommandEncoderCopyBufferToBuffer CommandEncoderCopyBufferToBuffer = nullptr;
-    // WGPUProcCommandEncoderCopyBufferToTexture CommandEncoderCopyBufferToTexture = nullptr;
-    // WGPUProcCommandEncoderCopyTextureToBuffer CommandEncoderCopyTextureToBuffer = nullptr;
-    // WGPUProcCommandEncoderCopyTextureToTexture CommandEncoderCopyTextureToTexture = nullptr;
+    WGPUProcCommandEncoderCopyBufferToBuffer CommandEncoderCopyBufferToBuffer = nullptr;
+    WGPUProcCommandEncoderCopyBufferToTexture CommandEncoderCopyBufferToTexture = nullptr;
+    WGPUProcCommandEncoderCopyTextureToBuffer CommandEncoderCopyTextureToBuffer = nullptr;
+    WGPUProcCommandEncoderCopyTextureToTexture CommandEncoderCopyTextureToTexture = nullptr;
     WGPUProcCommandEncoderFinish CommandEncoderFinish = nullptr;
     // WGPUProcCommandEncoderInsertDebugMarker CommandEncoderInsertDebugMarker = nullptr;
     // WGPUProcCommandEncoderPopDebugGroup CommandEncoderPopDebugGroup = nullptr;

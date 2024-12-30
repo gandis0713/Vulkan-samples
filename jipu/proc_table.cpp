@@ -438,6 +438,30 @@ void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder
     return webgpuRenderPassEncoder->executeBundles(bundleCount, bundles);
 }
 
+void procCommandEncoderCopyBufferToBuffer(WGPUCommandEncoder commandEncoder, WGPUBuffer source, uint64_t sourceOffset, WGPUBuffer destination, uint64_t destinationOffset, uint64_t size)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyBufferToBuffer(source, sourceOffset, destination, destinationOffset, size);
+}
+
+void procCommandEncoderCopyBufferToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyBuffer const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyBufferToTexture(source, destination, copySize);
+}
+
+void procCommandEncoderCopyTextureToBuffer(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyBuffer const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyTextureToBuffer(source, destination, copySize);
+}
+
+void procCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyTextureToTexture(source, destination, copySize);
+}
+
 namespace
 {
 
@@ -509,6 +533,10 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderBundleEncoderSetPipeline", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetPipeline) },
     { "wgpuRenderBundleEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetVertexBuffer) },
     { "wgpuRenderPassEncoderExecuteBundles", reinterpret_cast<WGPUProc>(procRenderPassEncoderExecuteBundles) },
+    { "wgpuCommandEncoderCopyBufferToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyBufferToBuffer) },
+    { "wgpuCommandEncoderCopyBufferToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyBufferToTexture) },
+    { "wgpuCommandEncoderCopyTextureToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToBuffer) },
+    { "wgpuCommandEncoderCopyTextureToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToTexture) },
 };
 
 } // namespace

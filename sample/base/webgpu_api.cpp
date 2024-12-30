@@ -59,10 +59,10 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(CommandEncoderBeginComputePass);
     GET_PROC(CommandEncoderBeginRenderPass);
     // GET_PROC(CommandEncoderClearBuffer);
-    // GET_PROC(CommandEncoderCopyBufferToBuffer);
-    // GET_PROC(CommandEncoderCopyBufferToTexture);
-    // GET_PROC(CommandEncoderCopyTextureToBuffer);
-    // GET_PROC(CommandEncoderCopyTextureToTexture);
+    GET_PROC(CommandEncoderCopyBufferToBuffer);
+    GET_PROC(CommandEncoderCopyBufferToTexture);
+    GET_PROC(CommandEncoderCopyTextureToBuffer);
+    GET_PROC(CommandEncoderCopyTextureToTexture);
     GET_PROC(CommandEncoderFinish);
     // GET_PROC(CommandEncoderInsertDebugMarker);
     // GET_PROC(CommandEncoderPopDebugGroup);
