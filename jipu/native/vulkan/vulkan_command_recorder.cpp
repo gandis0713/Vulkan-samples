@@ -11,6 +11,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_query_set.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
@@ -125,6 +126,9 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
             break;
         case CommandType::kWriteTimestamp:
             // TODO: write timestamp
+            break;
+        case CommandType::kExecuteBundle:
+            executeBundle(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
             break;
         default:
             throw std::runtime_error("Unknown command type.");
@@ -356,6 +360,48 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
                                 static_cast<float>(color.a) };
 
     m_commandBuffer->getDevice()->vkAPI.CmdSetBlendConstants(m_commandBuffer->getVkCommandBuffer(), blendConstants);
+}
+
+void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
+{
+    for (auto& renderBundle : command->renderBundles)
+    {
+        auto vulkanRenderBundle = downcast(renderBundle);
+        const auto& commands = vulkanRenderBundle->getCommands();
+        for (auto& command : commands)
+        {
+            switch (command->type)
+            {
+            case CommandType::kSetRenderPipeline:
+                setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
+                break;
+            case CommandType::kSetVertexBuffer:
+                setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kSetIndexBuffer:
+                setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kDraw:
+                draw(reinterpret_cast<DrawCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndexed:
+                drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndirect:
+                // TODO
+                break;
+            case CommandType::kDrawIndexedIndirect:
+                // TODO
+                break;
+            case CommandType::kSetRenderBindGroup:
+                setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+                break;
+            default:
+                throw std::runtime_error("Unknown command type.");
+                break;
+            }
+        }
+    }
 }
 
 void VulkanCommandRecorder::draw(DrawCommand* command)

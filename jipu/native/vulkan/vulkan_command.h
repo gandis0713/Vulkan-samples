@@ -147,7 +147,7 @@ struct DrawIndexedCommand : public Command
 
 struct ExecuteBundleCommand : public Command
 {
-    std::vector<RenderBundle*> bundles{};
+    std::vector<RenderBundle*> renderBundles{};
 };
 
 struct DrawIndirectCommand : public Command

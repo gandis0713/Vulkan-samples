@@ -2,6 +2,7 @@
 
 #include "vulkan_compute_pass_encoder.h"
 #include "vulkan_device.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_render_pass_encoder.h"
 
 namespace jipu
@@ -111,19 +112,19 @@ void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
         m_commandResourceTracker.endComputePass(reinterpret_cast<EndComputePassCommand*>(command.get()));
         break;
     case CommandType::kSetComputePipeline:
-        // setComputePipeline(reinterpret_cast<SetComputePipelineCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kDispatch:
-        // dispatch(reinterpret_cast<DispatchCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kDispatchIndirect:
-        // dispatchIndirect(reinterpret_cast<DispatchIndirectCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kBeginRenderPass:
         m_commandResourceTracker.beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command.get()));
         break;
     case CommandType::kSetRenderPipeline:
-        // setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kSetVertexBuffer:
         m_commandResourceTracker.setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
@@ -132,19 +133,19 @@ void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
         m_commandResourceTracker.setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
         break;
     case CommandType::kSetViewport:
-        // setViewport(reinterpret_cast<SetViewportCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kSetScissor:
-        // setScissor(reinterpret_cast<SetScissorCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kSetBlendConstant:
-        // setBlendConstant(reinterpret_cast<SetBlendConstantCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kDraw:
-        // draw(reinterpret_cast<DrawCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kDrawIndexed:
-        // drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kDrawIndirect:
         // TODO: draw indirect
@@ -153,10 +154,10 @@ void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
         // TODO: draw indexed indirect
         break;
     case CommandType::kBeginOcclusionQuery:
-        // beginOcclusionQuery(reinterpret_cast<BeginOcclusionQueryCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kEndOcclusionQuery:
-        // endOcclusionQuery(reinterpret_cast<EndOcclusionQueryCommand*>(command.get()));
+        // nothing to do
         break;
     case CommandType::kEndRenderPass:
         m_commandResourceTracker.endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command.get()));
@@ -171,22 +172,25 @@ void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
         // TODO: clear buffer
         break;
     case CommandType::kCopyBufferToBuffer:
-        // copyBufferToBuffer(reinterpret_cast<CopyBufferToBufferCommand*>(command.get()));
+        // TODO
         break;
     case CommandType::kCopyBufferToTexture:
-        // copyBufferToTexture(reinterpret_cast<CopyBufferToTextureCommand*>(command.get()));
+        // TODO
         break;
     case CommandType::kCopyTextureToBuffer:
-        // copyTextureToBuffer(reinterpret_cast<CopyTextureToBufferCommand*>(command.get()));
+        // TODO
         break;
     case CommandType::kCopyTextureToTexture:
-        // copyTextureToTexture(reinterpret_cast<CopyTextureToTextureCommand*>(command.get()));
+        // TODO
         break;
     case CommandType::kResolveQuerySet:
-        // resolveQuerySet(reinterpret_cast<ResolveQuerySetCommand*>(command.get()));
+        // TODO
         break;
     case CommandType::kWriteTimestamp:
-        // TODO: write timestamp
+        // TODO:
+        break;
+    case CommandType::kExecuteBundle:
+        m_commandResourceTracker.executeBundle(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
         break;
     default:
         throw std::runtime_error("Unknown command type.");
@@ -201,7 +205,7 @@ VulkanDevice* VulkanCommandEncoder::getDevice() const
     return m_device;
 }
 
-CommandEncodingResult VulkanCommandEncoder::finish()
+CommandEncodingResult VulkanCommandEncoder::extractResult()
 {
     return CommandEncodingResult{
         .commands = std::move(m_commands),

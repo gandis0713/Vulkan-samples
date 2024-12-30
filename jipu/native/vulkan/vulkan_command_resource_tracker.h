@@ -70,6 +70,7 @@ public:
     void setBlendConstant(SetBlendConstantCommand* command);
     void draw(DrawCommand* command);
     void drawIndexed(DrawIndexedCommand* command);
+    void executeBundle(ExecuteBundleCommand* command);
     void beginOcclusionQuery(BeginOcclusionQueryCommand* command);
     void endOcclusionQuery(EndOcclusionQueryCommand* command);
     void endRenderPass(EndRenderPassCommand* command);

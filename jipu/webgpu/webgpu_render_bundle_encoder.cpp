@@ -64,9 +64,6 @@ void WebGPURenderBundleEncoder::drawIndexed(uint32_t indexCount, uint32_t instan
 
 WebGPURenderBundle* WebGPURenderBundleEncoder::finish(WGPURenderBundleDescriptor const* descriptor)
 {
-    RenderBundleDescriptor renderBundleDescriptor{};
-    auto renderBundle = m_renderBundleEncoder->finish(renderBundleDescriptor);
-
     return WebGPURenderBundle::create(this, descriptor);
 }
 

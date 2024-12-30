@@ -380,8 +380,6 @@ WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBun
 {
     WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
     return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
-
-    return nullptr;
 }
 
 void procRenderBundleRelease(WGPURenderBundle renderBundle)
@@ -436,7 +434,8 @@ void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundle
 
 void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles)
 {
-    // TODO
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->executeBundles(bundleCount, bundles);
 }
 
 namespace

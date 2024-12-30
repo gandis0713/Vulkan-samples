@@ -25,6 +25,9 @@ public:
     WebGPURenderBundle(const WebGPURenderBundle&) = delete;
     WebGPURenderBundle& operator=(const WebGPURenderBundle&) = delete;
 
+public:
+    RenderBundle* getRenderBundle() const;
+
 private:
     // WebGPURenderBundleEncoder* m_wgpuRenderBundleEncoder = nullptr;
     [[maybe_unused]] const WGPURenderBundleDescriptor m_descriptor{};

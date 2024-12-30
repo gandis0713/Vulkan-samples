@@ -32,8 +32,8 @@ void WGPURenderBundles::init()
 {
     WGPUSample::init();
 
-    // changeAPI(APIType::kJipu);
-    changeAPI(APIType::kDawn);
+    changeAPI(APIType::kJipu);
+    // changeAPI(APIType::kDawn);
 }
 
 void WGPURenderBundles::onUpdate()
@@ -176,6 +176,24 @@ void WGPURenderBundles::finalizeContext()
 {
     // TODO: check ways release and destory.
 
+    if (m_bindGroup)
+    {
+        wgpu.BindGroupRelease(m_bindGroup);
+        m_bindGroup = nullptr;
+    }
+
+    if (m_bindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_bindGroupLayout);
+        m_bindGroupLayout = nullptr;
+    }
+
+    if (m_sphereBindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_sphereBindGroupLayout);
+        m_sphereBindGroupLayout = nullptr;
+    }
+
     if (m_uniformBuffer)
     {
         wgpu.BufferRelease(m_uniformBuffer);
@@ -218,22 +236,60 @@ void WGPURenderBundles::finalizeContext()
         m_depthTexture = nullptr;
     }
 
-    if (m_bindGroup)
+    for (auto& renderable : m_renderables)
     {
-        wgpu.BindGroupRelease(m_bindGroup);
-        m_bindGroup = nullptr;
+        if (renderable.bindGroup)
+        {
+            wgpu.BindGroupRelease(renderable.bindGroup);
+            renderable.bindGroup = nullptr;
+        }
+
+        if (renderable.uniformBuffer)
+        {
+            wgpu.BufferRelease(renderable.uniformBuffer);
+            renderable.uniformBuffer = nullptr;
+        }
+    }
+    m_renderables.clear();
+
+    for (auto& asteroid : m_asteroids)
+    {
+        if (asteroid.indexBuffer)
+        {
+            wgpu.BufferRelease(asteroid.indexBuffer);
+            asteroid.indexBuffer = nullptr;
+        }
+
+        if (asteroid.vertexBuffer)
+        {
+            wgpu.BufferRelease(asteroid.vertexBuffer);
+            asteroid.vertexBuffer = nullptr;
+        }
+    }
+    m_asteroids.clear();
+
+    if (m_planet.bindGroup)
+    {
+        wgpu.BindGroupRelease(m_planet.bindGroup);
+        m_planet.bindGroup = nullptr;
     }
 
-    if (m_bindGroupLayout)
+    if (m_planet.indexBuffer)
     {
-        wgpu.BindGroupLayoutRelease(m_bindGroupLayout);
-        m_bindGroupLayout = nullptr;
+        wgpu.BufferRelease(m_planet.indexBuffer);
+        m_planet.indexBuffer = nullptr;
     }
 
-    if (m_sphereBindGroupLayout)
+    if (m_planet.vertexBuffer)
     {
-        wgpu.BindGroupLayoutRelease(m_sphereBindGroupLayout);
-        m_sphereBindGroupLayout = nullptr;
+        wgpu.BufferRelease(m_planet.vertexBuffer);
+        m_planet.vertexBuffer = nullptr;
+    }
+
+    if (m_planet.uniformBuffer)
+    {
+        wgpu.BufferRelease(m_planet.uniformBuffer);
+        m_planet.uniformBuffer = nullptr;
     }
 
     if (m_renderPipeline)

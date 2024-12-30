@@ -390,7 +390,7 @@ void VulkanRenderPassEncoder::executeBundles(const std::vector<RenderBundle*> bu
 {
     ExecuteBundleCommand command{
         { .type = CommandType::kExecuteBundle },
-        .bundles = bundles
+        .renderBundles = bundles
     };
 
     m_commandEncoder->addCommand(std::make_unique<ExecuteBundleCommand>(std::move(command)));

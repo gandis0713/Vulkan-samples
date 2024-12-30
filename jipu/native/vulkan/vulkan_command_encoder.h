@@ -18,12 +18,6 @@
 namespace jipu
 {
 
-struct CommandEncodingContext
-{
-    std::vector<std::unique_ptr<Command>> commands{};
-    VulkanCommandResourceTracker commandResourceTracker{};
-};
-
 struct CommandEncodingResult
 {
     std::vector<std::unique_ptr<Command>> commands{};
@@ -66,7 +60,7 @@ public:
 
 public:
     void addCommand(std::unique_ptr<Command> command);
-    CommandEncodingResult finish();
+    CommandEncodingResult extractResult();
 
 public:
     VulkanDevice* getDevice() const;

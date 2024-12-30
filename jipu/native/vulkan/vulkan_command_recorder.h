@@ -65,6 +65,7 @@ private:
     void drawIndexed(DrawIndexedCommand* command);
     void beginOcclusionQuery(BeginOcclusionQueryCommand* command);
     void endOcclusionQuery(EndOcclusionQueryCommand* command);
+    void executeBundle(ExecuteBundleCommand* command);
     void endRenderPass(EndRenderPassCommand* command);
 
     // copy

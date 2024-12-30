@@ -31,8 +31,8 @@ Window::Window(const WindowDescriptor& descriptor)
 
     float devicePixelRatio = (float)drawableWidth / (float)m_windowWidth;
 
-    m_width = m_windowWidth * devicePixelRatio;
-    m_height = m_windowHeight * devicePixelRatio;
+    // m_width = m_windowWidth * devicePixelRatio;
+    // m_height = m_windowHeight * devicePixelRatio;
 
     if (!window)
     {

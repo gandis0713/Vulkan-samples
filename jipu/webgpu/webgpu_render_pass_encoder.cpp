@@ -3,6 +3,7 @@
 #include "webgpu_bind_group.h"
 #include "webgpu_buffer.h"
 #include "webgpu_command_encoder.h"
+#include "webgpu_render_bundle.h"
 #include "webgpu_render_pipeline.h"
 #include "webgpu_texture_view.h"
 
@@ -73,13 +74,6 @@ WebGPURenderPassEncoder::WebGPURenderPassEncoder(WebGPUCommandEncoder* wgpuComma
     , m_descriptor(*descriptor)
     , m_renderPassEncoder(std::move(renderPassEncoder))
 {
-}
-
-void WebGPURenderPassEncoder::setPipeline(WebGPURenderPipeline* wgpuPipeline)
-{
-    auto renderPipeline = wgpuPipeline->getRenderPipeline();
-    m_renderPassEncoder->setPipeline(renderPipeline);
-
     // TODO: default viewport
     {
         auto textureView = reinterpret_cast<WebGPUTextureView*>(m_descriptor.colorAttachments[0].view)->getTextureView();
@@ -95,6 +89,12 @@ void WebGPURenderPassEncoder::setPipeline(WebGPURenderPipeline* wgpuPipeline)
         auto height = textureView->getHeight();
         m_renderPassEncoder->setScissor(0, 0, width, height);
     }
+}
+
+void WebGPURenderPassEncoder::setPipeline(WebGPURenderPipeline* wgpuPipeline)
+{
+    auto renderPipeline = wgpuPipeline->getRenderPipeline();
+    m_renderPassEncoder->setPipeline(renderPipeline);
 }
 
 void WebGPURenderPassEncoder::setVertexBuffer(uint32_t slot, WebGPUBuffer* buffer, uint64_t offset, uint64_t size)
@@ -133,6 +133,18 @@ void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount,
 void WebGPURenderPassEncoder::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
 {
     m_renderPassEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
+}
+
+void WebGPURenderPassEncoder::executeBundles(size_t bundleCount, WGPURenderBundle const* bundles)
+{
+    std::vector<RenderBundle*> renderBundles;
+    for (auto i = 0; i < bundleCount; i++)
+    {
+        auto webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(bundles[i]);
+        renderBundles.push_back(webgpuRenderBundle->getRenderBundle());
+    }
+
+    m_renderPassEncoder->executeBundles(renderBundles);
 }
 
 void WebGPURenderPassEncoder::end()

@@ -41,7 +41,7 @@ const std::vector<OperationResourceInfo>& VulkanCommandBuffer::getCommandResourc
 
 void VulkanCommandBuffer::recordToVkCommandBuffer()
 {
-    auto encodingReslut = m_commandEncoder->finish();
+    auto encodingReslut = m_commandEncoder->extractResult();
     auto commandRecorder = std::make_unique<VulkanCommandRecorder>(this,
                                                                    VulkanCommandRecorderDescriptor{ .commandEncodingResult = std::move(encodingReslut) });
 
