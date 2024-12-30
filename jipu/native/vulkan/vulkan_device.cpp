@@ -51,8 +51,8 @@ VulkanDevice::~VulkanDevice()
     m_frameBufferCache->clear();
     m_renderPassCache->clear();
 
+    m_inflightObjects->clearAll(); // TODO: change access directly it.
     m_deleter.reset();
-
     m_inflightObjects.reset();
 
     m_resourceAllocator.reset();
@@ -63,6 +63,7 @@ VulkanDevice::~VulkanDevice()
     m_fencePool.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
+    m_device = VK_NULL_HANDLE;
 }
 
 std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
