@@ -66,7 +66,7 @@ void WebGPUQueue::writeBuffer(WebGPUBuffer* buffer, uint64_t bufferOffset, void 
 
     CopyBuffer srcCopyBuffer{
         .buffer = srcBuffer.get(),
-        .offset = bufferOffset,
+        .offset = 0,
     };
 
     CopyBuffer dstCopyBuffer{
