@@ -3,6 +3,7 @@
 #include "jipu/common/dylib.h"
 
 #include "webgpu_api.h"
+#include "wgpu_im_gui.h"
 #include "window.h"
 
 #include <filesystem>
@@ -28,6 +29,12 @@ public:
     void init() override;
     void onUpdate() override;
     void onResize(uint32_t width, uint32_t height) override;
+
+    void recordImGui(std::vector<std::function<void()>> cmds);
+    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
+    void drawImGui(WGPUCommandEncoder commandEncoder, WGPUTextureView renderView);
+
+    void profilingWindow();
 
     virtual void initializeContext();
     virtual void finalizeContext();
@@ -69,6 +76,10 @@ protected:
     WGPUQueue m_queue = nullptr;
 
     WebGPUAPI wgpu{};
+
+    std::optional<WGPUImGui> m_imgui = std::nullopt;
+
+    friend class WGPUImGui;
 };
 
 } // namespace jipu

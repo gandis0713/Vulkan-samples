@@ -30,6 +30,8 @@ list(APPEND SRC_FILES
     sample.h
     wgpu_sample.cpp
     wgpu_sample.h
+    wgpu_im_gui.cpp
+    wgpu_im_gui.h
     fps.cpp
     fps.h
     window.cpp

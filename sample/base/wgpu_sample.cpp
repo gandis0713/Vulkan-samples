@@ -63,11 +63,58 @@ void WGPUSample::init()
 
 void WGPUSample::onUpdate()
 {
+    recordImGui({ [&]() {
+        profilingWindow();
+    } });
 }
 
 void WGPUSample::onResize(uint32_t width, uint32_t height)
 {
     createSurfaceConfigure();
+}
+
+void WGPUSample::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        // set display size and mouse state.
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+            io.MousePos = ImVec2(m_mouseX, m_mouseY);
+            io.MouseDown[0] = m_leftMouseButton;
+            io.MouseDown[1] = m_rightMouseButton;
+            io.MouseDown[2] = m_middleMouseButton;
+        }
+
+        m_imgui.value().record(cmds);
+        m_imgui.value().build();
+    }
+}
+void WGPUSample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().window(title, uis);
+    }
+}
+void WGPUSample::drawImGui(WGPUCommandEncoder commandEncoder, WGPUTextureView renderView)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().draw(commandEncoder, renderView);
+    }
+}
+
+void WGPUSample::profilingWindow()
+{
+    windowImGui(
+        "Profiling", { [&]() {
+            ImGui::Text("Common");
+            ImGui::Separator();
+            // drawPolyline("FPS", m_fps.getAll());
+            ImGui::Separator();
+        } });
 }
 
 void WGPUSample::initializeContext()
@@ -78,6 +125,11 @@ void WGPUSample::initializeContext()
     createDevice();
     createSurfaceConfigure();
     createQueue();
+
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().init();
+    }
 }
 
 void WGPUSample::finalizeContext()
@@ -112,6 +164,9 @@ void WGPUSample::finalizeContext()
         wgpu.InstanceRelease(m_instance);
         m_instance = nullptr;
     }
+
+    if (m_imgui.has_value())
+        m_imgui.value().clear();
 }
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)
