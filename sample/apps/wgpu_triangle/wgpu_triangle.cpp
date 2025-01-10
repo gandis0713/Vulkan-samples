@@ -9,6 +9,7 @@ namespace jipu
 WGPUTriangleSample::WGPUTriangleSample(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui = WGPUImGui(this);
 }
 
 WGPUTriangleSample::~WGPUTriangleSample()
@@ -56,6 +57,8 @@ void WGPUTriangleSample::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);

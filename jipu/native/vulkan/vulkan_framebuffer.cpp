@@ -158,6 +158,15 @@ bool VulkanFramebufferCache::invalidate(VkImageView imageView)
                 return true;
             }
         }
+
+        if (descriptor.depthStencilAttachment)
+        {
+            if (descriptor.depthStencilAttachment->getVkImageView() == imageView)
+            {
+                m_cache.erase(descriptor);
+                return true;
+            }
+        }
     }
 
     return false;

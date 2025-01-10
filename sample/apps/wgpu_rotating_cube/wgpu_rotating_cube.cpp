@@ -14,6 +14,7 @@ namespace jipu
 WGPURotatingCube::WGPURotatingCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui = WGPUImGui(this);
 }
 
 WGPURotatingCube::~WGPURotatingCube()
@@ -96,6 +97,8 @@ void WGPURotatingCube::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);

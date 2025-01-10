@@ -134,6 +134,9 @@ void WGPUSample::initializeContext()
 
 void WGPUSample::finalizeContext()
 {
+    if (m_imgui.has_value())
+        m_imgui.value().clear();
+
     if (m_queue)
     {
         wgpu.QueueRelease(m_queue);
@@ -164,9 +167,6 @@ void WGPUSample::finalizeContext()
         wgpu.InstanceRelease(m_instance);
         m_instance = nullptr;
     }
-
-    if (m_imgui.has_value())
-        m_imgui.value().clear();
 }
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)

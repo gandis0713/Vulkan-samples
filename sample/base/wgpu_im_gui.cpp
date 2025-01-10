@@ -329,8 +329,6 @@ void WGPUImGui::init()
         m_pipelineLayout = m_sample->wgpu.DeviceCreatePipelineLayout(m_sample->m_device, &pipelineLayoutDescriptor);
     }
 
-    WGPUShaderModule vertWGSLShaderModule = nullptr;
-    WGPUShaderModule fragWGSLShaderModule = nullptr;
     {
         WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
         vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -339,8 +337,8 @@ void WGPUImGui::init()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        vertWGSLShaderModule = m_sample->wgpu.DeviceCreateShaderModule(m_sample->m_device, &vertexShaderModuleDescriptor);
-        assert(vertWGSLShaderModule);
+        m_vertWGSLShaderModule = m_sample->wgpu.DeviceCreateShaderModule(m_sample->m_device, &vertexShaderModuleDescriptor);
+        assert(m_vertWGSLShaderModule);
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
         fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -349,8 +347,8 @@ void WGPUImGui::init()
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-        fragWGSLShaderModule = m_sample->wgpu.DeviceCreateShaderModule(m_sample->m_device, &fragShaderModuleDescriptor);
-        assert(fragWGSLShaderModule);
+        m_fragWGSLShaderModule = m_sample->wgpu.DeviceCreateShaderModule(m_sample->m_device, &fragShaderModuleDescriptor);
+        assert(m_fragWGSLShaderModule);
     }
 
     // create pipeline
@@ -390,7 +388,7 @@ void WGPUImGui::init()
         std::string entryPoint = "main";
         WGPUVertexState vertexState{};
         vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-        vertexState.module = vertWGSLShaderModule;
+        vertexState.module = m_vertWGSLShaderModule;
         vertexState.bufferCount = static_cast<uint32_t>(vertexBufferLayout.size());
         vertexState.buffers = vertexBufferLayout.data();
 
@@ -414,7 +412,7 @@ void WGPUImGui::init()
 
         WGPUFragmentState fragState{};
         fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-        fragState.module = fragWGSLShaderModule;
+        fragState.module = m_fragWGSLShaderModule;
         fragState.targetCount = 1;
         fragState.targets = &colorTargetState;
 
@@ -645,6 +643,18 @@ void WGPUImGui::clear()
     {
         m_sample->wgpu.BufferRelease(m_indexBuffer);
         m_indexBuffer = nullptr;
+    }
+
+    if (m_vertWGSLShaderModule)
+    {
+        m_sample->wgpu.ShaderModuleRelease(m_vertWGSLShaderModule);
+        m_vertWGSLShaderModule = nullptr;
+    }
+
+    if (m_fragWGSLShaderModule)
+    {
+        m_sample->wgpu.ShaderModuleRelease(m_fragWGSLShaderModule);
+        m_fragWGSLShaderModule = nullptr;
     }
 
     if (m_pipeline)

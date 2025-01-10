@@ -60,6 +60,8 @@ private:
     std::vector<WGPUBindGroup> m_bindGroups{};
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_pipeline = nullptr;
+    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
+    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
 };
 
 } // namespace jipu

@@ -15,6 +15,7 @@ namespace jipu
 WGPUTexturedCube::WGPUTexturedCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui = WGPUImGui(this);
 }
 
 WGPUTexturedCube::~WGPUTexturedCube()
@@ -97,6 +98,8 @@ void WGPUTexturedCube::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
