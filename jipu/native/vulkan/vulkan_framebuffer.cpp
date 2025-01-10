@@ -142,48 +142,62 @@ std::shared_ptr<VulkanFramebuffer> VulkanFramebufferCache::getFrameBuffer(const 
 
 bool VulkanFramebufferCache::invalidate(VkImageView imageView)
 {
-    for (auto& [descriptor, _] : m_cache)
+    bool isInvalidated = false;
+
+    for (auto it = m_cache.begin(); it != m_cache.end(); /* no increment */)
     {
+        auto& descriptor = it->first;
+        bool shouldErase = false;
+
         for (auto& attachment : descriptor.colorAttachments)
         {
-            if (attachment.renderView->getVkImageView() == imageView)
+            if ((attachment.renderView && attachment.renderView->getVkImageView() == imageView) ||
+                (attachment.resolveView && attachment.resolveView->getVkImageView() == imageView))
             {
-                m_cache.erase(descriptor);
-                return true;
-            }
-
-            if (attachment.resolveView != nullptr && attachment.resolveView->getVkImageView() == imageView)
-            {
-                m_cache.erase(descriptor);
-                return true;
+                shouldErase = true;
+                break;
             }
         }
 
-        if (descriptor.depthStencilAttachment)
+        if (!shouldErase && descriptor.depthStencilAttachment &&
+            descriptor.depthStencilAttachment->getVkImageView() == imageView)
         {
-            if (descriptor.depthStencilAttachment->getVkImageView() == imageView)
-            {
-                m_cache.erase(descriptor);
-                return true;
-            }
+            shouldErase = true;
+        }
+
+        if (shouldErase)
+        {
+            it = m_cache.erase(it);
+            isInvalidated = true;
+        }
+        else
+        {
+            ++it;
         }
     }
 
-    return false;
+    return isInvalidated;
 }
 
 bool VulkanFramebufferCache::invalidate(VkRenderPass renderPass)
 {
-    for (auto& [descriptor, _] : m_cache)
+    bool invalidated = false;
+
+    for (auto it = m_cache.begin(); it != m_cache.end(); /* no increment */)
     {
+        auto& descriptor = it->first;
         if (descriptor.renderPass == renderPass)
         {
-            m_cache.erase(descriptor);
-            return true;
+            it = m_cache.erase(it);
+            invalidated = true;
+        }
+        else
+        {
+            ++it;
         }
     }
 
-    return false;
+    return invalidated;
 }
 
 void VulkanFramebufferCache::clear()
