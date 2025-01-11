@@ -7,13 +7,8 @@
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <spdlog/spdlog.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp> // glm::pi
-#include <glm/gtc/matrix_transform.hpp>
 #include <random>
+#include <spdlog/spdlog.h>
 
 namespace jipu
 {
@@ -21,6 +16,7 @@ namespace jipu
 WGPURenderBundles::WGPURenderBundles(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui = WGPUImGui(this);
 }
 
 WGPURenderBundles::~WGPURenderBundles()
@@ -41,12 +37,17 @@ void WGPURenderBundles::onUpdate()
     WGPUSample::onUpdate();
 
     {
-        glm::mat4 viewMatrix = glm::mat4(1.0f);
+        // glm::mat4 viewMatrix = glm::lookAt(
+        //     glm::vec3(0.0f, 0.0f, 0.0f),
+        //     glm::vec3(0.0f, 0.0f, -1.0f),
+        //     glm::vec3(0.0f, 1.0f, 0.0f)
+        // );
+        glm::mat4 viewMatrix = glm::mat4(1.0f); // Identity matrix
 
         viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0f));
 
-        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(0.0f, 0.0f, 1.0f)); // 약 18도
-        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(1.0f, 0.0f, 0.0f)); // 약 18도
+        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+        viewMatrix = glm::rotate(viewMatrix, glm::pi<float>() * 0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         // auto now = std::chrono::system_clock::now().time_since_epoch();
         // double currentTime = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(now).count()) / 1000.0f;
@@ -54,7 +55,7 @@ void WGPURenderBundles::onUpdate()
 
         static float totalAngle = 0.0f;
         auto now = std::chrono::system_clock::now();
-        static auto lastTime = now; // 프로그램 시작 시점
+        static auto lastTime = now;
         float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count() / 1000.0f;
         lastTime = now;
         float rotateSpeed = 0.05f;
@@ -112,6 +113,8 @@ void WGPURenderBundles::onDraw()
 
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);

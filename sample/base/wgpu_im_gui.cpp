@@ -443,13 +443,7 @@ void WGPUImGui::build()
             float R = imDrawData->DisplayPos.x + imDrawData->DisplaySize.x;
             float T = imDrawData->DisplayPos.y;
             float B = imDrawData->DisplayPos.y + imDrawData->DisplaySize.y;
-            float mvp[4][4] = {
-                { 2.0f / (R - L), 0.0f, 0.0f, 0.0f },
-                { 0.0f, 2.0f / (T - B), 0.0f, 0.0f },
-                { 0.0f, 0.0f, 0.5f, 0.0f },
-                { (R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f },
-            };
-            m_sample->wgpu.QueueWriteBuffer(m_sample->m_queue, m_uniformBuffer, offsetof(Uniform, mvp), mvp, sizeof(Uniform::mvp));
+
             float gamma;
             switch (m_sample->m_surfaceConfigure.format)
             {
@@ -480,7 +474,15 @@ void WGPUImGui::build()
             default:
                 gamma = 1.0f;
             }
-            m_sample->wgpu.QueueWriteBuffer(m_sample->m_queue, m_uniformBuffer, offsetof(Uniform, gamma), &gamma, sizeof(Uniform::gamma));
+
+            Uniform uniform{ .mvp = {
+                                 { 2.0f / (R - L), 0.0f, 0.0f, 0.0f },
+                                 { 0.0f, 2.0f / (T - B), 0.0f, 0.0f },
+                                 { 0.0f, 0.0f, 0.5f, 0.0f },
+                                 { (R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f },
+                             },
+                             .gamma = gamma };
+            m_sample->wgpu.QueueWriteBuffer(m_sample->m_queue, m_uniformBuffer, 0, &uniform, MEMALIGN(sizeof(Uniform), 16));
         }
     }
 
@@ -500,6 +502,9 @@ void WGPUImGui::build()
         // Vertex buffer
         if ((m_vertexBuffer == nullptr) || (m_sample->wgpu.BufferGetSize(m_vertexBuffer) != vertexBufferSize))
         {
+            if ((m_vertexBuffer != nullptr))
+                m_sample->wgpu.BufferRelease(m_vertexBuffer);
+
             WGPUBufferDescriptor descriptor{};
             descriptor.size = vertexBufferSize;
             descriptor.usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst;
@@ -511,6 +516,9 @@ void WGPUImGui::build()
         // Index buffer
         if ((m_indexBuffer == nullptr) || (m_sample->wgpu.BufferGetSize(m_indexBuffer) < indexBufferSize))
         {
+            if ((m_indexBuffer != nullptr))
+                m_sample->wgpu.BufferRelease(m_indexBuffer);
+
             WGPUBufferDescriptor descriptor{};
             descriptor.size = indexBufferSize;
             descriptor.usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst;

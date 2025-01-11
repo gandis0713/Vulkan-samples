@@ -1,14 +1,14 @@
 
 #pragma once
 
+// CAUTION: do not use glm for imgui.
+
 #include <chrono>
 #include <deque>
 #include <functional>
-#include <glm/glm.hpp>
 #include <imgui.h>
 
 #include "jipu/webgpu/webgpu_header.h"
-
 namespace jipu
 {
 
@@ -45,7 +45,7 @@ private:
 
     struct Uniform
     {
-        glm::mat4 mvp;
+        float mvp[4][4];
         float gamma;
     } m_uniform;
 
