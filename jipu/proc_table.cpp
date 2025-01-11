@@ -462,6 +462,12 @@ void procCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, W
     return webgpuCommandEncoder->copyTextureToTexture(source, destination, copySize);
 }
 
+extern void procRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->setBlendConstant(color);
+}
+
 namespace
 {
 
@@ -537,6 +543,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuCommandEncoderCopyBufferToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyBufferToTexture) },
     { "wgpuCommandEncoderCopyTextureToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToBuffer) },
     { "wgpuCommandEncoderCopyTextureToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToTexture) },
+    { "wgpuRenderPassEncoderSetBlendConstant", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBlendConstant) },
 };
 
 } // namespace

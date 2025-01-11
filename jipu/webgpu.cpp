@@ -75,6 +75,7 @@ extern void procCommandEncoderCopyBufferToBuffer(WGPUCommandEncoder commandEncod
 extern void procCommandEncoderCopyBufferToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyBuffer const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize);
 extern void procCommandEncoderCopyTextureToBuffer(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyBuffer const* destination, WGPUExtent3D const* copySize);
 extern void procCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize);
+extern void procRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color);
 
 } // namespace jipu
 
@@ -440,5 +441,10 @@ extern "C"
     WGPU_EXPORT void wgpuCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize) WGPU_FUNCTION_ATTRIBUTE
     {
         return procCommandEncoderCopyTextureToTexture(commandEncoder, source, destination, copySize);
+    }
+
+    WGPU_EXPORT void wgpuRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procRenderPassEncoderSetBlendConstant(renderPassEncoder, color);
     }
 }
