@@ -152,7 +152,7 @@ struct WebGPUAPI
     // WGPUProcRenderPassEncoderPopDebugGroup RenderPassEncoderPopDebugGroup = nullptr;
     // WGPUProcRenderPassEncoderPushDebugGroup RenderPassEncoderPushDebugGroup = nullptr;
     WGPUProcRenderPassEncoderSetBindGroup RenderPassEncoderSetBindGroup = nullptr;
-    // WGPUProcRenderPassEncoderSetBlendConstant RenderPassEncoderSetBlendConstant = nullptr;
+    WGPUProcRenderPassEncoderSetBlendConstant RenderPassEncoderSetBlendConstant = nullptr;
     WGPUProcRenderPassEncoderSetIndexBuffer RenderPassEncoderSetIndexBuffer = nullptr;
     // WGPUProcRenderPassEncoderSetLabel RenderPassEncoderSetLabel = nullptr;
     WGPUProcRenderPassEncoderSetPipeline RenderPassEncoderSetPipeline = nullptr;

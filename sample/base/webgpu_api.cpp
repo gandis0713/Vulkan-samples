@@ -166,7 +166,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(RenderPassEncoderPopDebugGroup);
     // GET_PROC(RenderPassEncoderPushDebugGroup);
     GET_PROC(RenderPassEncoderSetBindGroup);
-    // GET_PROC(RenderPassEncoderSetBlendConstant);
+    GET_PROC(RenderPassEncoderSetBlendConstant);
     GET_PROC(RenderPassEncoderSetIndexBuffer);
     // GET_PROC(RenderPassEncoderSetLabel);
     GET_PROC(RenderPassEncoderSetPipeline);
