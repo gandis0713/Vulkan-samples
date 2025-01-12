@@ -25,9 +25,8 @@ VulkanDescriptorPool::~VulkanDescriptorPool()
     m_descriptorSets.clear();
 }
 
-VkDescriptorSet VulkanDescriptorPool::allocate(VulkanBindGroup* vulkanBindGroup)
+VkDescriptorSet VulkanDescriptorPool::allocate(VulkanBindGroupLayout* vulkanBindGroupLayout)
 {
-    auto vulkanBindGroupLayout = downcast(vulkanBindGroup->getLayout());
     VkDescriptorPool descriptorPool = createDescriptorPool(vulkanBindGroupLayout->getDescriptorSetLayouts());
 
     auto descriptorSetLayout = vulkanBindGroupLayout->getVkDescriptorSetLayout();

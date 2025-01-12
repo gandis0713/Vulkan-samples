@@ -77,11 +77,6 @@ void VulkanSubmit::add(VkDescriptorSet descriptorSet)
     object.descriptorSet.insert(descriptorSet);
 }
 
-void VulkanSubmit::add(VkDescriptorSetLayout descriptorSetLayout)
-{
-    object.descriptorSetLayouts.insert(descriptorSetLayout);
-}
-
 void VulkanSubmit::add(VkFramebuffer framebuffer)
 {
     object.framebuffers.insert(framebuffer);
@@ -146,7 +141,6 @@ void VulkanSubmit::add(SetComputePipelineCommand* command)
 void VulkanSubmit::addComputeBindGroup(SetBindGroupCommand* command)
 {
     add(downcast(command->bindGroup)->getVkDescriptorSet());
-    add(downcast(command->bindGroup->getLayout())->getVkDescriptorSetLayout());
     for (auto& binding : command->bindGroup->getBufferBindings())
     {
         addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());
@@ -200,7 +194,6 @@ void VulkanSubmit::add(BeginRenderPassCommand* command)
 void VulkanSubmit::addRenderBindGroup(SetBindGroupCommand* command)
 {
     add(downcast(command->bindGroup)->getVkDescriptorSet());
-    add(downcast(command->bindGroup->getLayout())->getVkDescriptorSetLayout());
     for (auto& binding : command->bindGroup->getBufferBindings())
     {
         addSrcBuffer(downcast(binding.buffer)->getVulkanBufferResource());

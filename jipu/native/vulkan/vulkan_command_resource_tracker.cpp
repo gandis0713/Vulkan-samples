@@ -252,11 +252,10 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
 {
     // dst
     {
-        auto bindGroup = command->bindGroup;
-        auto bindGroupLayout = command->bindGroup->getLayout();
+        auto bindGroup = downcast(command->bindGroup);
 
         auto bufferBindings = bindGroup->getBufferBindings();
-        auto bufferBindingLayouts = bindGroupLayout->getBufferBindingLayouts();
+        auto bufferBindingLayouts = bindGroup->getBufferLayouts();
         for (auto i = 0; i < bufferBindings.size(); ++i)
         {
             auto& bufferBinding = bufferBindings[i];
@@ -298,7 +297,7 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
         }
 
         auto textureBindings = bindGroup->getTextureBindings();
-        auto textureBindingLayouts = bindGroupLayout->getTextureBindingLayouts();
+        auto textureBindingLayouts = bindGroup->getTextureLayouts();
         for (auto i = 0; i < textureBindings.size(); ++i)
         {
             auto& textureBinding = textureBindings[i];

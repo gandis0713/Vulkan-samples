@@ -20,10 +20,15 @@ public:
     ~VulkanBindGroup() override;
 
 public:
-    BindGroupLayout* getLayout() const override;
+    VulkanDevice* getDevice() const;
     const std::vector<BufferBinding>& getBufferBindings() const override;
     const std::vector<SamplerBinding>& getSmaplerBindings() const override;
     const std::vector<TextureBinding>& getTextureBindings() const override;
+
+public: // for information about bind group layout.
+    const std::vector<BufferBindingLayout>& getBufferLayouts() const;
+    const std::vector<SamplerBindingLayout>& getSamplerLayouts() const;
+    const std::vector<TextureBindingLayout>& getTextureLayouts() const;
 
 public:
     VkDescriptorSet getVkDescriptorSet() const;
@@ -34,6 +39,9 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const BindGroupDescriptor m_descriptor;
+
+private: // for information about bind group layout. TODO: use cached layout
+    BindGroupLayoutDescriptor m_layoutDescriptor{};
 
 public:
     using Ref = std::reference_wrapper<VulkanBindGroup>;

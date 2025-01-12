@@ -10,7 +10,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanBindGroup;
+class VulkanBindGroupLayout;
 class VulkanDescriptorPool final
 {
 public:
@@ -22,7 +22,7 @@ public:
     VulkanDescriptorPool& operator=(const VulkanDescriptorPool&) = delete;
 
 public:
-    VkDescriptorSet allocate(VulkanBindGroup* vulkanBindGroup);
+    VkDescriptorSet allocate(VulkanBindGroupLayout* vulkanBindGroupLayout);
     void free(VkDescriptorSet descriptorSet);
 
 private:
