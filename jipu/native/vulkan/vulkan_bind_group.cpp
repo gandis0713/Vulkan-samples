@@ -187,6 +187,11 @@ const std::vector<TextureBinding>& VulkanBindGroup::getTextureBindings() const
     return m_descriptor.textures;
 }
 
+const BindGroupLayoutInfo& VulkanBindGroup::getLayoutInfo() const
+{
+    return m_layoutInfo;
+}
+
 const std::vector<BufferBindingLayout>& VulkanBindGroup::getBufferLayouts() const
 {
     return m_layoutInfo.buffers;

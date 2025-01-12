@@ -26,6 +26,7 @@ public:
     const std::vector<TextureBinding>& getTextureBindings() const override;
 
 public: // for information about bind group layout.
+    const BindGroupLayoutInfo& getLayoutInfo() const;
     const std::vector<BufferBindingLayout>& getBufferLayouts() const;
     const std::vector<SamplerBindingLayout>& getSamplerLayouts() const;
     const std::vector<TextureBindingLayout>& getTextureLayouts() const;
@@ -41,12 +42,7 @@ private:
     const BindGroupDescriptor m_descriptor;
 
 private: // for information about bind group layout.
-    struct BindGroupLayoutInfo
-    {
-        std::vector<BufferBindingLayout> buffers{};
-        std::vector<SamplerBindingLayout> samplers{};
-        std::vector<TextureBindingLayout> textures{};
-    } m_layoutInfo{};
+    BindGroupLayoutInfo m_layoutInfo{};
 };
 DOWN_CAST(VulkanBindGroup, BindGroup);
 

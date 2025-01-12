@@ -66,9 +66,9 @@ void WGPUSample::onUpdate()
     recordImGui({ [&]() {
         windowImGui("API Type",
                     { [&]() {
-                        if (ImGui::RadioButton("Deferred", m_apiType == APIType::kDawn))
+                        if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
                             m_apiType = APIType::kDawn;
-                        else if (ImGui::RadioButton("Position", m_apiType == APIType::kJipu))
+                        else if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
                             m_apiType = APIType::kJipu;
                     } });
         profilingWindow();

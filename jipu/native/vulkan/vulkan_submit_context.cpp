@@ -134,7 +134,7 @@ void VulkanSubmit::add(CopyTextureToTextureCommand* command)
 void VulkanSubmit::add(SetComputePipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
-    add(downcast(command->pipeline->getPipelineLayout())->getVkPipelineLayout());
+    add(downcast(command->pipeline)->getVkPipelineLayout());
     add({ downcast(command->pipeline)->getShaderModule() });
 }
 
@@ -215,7 +215,7 @@ void VulkanSubmit::addRenderBindGroup(SetBindGroupCommand* command)
 void VulkanSubmit::add(SetRenderPipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
-    add(downcast(command->pipeline->getPipelineLayout())->getVkPipelineLayout());
+    add(downcast(command->pipeline)->getVkPipelineLayout());
     add(downcast(command->pipeline)->getShaderModules());
 }
 

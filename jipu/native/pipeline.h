@@ -21,9 +21,6 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-public:
-    virtual PipelineLayout* getPipelineLayout() const = 0;
-
 protected:
     Pipeline() = default;
 };

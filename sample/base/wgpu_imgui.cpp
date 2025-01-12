@@ -777,7 +777,7 @@ bool WGPUImGui::createDeviceObjects()
 
     SafeRelease(vertex_shader_desc.module);
     SafeRelease(pixel_shader_desc.module);
-    // SafeRelease(graphics_pipeline_desc.layout);
+    SafeRelease(graphics_pipeline_desc.layout);
     SafeRelease(bg_layouts[0]);
 
     return true;
@@ -864,7 +864,8 @@ void WGPUImGui::shutdown()
     invalidateDeviceObjects();
     delete[] bd->pFrameResources;
     bd->pFrameResources = nullptr;
-    m_sample->wgpu.QueueRelease(bd->defaultQueue);
+    // m_sample->wgpu.QueueRelease(bd->defaultQueue);
+    bd->defaultQueue = nullptr;
     bd->wgpuDevice = nullptr;
     bd->numFramesInFlight = 0;
     bd->frameIndex = UINT_MAX;

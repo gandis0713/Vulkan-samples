@@ -33,6 +33,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDes
 
     m_renderPassCache = std::make_shared<VulkanRenderPassCache>(this);
     m_frameBufferCache = std::make_shared<VulkanFramebufferCache>(this);
+    m_bindGroupLayoutCache = std::make_shared<VulkanBindGroupLayoutCache>(this);
+    m_pipelineLayoutCache = std::make_shared<VulkanPipelineLayoutCache>(this);
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, allocatorDescriptor);
@@ -48,12 +50,14 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
+    m_bindGroupLayoutCache->clear();
+    m_pipelineLayoutCache->clear();
     m_frameBufferCache->clear();
     m_renderPassCache->clear();
 
-    m_inflightObjects->clearAll(); // TODO: fix me
-    m_deleter.reset();
+    // m_inflightObjects->clearAll(); // TODO: fix me
     m_inflightObjects.reset();
+    m_deleter.reset();
 
     m_resourceAllocator.reset();
 
@@ -126,24 +130,9 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& de
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
-{
-    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
-}
-
-std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor)
-{
-    return std::make_unique<VulkanBindGroupLayout>(this, descriptor);
-}
-
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
     return std::make_unique<VulkanTexture>(this, descriptor);
-}
-
-std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
-{
-    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
@@ -199,6 +188,16 @@ std::shared_ptr<VulkanRenderPassCache> VulkanDevice::getRenderPassCache()
 std::shared_ptr<VulkanFramebufferCache> VulkanDevice::getFramebufferCache()
 {
     return m_frameBufferCache;
+}
+
+std::shared_ptr<VulkanBindGroupLayoutCache> VulkanDevice::getBindGroupLayoutCache()
+{
+    return m_bindGroupLayoutCache;
+}
+
+std::shared_ptr<VulkanPipelineLayoutCache> VulkanDevice::getPipelineLayoutCache()
+{
+    return m_pipelineLayoutCache;
 }
 
 std::shared_ptr<VulkanCommandPool> VulkanDevice::getCommandPool()

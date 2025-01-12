@@ -189,7 +189,6 @@ void VulkanCommandRecorder::setComputeBindGroup(SetBindGroupCommand* command)
     m_commandResourceSyncronizer.setComputeBindGroup(command);
 
     auto vulkanBindGroup = downcast(command->bindGroup);
-    auto vulkanPipelineLayout = downcast(m_computePipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
@@ -197,7 +196,7 @@ void VulkanCommandRecorder::setComputeBindGroup(SetBindGroupCommand* command)
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                m_computePipeline->getVkPipelineLayout(),
                                 command->index,
                                 1,
                                 &descriptorSet,
@@ -280,7 +279,6 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
     m_commandResourceSyncronizer.setRenderBindGroup(command);
 
     auto vulkanBindGroup = downcast(command->bindGroup);
-    auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
@@ -288,7 +286,7 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                m_renderPipeline->getVkPipelineLayout(),
                                 command->index,
                                 1,
                                 &descriptorSet,

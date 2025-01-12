@@ -16,6 +16,7 @@ namespace jipu
 VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
+    , m_layoutInfo(downcast(descriptor.layout)->getLayoutInfo())
 {
     initialize();
 }
@@ -25,9 +26,9 @@ VulkanComputePipeline::~VulkanComputePipeline()
     m_device->getDeleter()->safeDestroy(m_pipeline);
 }
 
-PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
+VkPipelineLayout VulkanComputePipeline::getVkPipelineLayout() const
 {
-    return m_descriptor.layout;
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutInfo);
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -54,7 +55,7 @@ void VulkanComputePipeline::initialize()
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     pipelineCreateInfo.pNext = nullptr;
     pipelineCreateInfo.stage = computeStageInfo;
-    pipelineCreateInfo.layout = downcast(m_descriptor.layout)->getVkPipelineLayout();
+    pipelineCreateInfo.layout = getVkPipelineLayout();
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineCreateInfo.basePipelineIndex = -1;              // Optional
 
@@ -427,6 +428,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPip
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
+    , m_layoutInfo(m_descriptor.layout->getLayoutInfo())
 {
     initialize();
 }
@@ -436,9 +438,9 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
     m_device->getDeleter()->safeDestroy(m_pipeline);
 }
 
-PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
+VkPipelineLayout VulkanRenderPipeline::getVkPipelineLayout() const
 {
-    return m_descriptor.layout;
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutInfo);
 }
 
 std::vector<VkShaderModule> VulkanRenderPipeline::getShaderModules() const
@@ -497,7 +499,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pDepthStencilState = &descriptor.depthStencilState;
     pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
-    pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
+    pipelineInfo.layout = getVkPipelineLayout();
     pipelineInfo.renderPass = descriptor.renderPass;
     pipelineInfo.subpass = descriptor.subpass;
     pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;
