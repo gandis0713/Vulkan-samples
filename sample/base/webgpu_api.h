@@ -28,7 +28,7 @@ struct WebGPUAPI
     // WGPUProcBindGroupLayoutSetLabel BindGroupLayoutSetLabel = nullptr;
     // WGPUProcBindGroupLayoutAddRef BindGroupLayoutAddRef = nullptr;
     WGPUProcBindGroupLayoutRelease BindGroupLayoutRelease = nullptr;
-    // WGPUProcBufferDestroy BufferDestroy = nullptr;
+    WGPUProcBufferDestroy BufferDestroy = nullptr;
     // WGPUProcBufferGetConstMappedRange BufferGetConstMappedRange = nullptr;
     // WGPUProcBufferGetMapState BufferGetMapState = nullptr;
     WGPUProcBufferGetMappedRange BufferGetMappedRange = nullptr;
