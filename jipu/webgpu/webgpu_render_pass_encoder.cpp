@@ -125,6 +125,11 @@ void WebGPURenderPassEncoder::setScissorRect(uint32_t x, uint32_t y, uint32_t wi
     m_renderPassEncoder->setScissor(x, y, width, height);
 }
 
+void WebGPURenderPassEncoder::setBlendConstant(WGPUColor const* color)
+{
+    m_renderPassEncoder->setBlendConstant(WGPUToColor(*color));
+}
+
 void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
     m_renderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
