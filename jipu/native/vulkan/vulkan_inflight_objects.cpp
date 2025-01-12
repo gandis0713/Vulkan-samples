@@ -59,7 +59,6 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
         inflightObject.pipelines.insert(submit.object.pipelines.begin(), submit.object.pipelines.end());
         inflightObject.pipelineLayouts.insert(submit.object.pipelineLayouts.begin(), submit.object.pipelineLayouts.end());
         inflightObject.descriptorSet.insert(submit.object.descriptorSet.begin(), submit.object.descriptorSet.end());
-        inflightObject.descriptorSetLayouts.insert(submit.object.descriptorSetLayouts.begin(), submit.object.descriptorSetLayouts.end());
         inflightObject.framebuffers.insert(submit.object.framebuffers.begin(), submit.object.framebuffers.end());
         inflightObject.renderPasses.insert(submit.object.renderPasses.begin(), submit.object.renderPasses.end());
 
