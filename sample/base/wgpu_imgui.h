@@ -87,8 +87,8 @@ public:
     void window(const char* title, std::vector<std::function<void()>> uis);
 
 public:
-    void init();
-    void clear();
+    void initialize();
+    void finalize();
     void build();
     void resize();
     void draw(WGPUCommandEncoder commandEncoder, WGPUTextureView renderView);

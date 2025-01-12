@@ -149,14 +149,14 @@ void WGPUSample::initializeContext()
 
     if (m_imgui.has_value())
     {
-        m_imgui.value().init();
+        m_imgui.value().initialize();
     }
 }
 
 void WGPUSample::finalizeContext()
 {
     if (m_imgui.has_value())
-        m_imgui.value().clear();
+        m_imgui.value().finalize();
 
     if (m_queue)
     {

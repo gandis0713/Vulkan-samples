@@ -1,4 +1,4 @@
-#include "wgpu_im_gui.h"
+#include "wgpu_imgui.h"
 
 #include "wgpu_sample.h"
 #include <fmt/format.h>
@@ -157,7 +157,6 @@ WGPUImGui::WGPUImGui(WGPUSample* sample)
 
 WGPUImGui::~WGPUImGui()
 {
-    shutdown();
     ImGui::DestroyContext();
 }
 
@@ -181,7 +180,7 @@ void WGPUImGui::record(std::vector<std::function<void()>> cmds)
     m_cmds.insert(m_cmds.end(), cmds.begin(), cmds.end());
 }
 
-void WGPUImGui::init()
+void WGPUImGui::initialize()
 {
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
@@ -270,8 +269,9 @@ void WGPUImGui::draw(WGPUCommandEncoder commandEncoder, WGPUTextureView renderVi
     m_sample->wgpu.RenderPassEncoderRelease(pass);
 }
 
-void WGPUImGui::clear()
+void WGPUImGui::finalize()
 {
+    shutdown();
 }
 
 ImGui_ImplWGPU_Data* WGPUImGui::getBackendData()
@@ -777,7 +777,7 @@ bool WGPUImGui::createDeviceObjects()
 
     SafeRelease(vertex_shader_desc.module);
     SafeRelease(pixel_shader_desc.module);
-    SafeRelease(graphics_pipeline_desc.layout);
+    // SafeRelease(graphics_pipeline_desc.layout);
     SafeRelease(bg_layouts[0]);
 
     return true;
@@ -855,7 +855,10 @@ bool WGPUImGui::init(ImGui_ImplWGPU_InitInfo* init_info)
 void WGPUImGui::shutdown()
 {
     ImGui_ImplWGPU_Data* bd = getBackendData();
-    IM_ASSERT(bd != nullptr && "No renderer backend to shutdown, or already shutdown?");
+    // IM_ASSERT(bd != nullptr && "No renderer backend to shutdown, or already shutdown?");
+    if (!bd)
+        return;
+
     ImGuiIO& io = ImGui::GetIO();
 
     invalidateDeviceObjects();

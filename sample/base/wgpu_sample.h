@@ -3,7 +3,7 @@
 #include "jipu/common/dylib.h"
 
 #include "webgpu_api.h"
-#include "wgpu_im_gui.h"
+#include "wgpu_imgui.h"
 #include "window.h"
 
 #include <filesystem>
