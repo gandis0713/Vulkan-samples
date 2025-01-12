@@ -8,6 +8,7 @@
 namespace jipu
 {
 
+class VulkanDevice;
 class VulkanTexture;
 class VULKAN_EXPORT VulkanTextureView : public TextureView
 {
@@ -28,6 +29,7 @@ public:
     VkImageView getVkImageView() const;
 
 protected:
+    VulkanDevice* m_device = nullptr;
     VulkanTexture* m_texture = nullptr;
     const TextureViewDescriptor m_descriptor{};
 
