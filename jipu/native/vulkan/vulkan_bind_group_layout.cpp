@@ -61,6 +61,8 @@ VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const VulkanB
     : m_device(device)
     , m_descriptor(descriptor)
 {
+    // TODO: use cached layout
+
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
     bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
     bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());

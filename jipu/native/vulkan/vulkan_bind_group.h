@@ -40,8 +40,13 @@ private:
     VulkanDevice* m_device = nullptr;
     const BindGroupDescriptor m_descriptor;
 
-private: // for information about bind group layout. TODO: use cached layout
-    BindGroupLayoutDescriptor m_layoutDescriptor{};
+private: // for information about bind group layout.
+    struct BindGroupLayoutInfo
+    {
+        std::vector<BufferBindingLayout> buffers{};
+        std::vector<SamplerBindingLayout> samplers{};
+        std::vector<TextureBindingLayout> textures{};
+    } m_layoutInfo{};
 
 public:
     using Ref = std::reference_wrapper<VulkanBindGroup>;
