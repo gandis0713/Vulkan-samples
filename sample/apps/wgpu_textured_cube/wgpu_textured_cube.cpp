@@ -15,7 +15,7 @@ namespace jipu
 WGPUTexturedCube::WGPUTexturedCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
-    m_imgui = WGPUImGui(this);
+    m_imgui.emplace(this);
 }
 
 WGPUTexturedCube::~WGPUTexturedCube()

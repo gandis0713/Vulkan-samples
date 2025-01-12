@@ -9,7 +9,7 @@ namespace jipu
 WGPUTriangleSampleMSAA::WGPUTriangleSampleMSAA(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
-    m_imgui = WGPUImGui(this);
+    m_imgui.emplace(this);
 }
 
 WGPUTriangleSampleMSAA::~WGPUTriangleSampleMSAA()

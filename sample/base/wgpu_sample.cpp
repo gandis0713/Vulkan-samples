@@ -64,16 +64,45 @@ void WGPUSample::init()
 void WGPUSample::onUpdate()
 {
     recordImGui({ [&]() {
+        windowImGui("API Type",
+                    { [&]() {
+                        if (ImGui::RadioButton("Deferred", m_apiType == APIType::kDawn))
+                            m_apiType = APIType::kDawn;
+                        else if (ImGui::RadioButton("Position", m_apiType == APIType::kJipu))
+                            m_apiType = APIType::kJipu;
+                    } });
         profilingWindow();
     } });
+
+    buildImGui();
 }
 
 void WGPUSample::onResize(uint32_t width, uint32_t height)
 {
     createSurfaceConfigure();
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().resize();
+    }
 }
 
 void WGPUSample::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().record(cmds);
+    }
+}
+
+void WGPUSample::buildImGui()
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().build();
+    }
+}
+
+void WGPUSample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
 {
     if (m_imgui.has_value())
     {
@@ -87,14 +116,6 @@ void WGPUSample::recordImGui(std::vector<std::function<void()>> cmds)
             io.MouseDown[2] = m_middleMouseButton;
         }
 
-        m_imgui.value().record(cmds);
-        m_imgui.value().build();
-    }
-}
-void WGPUSample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
-{
-    if (m_imgui.has_value())
-    {
         m_imgui.value().window(title, uis);
     }
 }
