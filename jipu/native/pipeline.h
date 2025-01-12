@@ -31,7 +31,7 @@ protected:
 struct ProgrammableStage
 {
     ShaderModule* shaderModule = nullptr;
-    std::string entryPoint = "main";
+    std::string entryPoint = "main"; // TODO: use std::string_view
 };
 
 /**
