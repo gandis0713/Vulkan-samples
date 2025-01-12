@@ -52,9 +52,6 @@ public:
 
 protected:
     TextureView() = default;
-
-public:
-    using Ref = std::reference_wrapper<TextureView>;
 };
 
 } // namespace jipu

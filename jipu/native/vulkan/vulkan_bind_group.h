@@ -47,9 +47,6 @@ private: // for information about bind group layout.
         std::vector<SamplerBindingLayout> samplers{};
         std::vector<TextureBindingLayout> textures{};
     } m_layoutInfo{};
-
-public:
-    using Ref = std::reference_wrapper<VulkanBindGroup>;
 };
 DOWN_CAST(VulkanBindGroup, BindGroup);
 

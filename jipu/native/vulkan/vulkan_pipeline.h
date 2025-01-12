@@ -42,9 +42,6 @@ private:
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
-
-public:
-    using Ref = std::reference_wrapper<VulkanComputePipeline>;
 };
 DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 
@@ -124,9 +121,6 @@ private:
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
-
-public:
-    using Ref = std::reference_wrapper<VulkanRenderPipeline>;
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 
