@@ -3,7 +3,7 @@
 #include "file.h"
 #include "image.h"
 #include "model.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/bind_group.h"
@@ -32,7 +32,7 @@
 namespace jipu
 {
 
-class OBJModelSample : public Sample
+class OBJModelSample : public NativeSample
 {
 public:
     OBJModelSample() = delete;
@@ -111,7 +111,7 @@ private:
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -144,7 +144,7 @@ OBJModelSample::~OBJModelSample()
 
 void OBJModelSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -171,7 +171,7 @@ void OBJModelSample::init()
 
 void OBJModelSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
     updateImGui();

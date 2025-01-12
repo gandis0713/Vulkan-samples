@@ -1,6 +1,6 @@
 
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -31,7 +31,7 @@ uint64_t getCurrentTime()
 
 } // namespace
 
-class ParticleSample : public Sample
+class ParticleSample : public NativeSample
 {
 public:
     ParticleSample() = delete;
@@ -96,7 +96,7 @@ private:
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -122,7 +122,7 @@ ParticleSample::~ParticleSample()
 
 void ParticleSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -139,7 +139,7 @@ void ParticleSample::init()
 
 void ParticleSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
 

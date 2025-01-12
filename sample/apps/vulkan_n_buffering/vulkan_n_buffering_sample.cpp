@@ -16,7 +16,7 @@
 namespace jipu
 {
 VulkanNBufferingSample::VulkanNBufferingSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -52,7 +52,7 @@ VulkanNBufferingSample::~VulkanNBufferingSample()
 
 void VulkanNBufferingSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -79,7 +79,7 @@ void VulkanNBufferingSample::init()
 
 void VulkanNBufferingSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
 

@@ -2,7 +2,7 @@
 
 #include "fps.h"
 #include "hpc_watcher.h"
-#include "im_gui.h"
+#include "native_imgui.h"
 #include "window.h"
 
 #include <deque>
@@ -29,12 +29,12 @@ struct SampleDescriptor
     std::filesystem::path path;
 };
 
-class Sample : public Window
+class NativeSample : public Window
 {
 public:
-    Sample() = delete;
-    Sample(const SampleDescriptor& descriptor);
-    virtual ~Sample();
+    NativeSample() = delete;
+    NativeSample(const SampleDescriptor& descriptor);
+    virtual ~NativeSample();
 
 public:
     virtual void createInstance();
@@ -73,7 +73,7 @@ protected:
     TextureView* m_renderView = nullptr;
 
 protected:
-    std::optional<Im_Gui> m_imgui = std::nullopt;
+    std::optional<NativeImGui> m_imgui = std::nullopt;
 
 protected:
     std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;

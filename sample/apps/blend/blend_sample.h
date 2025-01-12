@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "file.h"
 #include "image.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -22,7 +22,7 @@
 namespace jipu
 {
 
-class BlendSample : public Sample
+class BlendSample : public NativeSample
 {
 public:
     BlendSample() = delete;

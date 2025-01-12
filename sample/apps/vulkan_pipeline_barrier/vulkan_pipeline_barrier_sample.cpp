@@ -282,7 +282,7 @@ bool StageEqual::operator()(const Stage& lhs, const Stage& rhs) const
 }
 
 VulkanPipelineBarrierSample::VulkanPipelineBarrierSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -309,7 +309,7 @@ VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
 
 void VulkanPipelineBarrierSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -360,7 +360,7 @@ void VulkanPipelineBarrierSample::updateOffscreenUniformBuffer()
 
 void VulkanPipelineBarrierSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateOffscreenUniformBuffer();
 

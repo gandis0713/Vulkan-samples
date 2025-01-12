@@ -27,7 +27,7 @@ namespace jipu
 {
 
 VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
     // Do not call init function.
 }
@@ -112,7 +112,7 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
 
 void VulkanSubpassesSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -152,7 +152,7 @@ void VulkanSubpassesSample::init()
 
 void VulkanSubpassesSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();

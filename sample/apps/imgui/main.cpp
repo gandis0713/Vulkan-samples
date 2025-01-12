@@ -1,7 +1,7 @@
 
 
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-class ImGuiSample : public Sample
+class ImGuiSample : public NativeSample
 {
 public:
     ImGuiSample() = delete;
@@ -47,7 +47,7 @@ private:
 };
 
 ImGuiSample::ImGuiSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -59,7 +59,7 @@ ImGuiSample::~ImGuiSample()
 
 void ImGuiSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -69,7 +69,7 @@ void ImGuiSample::init()
 
 void ImGuiSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateImGui();
 }

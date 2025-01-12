@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -39,7 +39,7 @@ struct StageEqual
     bool operator()(const Stage& lhs, const Stage& rhs) const;
 };
 
-class VulkanPipelineBarrierSample : public Sample
+class VulkanPipelineBarrierSample : public NativeSample
 {
 public:
     VulkanPipelineBarrierSample() = delete;

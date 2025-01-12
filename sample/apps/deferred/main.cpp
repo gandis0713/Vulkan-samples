@@ -24,12 +24,12 @@
 #include "khronos_texture.h"
 #include "light.h"
 #include "model.h"
-#include "sample.h"
+#include "native_sample.h"
 
 namespace jipu
 {
 
-class DeferredSample : public Sample
+class DeferredSample : public NativeSample
 {
 public:
     DeferredSample() = delete;
@@ -167,7 +167,7 @@ private:
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
     // Do not call init function.
 }
@@ -217,7 +217,7 @@ DeferredSample::~DeferredSample()
 
 void DeferredSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -254,7 +254,7 @@ void DeferredSample::init()
 
 void DeferredSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();

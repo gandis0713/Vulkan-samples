@@ -4,7 +4,7 @@ namespace jipu
 {
 
 QuerySample::QuerySample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
     // do not call init() function. it will be called in window exec() function.
 }
@@ -26,7 +26,7 @@ QuerySample::~QuerySample()
 
 void QuerySample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -69,7 +69,7 @@ void QuerySample::updateUniformBuffer()
 
 void QuerySample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
 

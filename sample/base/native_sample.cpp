@@ -1,4 +1,4 @@
-#include "sample.h"
+#include "native_sample.h"
 
 #include <algorithm>
 #include <fmt/format.h>
@@ -12,15 +12,15 @@
 namespace jipu
 {
 
-Sample::Sample(const SampleDescriptor& descriptor)
+NativeSample::NativeSample(const SampleDescriptor& descriptor)
     : Window(descriptor.windowDescriptor)
     , m_appPath(descriptor.path)
     , m_appDir(descriptor.path.parent_path())
-    , m_imgui(Im_Gui())
+    , m_imgui(NativeImGui())
 {
 }
 
-Sample::~Sample()
+NativeSample::~NativeSample()
 {
     if (m_hpcWatcher)
         m_hpcWatcher->stop();
@@ -37,32 +37,32 @@ Sample::~Sample()
     m_instance.reset();
 }
 
-void Sample::createInstance()
+void NativeSample::createInstance()
 {
     InstanceDescriptor descriptor;
     m_instance = Instance::create(descriptor);
 }
 
-void Sample::createAdapter()
+void NativeSample::createAdapter()
 {
     AdapterDescriptor descriptor;
     descriptor.type = BackendAPI::kVulkan;
     m_adapter = m_instance->createAdapter(descriptor);
 }
 
-void Sample::getPhysicalDevices()
+void NativeSample::getPhysicalDevices()
 {
     m_physicalDevices = m_adapter->getPhysicalDevices();
 }
 
-void Sample::createSurface()
+void NativeSample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
     m_surface = m_adapter->createSurface(descriptor);
 }
 
-void Sample::createSwapchain()
+void NativeSample::createSwapchain()
 {
     if (m_surface == nullptr)
         throw std::runtime_error("Surface is null pointer.");
@@ -85,7 +85,7 @@ void Sample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void Sample::createDevice()
+void NativeSample::createDevice()
 {
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
@@ -94,14 +94,14 @@ void Sample::createDevice()
     m_device = physicalDevice->createDevice(descriptor);
 }
 
-void Sample::createQueue()
+void NativeSample::createQueue()
 {
     QueueDescriptor descriptor{};
 
     m_queue = m_device->createQueue(descriptor);
 }
 
-void Sample::init()
+void NativeSample::init()
 {
     createInstance();
     createAdapter();
@@ -119,18 +119,18 @@ void Sample::init()
     Window::init();
 }
 
-void Sample::onUpdate()
+void NativeSample::onUpdate()
 {
     m_fps.update();
 }
 
-void Sample::onResize(uint32_t width, uint32_t height)
+void NativeSample::onResize(uint32_t width, uint32_t height)
 {
     if (m_swapchain)
         m_swapchain->resize(width, height);
 }
 
-void Sample::recordImGui(std::vector<std::function<void()>> cmds)
+void NativeSample::recordImGui(std::vector<std::function<void()>> cmds)
 {
     if (m_imgui.has_value())
     {
@@ -149,7 +149,7 @@ void Sample::recordImGui(std::vector<std::function<void()>> cmds)
     }
 }
 
-void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+void NativeSample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
 {
     if (m_imgui.has_value())
     {
@@ -157,7 +157,7 @@ void Sample::windowImGui(const char* title, std::vector<std::function<void()>> u
     }
 }
 
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
+void NativeSample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     if (m_imgui.has_value())
     {
@@ -165,7 +165,7 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
     }
 }
 
-void Sample::onHPCListner(Values values)
+void NativeSample::onHPCListner(Values values)
 {
     for (const auto& value : values)
     {
@@ -181,7 +181,7 @@ void Sample::onHPCListner(Values values)
     }
 }
 
-void Sample::createHPCWatcher(const std::unordered_set<hpc::Counter>& counters)
+void NativeSample::createHPCWatcher(const std::unordered_set<hpc::Counter>& counters)
 {
     // TODO: select gpu device
     m_hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Mali });
@@ -230,14 +230,14 @@ void Sample::createHPCWatcher(const std::unordered_set<hpc::Counter>& counters)
     HPCWatcherDescriptor watcherDescriptor{
         .sampler = std::move(sampler),
         .counters = counters,
-        .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
+        .listner = std::bind(&NativeSample::onHPCListner, this, std::placeholders::_1)
     };
 
     m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
     m_hpcWatcher->start();
 }
 
-void Sample::profilingWindow()
+void NativeSample::profilingWindow()
 {
     windowImGui(
         "Profiling", { [&]() {
@@ -287,7 +287,7 @@ void Sample::profilingWindow()
         } });
 }
 
-void Sample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
+void NativeSample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
 {
     if (data.empty())
         return;
