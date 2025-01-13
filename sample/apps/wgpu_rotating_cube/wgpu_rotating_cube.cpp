@@ -27,7 +27,6 @@ void WGPURotatingCube::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPURotatingCube::onUpdate()

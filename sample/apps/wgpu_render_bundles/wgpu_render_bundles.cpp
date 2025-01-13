@@ -29,7 +29,6 @@ void WGPURenderBundles::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPURenderBundles::onUpdate()

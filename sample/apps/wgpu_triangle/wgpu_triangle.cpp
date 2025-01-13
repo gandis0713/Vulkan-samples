@@ -22,7 +22,6 @@ void WGPUTriangleSample::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTriangleSample::onUpdate()

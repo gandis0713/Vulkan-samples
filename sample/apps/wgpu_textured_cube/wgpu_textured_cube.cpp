@@ -28,7 +28,6 @@ void WGPUTexturedCube::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTexturedCube::onUpdate()
