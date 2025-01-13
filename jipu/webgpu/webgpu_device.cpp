@@ -7,6 +7,7 @@
 #include "webgpu_command_encoder.h"
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
+#include "webgpu_render_bundle_encoder.h"
 #include "webgpu_render_pipeline.h"
 #include "webgpu_sampler.h"
 #include "webgpu_shader_module.h"
@@ -93,6 +94,11 @@ WebGPUBuffer* WebGPUDevice::createBuffer(WGPUBufferDescriptor const* descriptor)
 WebGPUCommandEncoder* WebGPUDevice::createCommandEncoder(WGPUCommandEncoderDescriptor const* descriptor)
 {
     return WebGPUCommandEncoder::create(this, descriptor);
+}
+
+WebGPURenderBundleEncoder* WebGPUDevice::createRenderBundleEncoder(WGPURenderBundleEncoderDescriptor const* descriptor)
+{
+    return WebGPURenderBundleEncoder::create(this, descriptor);
 }
 
 WebGPUSampler* WebGPUDevice::createSampler(WGPU_NULLABLE WGPUSamplerDescriptor const* descriptor)

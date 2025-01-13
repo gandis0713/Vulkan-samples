@@ -59,7 +59,6 @@ void VulkanInflightObjects::add(VkFence fence, const std::vector<VulkanSubmit>& 
         inflightObject.pipelines.insert(submit.object.pipelines.begin(), submit.object.pipelines.end());
         inflightObject.pipelineLayouts.insert(submit.object.pipelineLayouts.begin(), submit.object.pipelineLayouts.end());
         inflightObject.descriptorSet.insert(submit.object.descriptorSet.begin(), submit.object.descriptorSet.end());
-        inflightObject.descriptorSetLayouts.insert(submit.object.descriptorSetLayouts.begin(), submit.object.descriptorSetLayouts.end());
         inflightObject.framebuffers.insert(submit.object.framebuffers.begin(), submit.object.framebuffers.end());
         inflightObject.renderPasses.insert(submit.object.renderPasses.begin(), submit.object.renderPasses.end());
 
@@ -113,7 +112,10 @@ bool VulkanInflightObjects::clear(VkFence fence)
         std::lock_guard<std::mutex> lock(m_subscribeMutex);
         for (const auto& [_, sub] : m_subs)
         {
-            sub(fence, inflightObject.value());
+            if (auto subLocked = sub.lock())
+            {
+                (*subLocked)(fence, inflightObject.value());
+            }
         }
 
         return true;
@@ -126,10 +128,15 @@ void VulkanInflightObjects::clearAll()
 {
     std::lock_guard<std::mutex> lock(m_objectMutex);
 
+    for (const auto& [fence, inflightObject] : m_inflightObjects)
+    {
+        clear(fence);
+    }
+
     m_inflightObjects.clear();
 }
 
-void VulkanInflightObjects::subscribe(void* ptr, Subscribe sub)
+void VulkanInflightObjects::subscribe(void* ptr, std::weak_ptr<Subscribe> sub)
 {
     std::lock_guard<std::mutex> lock(m_subscribeMutex);
 

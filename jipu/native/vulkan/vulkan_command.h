@@ -39,6 +39,7 @@ enum class CommandType
     kDrawIndexed,
     kDrawIndirect,
     kDrawIndexedIndirect,
+    kExecuteBundle,
     kEndRenderPass,
 
     kClearBuffer,
@@ -142,6 +143,11 @@ struct DrawIndexedCommand : public Command
     uint32_t indexOffset = 0;
     uint32_t vertexOffset = 0;
     uint32_t firstInstance = 0;
+};
+
+struct ExecuteBundleCommand : public Command
+{
+    std::vector<RenderBundle*> renderBundles{};
 };
 
 struct DrawIndirectCommand : public Command

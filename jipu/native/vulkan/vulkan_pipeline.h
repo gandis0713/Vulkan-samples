@@ -4,6 +4,7 @@
 #include "pipeline.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
+#include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_shader_module.h"
 
@@ -26,7 +27,7 @@ public:
     VulkanComputePipeline& operator=(const VulkanComputePipeline&) = delete;
 
 public:
-    PipelineLayout* getPipelineLayout() const override;
+    VkPipelineLayout getVkPipelineLayout() const;
 
 public:
     VkPipeline getVkPipeline() const;
@@ -37,14 +38,11 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
-
     const ComputePipelineDescriptor m_descriptor;
+    PipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
-
-public:
-    using Ref = std::reference_wrapper<VulkanComputePipeline>;
 };
 DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 
@@ -109,7 +107,7 @@ public:
     VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
 public:
-    PipelineLayout* getPipelineLayout() const override;
+    VkPipelineLayout getVkPipelineLayout() const;
 
 public:
     VkPipeline getVkPipeline() const;
@@ -121,12 +119,10 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanRenderPipelineDescriptor m_descriptor;
+    PipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
-
-public:
-    using Ref = std::reference_wrapper<VulkanRenderPipeline>;
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 

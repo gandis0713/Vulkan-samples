@@ -52,7 +52,6 @@ public:
     BindGroup& operator=(const BindGroup&) = delete;
 
 public:
-    virtual BindGroupLayout* getLayout() const = 0;
     virtual const std::vector<BufferBinding>& getBufferBindings() const = 0;
     virtual const std::vector<SamplerBinding>& getSmaplerBindings() const = 0;
     virtual const std::vector<TextureBinding>& getTextureBindings() const = 0;

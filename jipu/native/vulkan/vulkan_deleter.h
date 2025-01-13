@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulkan_api.h"
+#include "vulkan_inflight_objects.h"
 #include "vulkan_resource.h"
 
 #include <memory>
@@ -120,6 +121,8 @@ private:
     std::unordered_set<VkFence> m_fences{};
 
     mutable std::mutex m_mutex{};
+
+    std::shared_ptr<VulkanInflightObjects::Subscribe> m_subscribe{};
 };
 
 } // namespace jipu

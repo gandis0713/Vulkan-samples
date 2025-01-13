@@ -28,24 +28,23 @@ public:
 public:
     VulkanDevice* getDevice() const;
     VulkanCommandEncoder* getCommandEncoder() const;
-    const CommandEncodingResult& getCommandEncodingResult() const;
 
 public:
-    VulkanCommandRecordResult recordToVkCommandBuffer();
+    const std::vector<std::unique_ptr<Command>>& getCommands();
+    const std::vector<OperationResourceInfo>& getCommandResourceInfos();
 
 public:
     VkCommandBuffer getVkCommandBuffer();
 
 private:
-    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
-
-private:
     void createVkCommandBuffer();
     void releaseVkCommandBuffer();
 
+    void recordToVkCommandBuffer();
+
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-    CommandEncodingResult m_commandEncodingResult{};
+    VulkanCommandRecordResult m_commandRecordResult{};
 
 private:
     // store VkCommandBuffer to reuse it as secondary command buffer if need.

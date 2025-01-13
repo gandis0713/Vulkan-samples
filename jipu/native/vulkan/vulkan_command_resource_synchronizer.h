@@ -18,12 +18,12 @@ class VulkanCommandRecorder;
 
 struct VulkanCommandResourceSynchronizerDescriptor
 {
-    std::vector<PassResourceInfo> passResourceInfos{};
+    std::vector<OperationResourceInfo> operationResourceInfos{};
 };
 
-struct CommandResourceSyncResult
+struct ResourceSyncResult
 {
-    std::vector<PassResourceInfo> notSyncedPassResourceInfos{};
+    std::vector<OperationResourceInfo> notSyncedOperationResourceInfos{};
 };
 
 class VulkanCommandResourceSynchronizer final
@@ -67,8 +67,7 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    // result that not synchronized resources in this command.
-    CommandResourceSyncResult result();
+    ResourceSyncResult finish();
 
 private:
     bool findSrcBuffer(Buffer* buffer) const;
@@ -76,9 +75,9 @@ private:
     BufferUsageInfo extractSrcBufferUsageInfo(Buffer* buffer);
     TextureUsageInfo extractSrcTextureUsageInfo(Texture* texture);
 
-    void increasePassIndex();
-    int32_t currentPassIndex() const;
-    PassResourceInfo& getCurrentPassResourceInfo();
+    void increaseOperationIndex();
+    int32_t currentOperationIndex() const;
+    OperationResourceInfo& getCurrentOperationResourceInfo();
 
 private:
     void sync();
@@ -98,8 +97,8 @@ private:
 
 private:
     VulkanCommandRecorder* m_commandRecorder = nullptr;
-    VulkanCommandResourceSynchronizerDescriptor m_descriptor{};
-    int32_t m_currentPassIndex = -1;
+    std::vector<OperationResourceInfo> m_operationResourceInfos{};
+    int32_t m_currentOperationIndex = -1;
 
     struct
     {

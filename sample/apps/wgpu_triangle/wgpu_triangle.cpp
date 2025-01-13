@@ -9,6 +9,7 @@ namespace jipu
 WGPUTriangleSample::WGPUTriangleSample(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui.emplace(this);
 }
 
 WGPUTriangleSample::~WGPUTriangleSample()
@@ -21,7 +22,6 @@ void WGPUTriangleSample::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTriangleSample::onUpdate()
@@ -56,6 +56,8 @@ void WGPUTriangleSample::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
@@ -174,7 +176,7 @@ void WGPUTriangleSample::createPipeline()
     vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};

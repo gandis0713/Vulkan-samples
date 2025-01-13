@@ -17,7 +17,7 @@ std::unique_ptr<VulkanDeleter> VulkanDeleter::create(VulkanDevice* device)
 VulkanDeleter::VulkanDeleter(VulkanDevice* device)
     : m_device(device)
 {
-    m_device->getInflightObjects()->subscribe(this, [this](VkFence fence, VulkanInflightObject object) {
+    m_subscribe = std::make_shared<VulkanInflightObjects::Subscribe>([this](VkFence fence, VulkanInflightObject object) {
         for (auto commandBuffer : object.commandBuffers)
         {
             if (contains(commandBuffer))
@@ -127,11 +127,13 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             safeDestroy(fence);
         }
     });
+
+    m_device->getInflightObjects()->subscribe(this, m_subscribe);
 }
 
 VulkanDeleter::~VulkanDeleter()
 {
-    m_device->getInflightObjects()->unsubscribe(this);
+    // doesn't need to unsubscribe because weak_ptr is used in VulkanInflightObjects.
 
     std::unordered_map<VkBuffer, VulkanMemory> buffers{};
     std::unordered_map<VkImage, VulkanMemory> images{};
@@ -475,7 +477,7 @@ void VulkanDeleter::destroy(VkShaderModule shaderModule)
 
 void VulkanDeleter::destroy(VkDescriptorSet descriptorSet)
 {
-    m_device->vkAPI.FreeDescriptorSets(m_device->getVkDevice(), m_device->getVkDescriptorPool(), 1, &descriptorSet);
+    m_device->getDescriptorPool()->free(descriptorSet);
 }
 
 void VulkanDeleter::destroy(VkDescriptorSetLayout descriptorSetLayout)

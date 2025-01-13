@@ -11,6 +11,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_query_set.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
@@ -22,9 +23,10 @@
 namespace jipu
 {
 
-VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
+VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
-    , m_commandResourceSyncronizer(this, { commandBuffer->getCommandEncodingResult().passResourceInfos })
+    , m_descriptor(std::move(descriptor))
+    , m_commandResourceSyncronizer(this, VulkanCommandResourceSynchronizerDescriptor{ .operationResourceInfos = m_descriptor.commandEncodingResult.resourceTrackingResult.operationResourceInfos })
 {
 }
 
@@ -37,9 +39,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    auto& commands = m_commandBuffer->getCommandEncodingResult().commands;
-
-    for (const auto& command : commands)
+    for (const auto& command : m_descriptor.commandEncodingResult.commands)
     {
         switch (command->type)
         {
@@ -127,15 +127,16 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
         case CommandType::kWriteTimestamp:
             // TODO: write timestamp
             break;
+        case CommandType::kExecuteBundle:
+            executeBundle(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
+            break;
         default:
             throw std::runtime_error("Unknown command type.");
             break;
         }
     }
 
-    endRecord();
-
-    return result();
+    return endRecord();
 }
 
 void VulkanCommandRecorder::beginRecord()
@@ -151,12 +152,17 @@ void VulkanCommandRecorder::beginRecord()
     }
 }
 
-void VulkanCommandRecorder::endRecord()
+VulkanCommandRecordResult VulkanCommandRecorder::endRecord()
 {
     if (m_commandBuffer->getDevice()->vkAPI.EndCommandBuffer(m_commandBuffer->getVkCommandBuffer()) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to end command buffer.");
     }
+
+    return VulkanCommandRecordResult{
+        .commands = std::move(m_descriptor.commandEncodingResult.commands),
+        .resourceSyncResult = m_commandResourceSyncronizer.finish()
+    };
 }
 
 void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
@@ -183,7 +189,6 @@ void VulkanCommandRecorder::setComputeBindGroup(SetBindGroupCommand* command)
     m_commandResourceSyncronizer.setComputeBindGroup(command);
 
     auto vulkanBindGroup = downcast(command->bindGroup);
-    auto vulkanPipelineLayout = downcast(m_computePipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
@@ -191,7 +196,7 @@ void VulkanCommandRecorder::setComputeBindGroup(SetBindGroupCommand* command)
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                m_computePipeline->getVkPipelineLayout(),
                                 command->index,
                                 1,
                                 &descriptorSet,
@@ -274,7 +279,6 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
     m_commandResourceSyncronizer.setRenderBindGroup(command);
 
     auto vulkanBindGroup = downcast(command->bindGroup);
-    auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
 
@@ -282,7 +286,7 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
 
     vkAPI.CmdBindDescriptorSets(m_commandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                m_renderPipeline->getVkPipelineLayout(),
                                 command->index,
                                 1,
                                 &descriptorSet,
@@ -354,6 +358,48 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
                                 static_cast<float>(color.a) };
 
     m_commandBuffer->getDevice()->vkAPI.CmdSetBlendConstants(m_commandBuffer->getVkCommandBuffer(), blendConstants);
+}
+
+void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
+{
+    for (auto& renderBundle : command->renderBundles)
+    {
+        auto vulkanRenderBundle = downcast(renderBundle);
+        const auto& commands = vulkanRenderBundle->getCommands();
+        for (auto& command : commands)
+        {
+            switch (command->type)
+            {
+            case CommandType::kSetRenderPipeline:
+                setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
+                break;
+            case CommandType::kSetVertexBuffer:
+                setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kSetIndexBuffer:
+                setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kDraw:
+                draw(reinterpret_cast<DrawCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndexed:
+                drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndirect:
+                // TODO
+                break;
+            case CommandType::kDrawIndexedIndirect:
+                // TODO
+                break;
+            case CommandType::kSetRenderBindGroup:
+                setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+                break;
+            default:
+                throw std::runtime_error("Unknown command type.");
+                break;
+            }
+        }
+    }
 }
 
 void VulkanCommandRecorder::draw(DrawCommand* command)
@@ -682,16 +728,6 @@ void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
 VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 {
     return m_commandBuffer;
-}
-
-VulkanCommandRecordResult VulkanCommandRecorder::result()
-{
-    VulkanCommandRecordResult result{};
-
-    result.commandBuffer = m_commandBuffer;
-    result.commandResourceSyncResult = m_commandResourceSyncronizer.result();
-
-    return result;
 }
 
 // Generator

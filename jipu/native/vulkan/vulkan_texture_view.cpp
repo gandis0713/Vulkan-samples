@@ -8,7 +8,8 @@ namespace jipu
 {
 
 VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor)
-    : m_texture(texture)
+    : m_device(downcast(texture->getDevice()))
+    , m_texture(texture)
     , m_descriptor(descriptor)
 {
     VkImageViewCreateInfo imageViewCreateInfo{};
@@ -28,8 +29,7 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
     imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-    auto vulkanDevice = downcast(m_texture->getDevice());
-    if (vulkanDevice->vkAPI.CreateImageView(vulkanDevice->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    if (m_device->vkAPI.CreateImageView(m_device->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create image views!");
     }
@@ -37,8 +37,7 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
 
 VulkanTextureView::~VulkanTextureView()
 {
-    auto vulkanDevice = downcast(m_texture->getDevice());
-    vulkanDevice->getDeleter()->safeDestroy(m_imageView);
+    m_device->getDeleter()->safeDestroy(m_imageView);
 }
 
 TextureViewDimension VulkanTextureView::getDimension() const

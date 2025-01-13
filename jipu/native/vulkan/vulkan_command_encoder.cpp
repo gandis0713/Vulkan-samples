@@ -2,6 +2,7 @@
 
 #include "vulkan_compute_pass_encoder.h"
 #include "vulkan_device.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_render_pass_encoder.h"
 
 namespace jipu
@@ -37,7 +38,7 @@ void VulkanCommandEncoder::copyBufferToBuffer(const CopyBuffer& src, const CopyB
         size
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
+    m_commands.push_back(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyBufferToTexture(const CopyTextureBuffer& buffer, const CopyTexture& texture, const Extent3D& extent)
@@ -49,7 +50,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const CopyTextureBuffer& buffer, 
         extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
+    m_commands.push_back(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyTextureToBuffer(const CopyTexture& texture, const CopyTextureBuffer& buffer, const Extent3D& extent)
@@ -61,7 +62,7 @@ void VulkanCommandEncoder::copyTextureToBuffer(const CopyTexture& texture, const
         extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
+    m_commands.push_back(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyTextureToTexture(const CopyTexture& src, const CopyTexture& dst, const Extent3D& extent)
@@ -73,7 +74,7 @@ void VulkanCommandEncoder::copyTextureToTexture(const CopyTexture& src, const Co
         extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToTextureCommand>(std::move(command)));
+    m_commands.push_back(std::make_unique<CopyTextureToTextureCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
@@ -92,7 +93,7 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
         destinationOffset
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<ResolveQuerySetCommand>(std::move(command)));
+    m_commands.push_back(std::make_unique<ResolveQuerySetCommand>(std::move(command)));
 }
 
 std::unique_ptr<CommandBuffer> VulkanCommandEncoder::finish(const CommandBufferDescriptor& descriptor)
@@ -100,23 +101,116 @@ std::unique_ptr<CommandBuffer> VulkanCommandEncoder::finish(const CommandBufferD
     return std::make_unique<VulkanCommandBuffer>(this, descriptor);
 }
 
+void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
+{
+    switch (command->type)
+    {
+    case CommandType::kBeginComputePass:
+        m_commandResourceTracker.beginComputePass(reinterpret_cast<BeginComputePassCommand*>(command.get()));
+        break;
+    case CommandType::kEndComputePass:
+        m_commandResourceTracker.endComputePass(reinterpret_cast<EndComputePassCommand*>(command.get()));
+        break;
+    case CommandType::kSetComputePipeline:
+        // nothing to do
+        break;
+    case CommandType::kDispatch:
+        // nothing to do
+        break;
+    case CommandType::kDispatchIndirect:
+        // nothing to do
+        break;
+    case CommandType::kBeginRenderPass:
+        m_commandResourceTracker.beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command.get()));
+        break;
+    case CommandType::kSetRenderPipeline:
+        // nothing to do
+        break;
+    case CommandType::kSetVertexBuffer:
+        m_commandResourceTracker.setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
+        break;
+    case CommandType::kSetIndexBuffer:
+        m_commandResourceTracker.setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
+        break;
+    case CommandType::kSetViewport:
+        // nothing to do
+        break;
+    case CommandType::kSetScissor:
+        // nothing to do
+        break;
+    case CommandType::kSetBlendConstant:
+        // nothing to do
+        break;
+    case CommandType::kDraw:
+        // nothing to do
+        break;
+    case CommandType::kDrawIndexed:
+        // nothing to do
+        break;
+    case CommandType::kDrawIndirect:
+        // TODO: draw indirect
+        break;
+    case CommandType::kDrawIndexedIndirect:
+        // TODO: draw indexed indirect
+        break;
+    case CommandType::kBeginOcclusionQuery:
+        // nothing to do
+        break;
+    case CommandType::kEndOcclusionQuery:
+        // nothing to do
+        break;
+    case CommandType::kEndRenderPass:
+        m_commandResourceTracker.endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command.get()));
+        break;
+    case CommandType::kSetComputeBindGroup:
+        m_commandResourceTracker.setComputeBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+        break;
+    case CommandType::kSetRenderBindGroup:
+        m_commandResourceTracker.setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+        break;
+    case CommandType::kClearBuffer:
+        // TODO: clear buffer
+        break;
+    case CommandType::kCopyBufferToBuffer:
+        // TODO
+        break;
+    case CommandType::kCopyBufferToTexture:
+        // TODO
+        break;
+    case CommandType::kCopyTextureToBuffer:
+        // TODO
+        break;
+    case CommandType::kCopyTextureToTexture:
+        // TODO
+        break;
+    case CommandType::kResolveQuerySet:
+        // TODO
+        break;
+    case CommandType::kWriteTimestamp:
+        // TODO:
+        break;
+    case CommandType::kExecuteBundle:
+        m_commandResourceTracker.executeBundle(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
+        break;
+    default:
+        throw std::runtime_error("Unknown command type.");
+        break;
+    }
+
+    m_commands.push_back(std::move(command));
+}
+
 VulkanDevice* VulkanCommandEncoder::getDevice() const
 {
     return m_device;
 }
 
-CommandEncodingContext& VulkanCommandEncoder::context()
+CommandEncodingResult VulkanCommandEncoder::extractResult()
 {
-    return m_commandEncodingContext;
-}
-
-CommandEncodingResult VulkanCommandEncoder::result()
-{
-    CommandEncodingResult result{};
-    result.commands = std::move(m_commandEncodingContext.commands);
-    result.passResourceInfos = m_commandEncodingContext.commandResourceTracker.result();
-
-    return result;
+    return CommandEncodingResult{
+        .commands = std::move(m_commands),
+        .resourceTrackingResult = m_commandResourceTracker.finish()
+    };
 }
 
 } // namespace jipu

@@ -9,6 +9,7 @@
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_pool.h"
 #include "vulkan_deleter.h"
+#include "vulkan_descriptor_pool.h"
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
@@ -53,12 +54,10 @@ public:
     std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
     std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
+    std::unique_ptr<RenderBundleEncoder> createRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor) override;
 
 public:
-    std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
-    std::unique_ptr<BindGroupLayout> createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
-    std::unique_ptr<Swapchain> createSwapchain(const VulkanSwapchainDescriptor& descriptor);
 
 public:
     VulkanPhysicalDevice* getPhysicalDevice() const;
@@ -71,8 +70,11 @@ public:
     std::shared_ptr<VulkanResourceAllocator> getResourceAllocator();
     std::shared_ptr<VulkanSemaphorePool> getSemaphorePool();
     std::shared_ptr<VulkanFencePool> getFencePool();
+    std::shared_ptr<VulkanDescriptorPool> getDescriptorPool();
     std::shared_ptr<VulkanRenderPassCache> getRenderPassCache();
     std::shared_ptr<VulkanFramebufferCache> getFramebufferCache();
+    std::shared_ptr<VulkanBindGroupLayoutCache> getBindGroupLayoutCache();
+    std::shared_ptr<VulkanPipelineLayoutCache> getPipelineLayoutCache();
     std::shared_ptr<VulkanCommandPool> getCommandPool();
     std::shared_ptr<VulkanInflightObjects> getInflightObjects();
     std::shared_ptr<VulkanDeleter> getDeleter();
@@ -80,7 +82,6 @@ public:
 public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
-    VkDescriptorPool getVkDescriptorPool();
     const std::vector<VkQueueFamilyProperties>& getActivatedQueueFamilies() const;
 
 public:
@@ -96,14 +97,16 @@ private:
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;
-    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
 
     std::shared_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
     std::shared_ptr<VulkanFencePool> m_fencePool = nullptr;
     std::shared_ptr<VulkanCommandPool> m_commandBufferPool = nullptr;
+    std::shared_ptr<VulkanDescriptorPool> m_descriptorPool = nullptr;
 
     std::shared_ptr<VulkanRenderPassCache> m_renderPassCache = nullptr;
     std::shared_ptr<VulkanFramebufferCache> m_frameBufferCache = nullptr;
+    std::shared_ptr<VulkanBindGroupLayoutCache> m_bindGroupLayoutCache = nullptr;
+    std::shared_ptr<VulkanPipelineLayoutCache> m_pipelineLayoutCache = nullptr;
     std::shared_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::shared_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 

@@ -46,7 +46,6 @@ struct VulkanSubmit
         std::unordered_set<VkPipelineLayout> pipelineLayouts{};
         std::unordered_set<VkShaderModule> shaderModules{};
         std::unordered_set<VkDescriptorSet> descriptorSet{};
-        std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
         std::unordered_set<VkFramebuffer> framebuffers{};
         std::unordered_set<VkRenderPass> renderPasses{};
         Resource srcResource{};
@@ -63,7 +62,6 @@ struct VulkanSubmit
     void add(VkPipelineLayout pipelineLayout);
     void add(const std::vector<VkShaderModule>& shaderModules);
     void add(VkDescriptorSet descriptorSet);
-    void add(VkDescriptorSetLayout descriptorSetLayout);
     void add(VkFramebuffer framebuffer);
     void add(VkRenderPass renderPass);
 
@@ -71,6 +69,19 @@ struct VulkanSubmit
     void addSrcImage(VulkanTextureResource image);
     void addDstBuffer(VulkanBufferResource buffer);
     void addDstImage(VulkanTextureResource image);
+
+    void add(CopyBufferToBufferCommand* command);
+    void add(CopyBufferToTextureCommand* command);
+    void add(CopyTextureToBufferCommand* command);
+    void add(CopyTextureToTextureCommand* command);
+    void add(SetComputePipelineCommand* command);
+    void addComputeBindGroup(SetBindGroupCommand* command);
+    void add(BeginRenderPassCommand* command);
+    void addRenderBindGroup(SetBindGroupCommand* command);
+    void add(SetRenderPipelineCommand* command);
+    void add(SetVertexBufferCommand* command);
+    void add(SetIndexBufferCommand* command);
+    void add(ExecuteBundleCommand* command);
 };
 
 class VulkanDevice;
@@ -81,7 +92,7 @@ public:
     ~VulkanSubmitContext() = default;
 
 public:
-    static VulkanSubmitContext create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results);
+    static VulkanSubmitContext create(VulkanDevice* device, const std::vector<CommandBuffer*>& commandBuffers);
 
 public:
     const std::vector<VulkanSubmit>& getSubmits() const;

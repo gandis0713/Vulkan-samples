@@ -25,11 +25,8 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
-    // record VulkanCommandBuffer to VkCommandBuffer.
-    std::vector<VulkanCommandRecordResult> commandRecordResults = recordCommands(commandBuffers);
-
     // generate Submit context.
-    VulkanSubmitContext submitContext = VulkanSubmitContext::create(m_device, commandRecordResults);
+    VulkanSubmitContext submitContext = VulkanSubmitContext::create(m_device, commandBuffers);
 
     // submit
     auto submits = submitContext.getSubmits();
@@ -63,18 +60,22 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         }
         else
         {
-            m_notPresentTasks.push_back(std::move(future));
+            m_notPresentTasks.push(std::move(future));
         }
     }
 }
 
 void VulkanQueue::waitIdle()
 {
-    for (auto& task : m_notPresentTasks)
+    m_submitter->waitIdle();
+
+    while (!m_notPresentTasks.empty())
     {
+        auto task = std::move(m_notPresentTasks.front());
+        m_notPresentTasks.pop();
+
         task.get();
     }
-    m_notPresentTasks.clear();
 
     for (auto& [_, task] : m_presentTasks)
     {
@@ -98,19 +99,6 @@ void VulkanQueue::present(VulkanPresentInfo presentInfo)
     }
 
     m_submitter->present(presentInfo);
-}
-
-std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
-{
-    std::vector<VulkanCommandRecordResult> commandRecordResult{};
-
-    for (auto& commandBuffer : commandBuffers)
-    {
-        auto vulkanCommandBuffer = downcast(commandBuffer);
-        commandRecordResult.push_back(vulkanCommandBuffer->recordToVkCommandBuffer());
-    }
-
-    return commandRecordResult;
 }
 
 } // namespace jipu

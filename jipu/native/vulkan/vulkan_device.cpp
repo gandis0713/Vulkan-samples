@@ -8,6 +8,7 @@
 #include "vulkan_physical_device.h"
 #include "vulkan_query_set.h"
 #include "vulkan_queue.h"
+#include "vulkan_render_bundle_encoder.h"
 #include "vulkan_sampler.h"
 
 #include <fmt/format.h>
@@ -32,6 +33,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDes
 
     m_renderPassCache = std::make_shared<VulkanRenderPassCache>(this);
     m_frameBufferCache = std::make_shared<VulkanFramebufferCache>(this);
+    m_bindGroupLayoutCache = std::make_shared<VulkanBindGroupLayoutCache>(this);
+    m_pipelineLayoutCache = std::make_shared<VulkanPipelineLayoutCache>(this);
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, allocatorDescriptor);
@@ -47,21 +50,23 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
+    m_bindGroupLayoutCache->clear();
+    m_pipelineLayoutCache->clear();
     m_frameBufferCache->clear();
     m_renderPassCache->clear();
 
+    m_inflightObjects.reset();
     m_deleter.reset();
 
-    m_inflightObjects.reset();
-
-    vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
     m_resourceAllocator.reset();
 
+    m_descriptorPool.reset();
     m_commandBufferPool.reset();
     m_semaphorePool.reset();
     m_fencePool.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
+    m_device = VK_NULL_HANDLE;
 }
 
 std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
@@ -124,29 +129,19 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& de
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
-{
-    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
-}
-
-std::unique_ptr<BindGroupLayout> VulkanDevice::createBindGroupLayout(const VulkanBindGroupLayoutDescriptor& descriptor)
-{
-    return std::make_unique<VulkanBindGroupLayout>(this, descriptor);
-}
-
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
-{
-    return std::make_unique<VulkanSwapchain>(this, descriptor);
-}
-
 std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
     return std::make_unique<VulkanCommandEncoder>(this, descriptor);
+}
+
+std::unique_ptr<RenderBundleEncoder> VulkanDevice::createRenderBundleEncoder(const RenderBundleEncoderDescriptor& descriptor)
+{
+    return VulkanRenderBundleEncoder::create(this, descriptor);
 }
 
 VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
@@ -179,6 +174,11 @@ std::shared_ptr<VulkanFencePool> VulkanDevice::getFencePool()
     return m_fencePool;
 }
 
+std::shared_ptr<VulkanDescriptorPool> VulkanDevice::getDescriptorPool()
+{
+    return m_descriptorPool;
+}
+
 std::shared_ptr<VulkanRenderPassCache> VulkanDevice::getRenderPassCache()
 {
     return m_renderPassCache;
@@ -187,6 +187,16 @@ std::shared_ptr<VulkanRenderPassCache> VulkanDevice::getRenderPassCache()
 std::shared_ptr<VulkanFramebufferCache> VulkanDevice::getFramebufferCache()
 {
     return m_frameBufferCache;
+}
+
+std::shared_ptr<VulkanBindGroupLayoutCache> VulkanDevice::getBindGroupLayoutCache()
+{
+    return m_bindGroupLayoutCache;
+}
+
+std::shared_ptr<VulkanPipelineLayoutCache> VulkanDevice::getPipelineLayoutCache()
+{
+    return m_pipelineLayoutCache;
 }
 
 std::shared_ptr<VulkanCommandPool> VulkanDevice::getCommandPool()
@@ -212,71 +222,6 @@ VkDevice VulkanDevice::getVkDevice() const
 VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
     return m_physicalDevice->getVkPhysicalDevice();
-}
-
-VkDescriptorPool VulkanDevice::getVkDescriptorPool()
-{
-    if (m_descriptorPool == VK_NULL_HANDLE)
-    {
-        const uint32_t maxSets = 32; // TODO: set correct max value.
-        const uint64_t descriptorPoolCount = 8;
-        const uint64_t maxDescriptorSetSize = descriptorPoolCount;
-        std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
-        VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-                                                   .pNext = nullptr,
-                                                   .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                                                   .maxSets = maxSets,
-                                                   .poolSizeCount = descriptorPoolCount,
-                                                   .pPoolSizes = poolSizes.data() };
-
-        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = m_physicalDevice->getVulkanPhysicalDeviceInfo();
-        const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
-
-        uint32_t kDescriptorSetUniformBufferCount = 32;
-        if (devicePropertyLimists.maxDescriptorSetUniformBuffers < kDescriptorSetUniformBufferCount)
-            kDescriptorSetUniformBufferCount = devicePropertyLimists.maxDescriptorSetUniformBuffers;
-
-        uint32_t kDescriptorSetUniformBufferDynamicCount = 32;
-        if (devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic < kDescriptorSetUniformBufferDynamicCount)
-            kDescriptorSetUniformBufferDynamicCount = devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic;
-
-        uint32_t kDescriptorSetSamplers = 32;
-        if (devicePropertyLimists.maxDescriptorSetSamplers < kDescriptorSetSamplers)
-            kDescriptorSetSamplers = devicePropertyLimists.maxDescriptorSetSamplers;
-
-        uint32_t kDescriptorSetSampledImages = 32;
-        if (devicePropertyLimists.maxDescriptorSetSampledImages < kDescriptorSetSampledImages)
-            kDescriptorSetSampledImages = devicePropertyLimists.maxDescriptorSetSampledImages;
-
-        uint32_t kDescriptorSetInputAttachments = 32;
-        if (devicePropertyLimists.maxDescriptorSetInputAttachments < kDescriptorSetInputAttachments)
-            kDescriptorSetInputAttachments = devicePropertyLimists.maxDescriptorSetInputAttachments;
-
-        uint32_t kDescriptorSetStorageBuffers = 32;
-        if (devicePropertyLimists.maxDescriptorSetStorageBuffers < kDescriptorSetStorageBuffers)
-            kDescriptorSetStorageBuffers = devicePropertyLimists.maxDescriptorSetStorageBuffers;
-
-        uint32_t kDescriptorSetStorageBuffersDynamic = 32;
-        if (devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic < kDescriptorSetStorageBuffersDynamic)
-            kDescriptorSetStorageBuffersDynamic = devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic;
-
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kDescriptorSetUniformBufferCount };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, kDescriptorSetUniformBufferDynamicCount };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, kDescriptorSetSamplers };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, kDescriptorSetSampledImages };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, kDescriptorSetSampledImages };
-        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, kDescriptorSetInputAttachments };
-        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, kDescriptorSetStorageBuffers };
-        poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, kDescriptorSetStorageBuffersDynamic };
-
-        VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
-        if (result != VK_SUCCESS)
-        {
-            throw std::runtime_error(fmt::format("Failed to create descriptor pool. {}", static_cast<uint32_t>(result)));
-        }
-    }
-
-    return m_descriptorPool;
 }
 
 const std::vector<VkQueueFamilyProperties>& VulkanDevice::getActivatedQueueFamilies() const
@@ -365,6 +310,7 @@ void VulkanDevice::createPools()
 {
     m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
     m_fencePool = std::make_unique<VulkanFencePool>(this);
+    m_descriptorPool = std::make_unique<VulkanDescriptorPool>(this);
 
     // command buffer pool
     {

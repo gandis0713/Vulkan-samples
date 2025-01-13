@@ -5,6 +5,7 @@
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_render_bundle.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 
@@ -29,7 +30,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_currentPassResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_currentOperationResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
             };
@@ -38,7 +39,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_currentPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_currentOperationResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -51,7 +52,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_currentPassResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_currentOperationResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
             };
@@ -60,7 +61,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         auto textureBindings = command->bindGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_currentPassResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_currentOperationResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -81,8 +82,8 @@ void VulkanCommandResourceTracker::dispatchIndirect(DispatchIndirectCommand* com
 
 void VulkanCommandResourceTracker::endComputePass(EndComputePassCommand* command)
 {
-    m_passResourceInfos.push_back(std::move(m_currentPassResourceInfo));
-    m_currentPassResourceInfo = {};
+    m_operationResourceInfos.push_back(std::move(m_currentOperationResourceInfo));
+    m_currentOperationResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
@@ -105,13 +106,13 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             const auto& framebufferColorAttachment = framebufferColorAttachments[i];
             const auto& renderPassColorAttachment = renderPassColorAttachments[i];
 
-            m_currentPassResourceInfo.dst.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+            m_currentOperationResourceInfo.dst.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 .accessFlags = VK_ACCESS_NONE,
                 .layout = renderPassColorAttachment.renderAttachment.initialLayout,
             };
 
-            m_currentPassResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+            m_currentOperationResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                 .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                 .layout = renderPassColorAttachment.renderAttachment.finalLayout,
@@ -119,18 +120,20 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
 
             if (framebufferColorAttachment.resolveView)
             {
-                m_currentPassResourceInfo.dst.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                m_currentOperationResourceInfo.dst.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     .accessFlags = VK_ACCESS_NONE,
                     .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
                 };
 
-                m_currentPassResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                m_currentOperationResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                     .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
                 };
             }
+
+            // TODO: depth stencil attachment
         }
     }
 }
@@ -144,7 +147,7 @@ void VulkanCommandResourceTracker::setVertexBuffer(SetVertexBufferCommand* comma
 {
     // dst
     {
-        m_currentPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
+        m_currentOperationResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
         };
@@ -155,7 +158,7 @@ void VulkanCommandResourceTracker::setIndexBuffer(SetIndexBufferCommand* command
 {
     // dst
     {
-        m_currentPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
+        m_currentOperationResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_INDEX_READ_BIT,
         };
@@ -187,6 +190,48 @@ void VulkanCommandResourceTracker::drawIndexed(DrawIndexedCommand* command)
     // do nothing.
 }
 
+void VulkanCommandResourceTracker::executeBundle(ExecuteBundleCommand* command)
+{
+    for (auto& renderBundle : command->renderBundles)
+    {
+        auto vulkanRenderBundle = downcast(renderBundle);
+        const auto& commands = vulkanRenderBundle->getCommands();
+        for (auto& command : commands)
+        {
+            switch (command->type)
+            {
+            case CommandType::kSetRenderPipeline:
+                setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
+                break;
+            case CommandType::kSetVertexBuffer:
+                setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kSetIndexBuffer:
+                setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
+                break;
+            case CommandType::kDraw:
+                draw(reinterpret_cast<DrawCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndexed:
+                drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
+                break;
+            case CommandType::kDrawIndirect:
+                // TODO
+                break;
+            case CommandType::kDrawIndexedIndirect:
+                // TODO
+                break;
+            case CommandType::kSetRenderBindGroup:
+                setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
+                break;
+            default:
+                throw std::runtime_error("Unknown command type.");
+                break;
+            }
+        }
+    }
+}
+
 void VulkanCommandResourceTracker::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
 {
     // do nothing.
@@ -199,19 +244,18 @@ void VulkanCommandResourceTracker::endOcclusionQuery(EndOcclusionQueryCommand* c
 
 void VulkanCommandResourceTracker::endRenderPass(EndRenderPassCommand* command)
 {
-    m_passResourceInfos.push_back(std::move(m_currentPassResourceInfo));
-    m_currentPassResourceInfo = {};
+    m_operationResourceInfos.push_back(std::move(m_currentOperationResourceInfo));
+    m_currentOperationResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* command)
 {
     // dst
     {
-        auto bindGroup = command->bindGroup;
-        auto bindGroupLayout = command->bindGroup->getLayout();
+        auto bindGroup = downcast(command->bindGroup);
 
         auto bufferBindings = bindGroup->getBufferBindings();
-        auto bufferBindingLayouts = bindGroupLayout->getBufferBindingLayouts();
+        auto bufferBindingLayouts = bindGroup->getBufferLayouts();
         for (auto i = 0; i < bufferBindings.size(); ++i)
         {
             auto& bufferBinding = bufferBindings[i];
@@ -249,11 +293,11 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
                 break;
             }
 
-            m_currentPassResourceInfo.dst.buffers[bufferBinding.buffer] = bufferUsageInfo;
+            m_currentOperationResourceInfo.dst.buffers[bufferBinding.buffer] = bufferUsageInfo;
         }
 
         auto textureBindings = bindGroup->getTextureBindings();
-        auto textureBindingLayouts = bindGroupLayout->getTextureBindingLayouts();
+        auto textureBindingLayouts = bindGroup->getTextureLayouts();
         for (auto i = 0; i < textureBindings.size(); ++i)
         {
             auto& textureBinding = textureBindings[i];
@@ -278,7 +322,7 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
             textureUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             textureUsageInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            m_currentPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = textureUsageInfo;
+            m_currentOperationResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = textureUsageInfo;
         }
     }
 
@@ -313,9 +357,11 @@ void VulkanCommandResourceTracker::resolveQuerySet(ResolveQuerySetCommand* comma
     // do nothing.
 }
 
-std::vector<PassResourceInfo> VulkanCommandResourceTracker::result()
+VulkanResourceTrackingResult VulkanCommandResourceTracker::finish()
 {
-    return m_passResourceInfos;
+    m_currentOperationResourceInfo = {};
+
+    return VulkanResourceTrackingResult{ .operationResourceInfos = std::move(m_operationResourceInfos) };
 }
 
 } // namespace jipu

@@ -21,9 +21,6 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-public:
-    virtual PipelineLayout* getPipelineLayout() const = 0;
-
 protected:
     Pipeline() = default;
 };
@@ -31,7 +28,7 @@ protected:
 struct ProgrammableStage
 {
     ShaderModule* shaderModule = nullptr;
-    std::string entryPoint = "main";
+    std::string entryPoint = "main"; // TODO: use std::string_view
 };
 
 /**

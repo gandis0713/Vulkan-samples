@@ -9,6 +9,7 @@ namespace jipu
 WGPUTriangleSampleMSAA::WGPUTriangleSampleMSAA(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui.emplace(this);
 }
 
 WGPUTriangleSampleMSAA::~WGPUTriangleSampleMSAA()
@@ -21,7 +22,6 @@ void WGPUTriangleSampleMSAA::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTriangleSampleMSAA::onUpdate()
@@ -68,6 +68,8 @@ void WGPUTriangleSampleMSAA::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
@@ -140,7 +142,7 @@ void WGPUTriangleSampleMSAA::createRenderTexture()
     descriptor.size.height = m_height;
     descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = m_sampleCount;
-    descriptor.format = m_surfaceCapabilities.formats[0]; // TODO
+    descriptor.format = m_surfaceConfigure.format;
     descriptor.mipLevelCount = 1;
     descriptor.usage = WGPUTextureUsage_RenderAttachment;
 
@@ -157,7 +159,7 @@ void WGPUTriangleSampleMSAA::createRenderTextureView()
     }
 
     WGPUTextureViewDescriptor descriptor{};
-    descriptor.format = m_surfaceCapabilities.formats[0]; // TODO
+    descriptor.format = m_surfaceConfigure.format;
     descriptor.dimension = WGPUTextureViewDimension_2D;
     descriptor.aspect = WGPUTextureAspect_All;
     descriptor.usage = WGPUTextureUsage_RenderAttachment;
@@ -222,7 +224,7 @@ void WGPUTriangleSampleMSAA::createRenderPipeline()
     vertexState.module = m_vertWGSLShaderModule;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};

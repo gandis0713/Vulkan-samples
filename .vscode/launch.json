@@ -42,6 +42,15 @@
             "environment": [],
         },
         {
+            "name": "[WGPU] [windows x64] Render Bundles",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_render_bundles/wgpu_render_bundles.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "[Native] [windows x64] Triangle",
             "type": "cppvsdbg",
             "request": "launch",
@@ -205,6 +214,23 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_textured_cube/wgpu_textured_cube",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[WGPU] [arm64 osx] Render Bundles",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_render_bundles/wgpu_render_bundles",
             "args": [],
             "stopAtEntry": false,
             "environment": [

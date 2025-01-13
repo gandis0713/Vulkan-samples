@@ -39,6 +39,13 @@ float FPS::average()
     return std::accumulate(m_fps.begin(), m_fps.end(), 0.0f) / m_fps.size();
 }
 
+void FPS::clear()
+{
+    m_time = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+    m_frame = 0;
+    m_fps.clear();
+}
+
 void FPS::update()
 {
     auto currentTime = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());

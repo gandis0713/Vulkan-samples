@@ -1,5 +1,6 @@
 #pragma once
 
+#include "buffer.h"
 #include "query_set.h"
 #include "texture_view.h"
 
@@ -14,6 +15,7 @@ class Pipeline;
 class Buffer;
 class CommandBuffer;
 class BindGroup;
+class RenderBundle;
 
 enum class LoadOp : uint8_t
 {
@@ -77,13 +79,6 @@ struct RenderPassEncoderDescriptor
     RenderPassTimestampWrites timestampWrites{};
 };
 
-enum IndexFormat
-{
-    kUndefined = 0,
-    kUint16,
-    kUint32,
-};
-
 class RenderPipeline;
 class JIPU_EXPORT RenderPassEncoder
 {
@@ -122,6 +117,8 @@ public:
                              uint32_t indexOffset,
                              uint32_t vertexOffset,
                              uint32_t firstInstance) = 0;
+
+    virtual void executeBundles(const std::vector<RenderBundle*> bundles) = 0;
 
     virtual void beginOcclusionQuery(uint32_t queryIndex) = 0;
     virtual void endOcclusionQuery() = 0;

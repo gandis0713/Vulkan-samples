@@ -11,6 +11,8 @@ Window::Window(const WindowDescriptor& descriptor)
     : m_handle(descriptor.handle)
     , m_width(descriptor.width)
     , m_height(descriptor.height)
+    , m_windowWidth(descriptor.width)
+    , m_windowHeight(descriptor.height)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -20,9 +22,18 @@ Window::Window(const WindowDescriptor& descriptor)
     SDL_Window* window = SDL_CreateWindow(descriptor.title.c_str(),
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
-                                          descriptor.width,
-                                          descriptor.height,
-                                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE); // | SDL_WINDOW_RESIZABLE
+                                          m_windowWidth,
+                                          m_windowHeight,
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI); // | SDL_WINDOW_RESIZABLE
+
+    int drawableWidth, drawableHeight;
+    SDL_GL_GetDrawableSize(window, &drawableWidth, &drawableHeight);
+
+    float devicePixelRatio = (float)drawableWidth / (float)m_windowWidth;
+
+    // m_width = m_windowWidth * devicePixelRatio;
+    // m_height = m_windowHeight * devicePixelRatio;
+
     if (!window)
     {
         SDL_Quit();
@@ -86,8 +97,12 @@ int Window::exec()
             // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
+        onBeforeUpdate();
         onUpdate();
+        onAfterUpdate();
+        onBeforeDraw();
         onDraw();
+        onAfterDraw();
     }
 
     return 0;

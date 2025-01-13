@@ -7,7 +7,7 @@
 #include "file.h"
 #include "light.h"
 #include "model.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -31,7 +31,7 @@ namespace jipu
 
 class VulkanFramebuffer;
 class VulkanRenderPass;
-class VulkanSubpassesSample : public Sample
+class VulkanSubpassesSample : public NativeSample
 {
 public:
     VulkanSubpassesSample() = delete;

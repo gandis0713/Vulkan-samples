@@ -20,9 +20,9 @@
 namespace jipu
 {
 
-class Im_Gui
+class NativeImGui
 {
-    friend class Sample;
+    friend class NativeSample;
 
 public:
     void record(std::vector<std::function<void()>> cmds);

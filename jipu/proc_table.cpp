@@ -10,6 +10,8 @@
 #include "webgpu/webgpu_instance.h"
 #include "webgpu/webgpu_pipeline_layout.h"
 #include "webgpu/webgpu_queue.h"
+#include "webgpu/webgpu_render_bundle.h"
+#include "webgpu/webgpu_render_bundle_encoder.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_render_pipeline.h"
 #include "webgpu/webgpu_sampler.h"
@@ -282,6 +284,14 @@ void procRenderPassEncoderDrawIndexed(WGPURenderPassEncoder renderPassEncoder, u
     return webgpuRenderPassEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
 }
 
+void procBufferDestroy(WGPUBuffer buffer)
+{
+    // TODO
+
+    // WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    // return webgpuBuffer->destroy();
+}
+
 void procBufferRelease(WGPUBuffer buffer)
 {
     WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
@@ -362,6 +372,110 @@ WGPUFuture procQueueOnSubmittedWorkDone(WGPUQueue queue, WGPUQueueWorkDoneCallba
     return webgpuQueue->onSubmittedWorkDone(callbackInfo);
 }
 
+uint64_t procBufferGetSize(WGPUBuffer buffer)
+{
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+    return webgpuBuffer->getSize();
+}
+
+WGPURenderBundleEncoder procDeviceCreateRenderBundleEncoder(WGPUDevice device, WGPURenderBundleEncoderDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPURenderBundleEncoder>(webgpuDevice->createRenderBundleEncoder(descriptor));
+}
+
+WGPURenderBundle procRenderBundleEncoderFinish(WGPURenderBundleEncoder renderBundleEncoder, WGPU_NULLABLE WGPURenderBundleDescriptor const* descriptor)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return reinterpret_cast<WGPURenderBundle>(webgpuRenderBundleEncoder->finish(descriptor));
+}
+
+void procRenderBundleRelease(WGPURenderBundle renderBundle)
+{
+    WebGPURenderBundle* webgpuRenderBundle = reinterpret_cast<WebGPURenderBundle*>(renderBundle);
+    return webgpuRenderBundle->release();
+}
+
+void procRenderBundleEncoderDraw(WGPURenderBundleEncoder renderBundleEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return webgpuRenderBundleEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void procRenderBundleEncoderDrawIndexed(WGPURenderBundleEncoder renderBundleEncoder, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t baseVertex, uint32_t firstInstance)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    return webgpuRenderBundleEncoder->drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
+}
+
+void procRenderBundleEncoderSetBindGroup(WGPURenderBundleEncoder renderBundleEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBindGroup* webgpuBindGroup = reinterpret_cast<WebGPUBindGroup*>(group);
+
+    return webgpuRenderBundleEncoder->setBindGroup(groupIndex, webgpuBindGroup, dynamicOffsetCount, dynamicOffsets);
+}
+
+void procRenderBundleEncoderSetIndexBuffer(WGPURenderBundleEncoder renderBundleEncoder, WGPUBuffer buffer, WGPUIndexFormat format, uint64_t offset, uint64_t size)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+
+    return webgpuRenderBundleEncoder->setIndexBuffer(webgpuBuffer, format, offset, size);
+}
+
+void procRenderBundleEncoderSetPipeline(WGPURenderBundleEncoder renderBundleEncoder, WGPURenderPipeline pipeline)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPURenderPipeline* webgpuRenderPipeline = reinterpret_cast<WebGPURenderPipeline*>(pipeline);
+
+    return webgpuRenderBundleEncoder->setPipeline(webgpuRenderPipeline);
+}
+
+void procRenderBundleEncoderSetVertexBuffer(WGPURenderBundleEncoder renderBundleEncoder, uint32_t slot, WGPU_NULLABLE WGPUBuffer buffer, uint64_t offset, uint64_t size)
+{
+    WebGPURenderBundleEncoder* webgpuRenderBundleEncoder = reinterpret_cast<WebGPURenderBundleEncoder*>(renderBundleEncoder);
+    WebGPUBuffer* webgpuBuffer = reinterpret_cast<WebGPUBuffer*>(buffer);
+
+    return webgpuRenderBundleEncoder->setVertexBuffer(slot, webgpuBuffer, offset, size);
+}
+
+void procRenderPassEncoderExecuteBundles(WGPURenderPassEncoder renderPassEncoder, size_t bundleCount, WGPURenderBundle const* bundles)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->executeBundles(bundleCount, bundles);
+}
+
+void procCommandEncoderCopyBufferToBuffer(WGPUCommandEncoder commandEncoder, WGPUBuffer source, uint64_t sourceOffset, WGPUBuffer destination, uint64_t destinationOffset, uint64_t size)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyBufferToBuffer(source, sourceOffset, destination, destinationOffset, size);
+}
+
+void procCommandEncoderCopyBufferToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyBuffer const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyBufferToTexture(source, destination, copySize);
+}
+
+void procCommandEncoderCopyTextureToBuffer(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyBuffer const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyTextureToBuffer(source, destination, copySize);
+}
+
+void procCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, WGPUImageCopyTexture const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return webgpuCommandEncoder->copyTextureToTexture(source, destination, copySize);
+}
+
+extern void procRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->setBlendConstant(color);
+}
+
 namespace
 {
 
@@ -409,6 +523,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuRenderPassEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetVertexBuffer) },
     { "wgpuRenderPassEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetIndexBuffer) },
     { "wgpuRenderPassEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderPassEncoderDrawIndexed) },
+    { "wgpuBufferDestroy", reinterpret_cast<WGPUProc>(procBufferDestroy) },
     { "wgpuBufferRelease", reinterpret_cast<WGPUProc>(procBufferRelease) },
     { "wgpuRenderPassEncoderSetViewport", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetViewport) },
     { "wgpuRenderPassEncoderSetScissorRect", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetScissorRect) },
@@ -422,6 +537,22 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuInstanceWaitAny", reinterpret_cast<WGPUProc>(procInstanceWaitAny) },
     { "wgpuInstanceProcessEvents", reinterpret_cast<WGPUProc>(procInstanceProcessEvents) },
     { "wgpuQueueOnSubmittedWorkDone2", reinterpret_cast<WGPUProc>(procQueueOnSubmittedWorkDone) },
+    { "wgpuBufferGetSize", reinterpret_cast<WGPUProc>(procBufferGetSize) },
+    { "wgpuDeviceCreateRenderBundleEncoder", reinterpret_cast<WGPUProc>(procDeviceCreateRenderBundleEncoder) },
+    { "wgpuRenderBundleEncoderFinish", reinterpret_cast<WGPUProc>(procRenderBundleEncoderFinish) },
+    { "wgpuRenderBundleRelease", reinterpret_cast<WGPUProc>(procRenderBundleRelease) },
+    { "wgpuRenderBundleEncoderDraw", reinterpret_cast<WGPUProc>(procRenderBundleEncoderDraw) },
+    { "wgpuRenderBundleEncoderDrawIndexed", reinterpret_cast<WGPUProc>(procRenderBundleEncoderDrawIndexed) },
+    { "wgpuRenderBundleEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetBindGroup) },
+    { "wgpuRenderBundleEncoderSetIndexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetIndexBuffer) },
+    { "wgpuRenderBundleEncoderSetPipeline", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetPipeline) },
+    { "wgpuRenderBundleEncoderSetVertexBuffer", reinterpret_cast<WGPUProc>(procRenderBundleEncoderSetVertexBuffer) },
+    { "wgpuRenderPassEncoderExecuteBundles", reinterpret_cast<WGPUProc>(procRenderPassEncoderExecuteBundles) },
+    { "wgpuCommandEncoderCopyBufferToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyBufferToBuffer) },
+    { "wgpuCommandEncoderCopyBufferToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyBufferToTexture) },
+    { "wgpuCommandEncoderCopyTextureToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToBuffer) },
+    { "wgpuCommandEncoderCopyTextureToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToTexture) },
+    { "wgpuRenderPassEncoderSetBlendConstant", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBlendConstant) },
 };
 
 } // namespace

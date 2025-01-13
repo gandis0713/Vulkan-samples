@@ -1,6 +1,7 @@
 #include "vulkan_bind_group_layout.h"
 #include "vulkan_device.h"
 
+#include "jipu/common/hash.h"
 #include <fmt/format.h>
 #include <stdexcept>
 
@@ -52,35 +53,38 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
     return vkdescriptor;
 }
 
-VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor)
-    : VulkanBindGroupLayout(device, generateVulkanBindGroupLayoutDescriptor(descriptor))
-{
-}
-
-VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const VulkanBindGroupLayoutDescriptor& descriptor)
-    : m_device(device)
-    , m_descriptor(descriptor)
+VkDescriptorSetLayout createDescriptorSetLayout(VulkanDevice* device, const VulkanBindGroupLayoutDescriptor& descriptor)
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
-    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
-    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
-    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+    bindings.insert(bindings.end(), descriptor.buffers.begin(), descriptor.buffers.end());
+    bindings.insert(bindings.end(), descriptor.samplers.begin(), descriptor.samplers.end());
+    bindings.insert(bindings.end(), descriptor.textures.begin(), descriptor.textures.end());
 
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
                                                       .bindingCount = static_cast<uint32_t>(bindings.size()),
                                                       .pBindings = bindings.data() };
 
+    VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     const VulkanAPI& vkAPI = device->vkAPI;
-    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
+    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &descriptorSetLayout);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create VkDescriptorSetLayout");
     }
+
+    return descriptorSetLayout;
+}
+
+VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
+{
+    m_descriptorSetLayout = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(descriptor);
 }
 
 VulkanBindGroupLayout::~VulkanBindGroupLayout()
 {
-    m_device->getDeleter()->safeDestroy(m_descriptorSetLayout);
+    // do not destroy descriptor set layout here. because it is managed by cache.
 }
 
 std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const
@@ -120,6 +124,17 @@ std::vector<TextureBindingLayout> VulkanBindGroupLayout::getTextureBindingLayout
     }
 
     return layouts;
+}
+
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getDescriptorSetLayouts() const
+{
+    std::vector<VkDescriptorSetLayoutBinding> bindings{};
+
+    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
+    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
+    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+
+    return bindings;
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getBufferDescriptorSetLayouts() const
@@ -173,6 +188,136 @@ VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getTextureDescriptorSetLayou
 VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
 {
     return m_descriptorSetLayout;
+}
+
+BindGroupLayoutInfo VulkanBindGroupLayout::getLayoutInfo() const
+{
+    BindGroupLayoutInfo layoutInfo{};
+    layoutInfo.buffers = getBufferBindingLayouts();
+    layoutInfo.samplers = getSamplerBindingLayouts();
+    layoutInfo.textures = getTextureBindingLayouts();
+
+    return layoutInfo;
+}
+
+// VulkanBindGroupLayoutCache
+
+VulkanBindGroupLayoutCache::VulkanBindGroupLayoutCache(VulkanDevice* device)
+    : m_device(device)
+{
+}
+
+VulkanBindGroupLayoutCache::~VulkanBindGroupLayoutCache()
+{
+    clear();
+}
+
+VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const BindGroupLayoutDescriptor& descriptor)
+{
+    return getVkDescriptorSetLayout(BindGroupLayoutInfo{
+        .buffers = descriptor.buffers,
+        .samplers = descriptor.samplers,
+        .textures = descriptor.textures,
+    });
+}
+
+VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const BindGroupLayoutInfo& layoutInfo)
+{
+    auto it = m_bindGroupLayouts.find(layoutInfo);
+    if (it != m_bindGroupLayouts.end())
+    {
+        return it->second;
+    }
+
+    BindGroupLayoutDescriptor descriptor{};
+    descriptor.buffers = layoutInfo.buffers;
+    descriptor.samplers = layoutInfo.samplers;
+    descriptor.textures = layoutInfo.textures;
+
+    VkDescriptorSetLayout layout = createDescriptorSetLayout(m_device, generateVulkanBindGroupLayoutDescriptor(descriptor));
+
+    m_bindGroupLayouts.insert({ layoutInfo, layout });
+
+    return layout;
+}
+
+void VulkanBindGroupLayoutCache::clear()
+{
+    for (auto& [descriptor, layout] : m_bindGroupLayouts)
+    {
+        m_device->getDeleter()->safeDestroy(layout);
+    }
+
+    m_bindGroupLayouts.clear();
+}
+
+size_t VulkanBindGroupLayoutCache::Functor::operator()(const BindGroupLayoutInfo& layoutInfo) const
+{
+    size_t hash = 0;
+
+    for (const auto& buffer : layoutInfo.buffers)
+    {
+        combineHash(hash, buffer.dynamicOffset);
+        combineHash(hash, buffer.index);
+        combineHash(hash, buffer.stages);
+        combineHash(hash, buffer.type);
+    }
+
+    for (const auto& sampler : layoutInfo.samplers)
+    {
+        combineHash(hash, sampler.index);
+        combineHash(hash, sampler.stages);
+    }
+
+    for (const auto& texture : layoutInfo.textures)
+    {
+        combineHash(hash, texture.index);
+        combineHash(hash, texture.stages);
+    }
+
+    return hash;
+}
+
+bool VulkanBindGroupLayoutCache::Functor::operator()(const BindGroupLayoutInfo& lhs,
+                                                     const BindGroupLayoutInfo& rhs) const
+{
+    if (lhs.buffers.size() != rhs.buffers.size() ||
+        lhs.samplers.size() != rhs.samplers.size() ||
+        lhs.textures.size() != rhs.textures.size())
+    {
+        return false;
+    }
+
+    for (auto j = 0; j < lhs.buffers.size(); ++j)
+    {
+        if (lhs.buffers[j].dynamicOffset != rhs.buffers[j].dynamicOffset ||
+            lhs.buffers[j].index != rhs.buffers[j].index ||
+            lhs.buffers[j].stages != rhs.buffers[j].stages ||
+            lhs.buffers[j].type != rhs.buffers[j].type)
+        {
+            return false;
+        }
+    }
+
+    for (auto j = 0; j < lhs.samplers.size(); ++j)
+    {
+        if (lhs.samplers[j].index != rhs.samplers[j].index ||
+            lhs.samplers[j].stages != rhs.samplers[j].stages)
+        {
+            return false;
+        }
+    }
+
+    for (auto j = 0; j < lhs.textures.size(); ++j)
+    {
+        if (lhs.textures[j].index != rhs.textures[j].index ||
+            lhs.textures[j].stages != rhs.textures[j].stages)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // Convert Helper

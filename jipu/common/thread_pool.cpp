@@ -33,16 +33,7 @@ ThreadPool::ThreadPool(size_t numberOfThreads)
 
 ThreadPool::~ThreadPool()
 {
-    {
-        std::unique_lock<std::mutex> lock(m_taskMutex);
-        m_stop = true;
-    }
-
-    m_condition.notify_all();
-    for (std::thread& worker : m_threads)
-    {
-        worker.join();
-    }
+    stop();
 }
 
 std::future<void> ThreadPool::enqueue(std::function<void()> func)
@@ -57,6 +48,23 @@ std::future<void> ThreadPool::enqueue(std::function<void()> func)
     m_condition.notify_one();
 
     return future;
+}
+
+void ThreadPool::stop()
+{
+    {
+        std::unique_lock<std::mutex> lock(m_taskMutex);
+        if (m_stop)
+            return;
+
+        m_stop = true;
+    }
+
+    m_condition.notify_all();
+    for (std::thread& worker : m_threads)
+    {
+        worker.join();
+    }
 }
 
 } // namespace jipu

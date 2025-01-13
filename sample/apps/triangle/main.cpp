@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -23,7 +23,7 @@
 namespace jipu
 {
 
-class TriangleSample : public Sample
+class TriangleSample : public NativeSample
 {
 public:
     TriangleSample() = delete;
@@ -90,7 +90,7 @@ private:
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -107,7 +107,7 @@ TriangleSample::~TriangleSample()
 
 void TriangleSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -149,7 +149,7 @@ void TriangleSample::updateUniformBuffer()
 
 void TriangleSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
 

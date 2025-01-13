@@ -4,7 +4,7 @@ namespace jipu
 {
 
 BlendSample::BlendSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
     // do not call init() function. it will be called in window exec() function.
 }
@@ -28,7 +28,7 @@ BlendSample::~BlendSample()
 
 void BlendSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -49,7 +49,7 @@ void BlendSample::init()
 
 void BlendSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateImGui();
 }

@@ -26,18 +26,20 @@ endif()
 list(APPEND SRC_FILES
     camera.cpp
     camera.h
-    sample.cpp
-    sample.h
+    native_sample.cpp
+    native_sample.h
     wgpu_sample.cpp
     wgpu_sample.h
+    wgpu_imgui.cpp
+    wgpu_imgui.h
     fps.cpp
     fps.h
     window.cpp
     window.h
     vertex.cpp
     vertex.h
-    im_gui.cpp
-    im_gui.h
+    native_imgui.cpp
+    native_imgui.h
     model.cpp
     model.h
     file.cpp

@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -28,7 +28,7 @@ static const uint32_t INSTANCING_SLOT = 1;
 namespace jipu
 {
 
-class InstancingSample : public Sample
+class InstancingSample : public NativeSample
 {
 public:
     InstancingSample() = delete;
@@ -158,7 +158,7 @@ private:
 };
 
 InstancingSample::InstancingSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -184,7 +184,7 @@ InstancingSample::~InstancingSample()
 
 void InstancingSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -228,7 +228,7 @@ void InstancingSample::updateUniformBuffer()
 
 void InstancingSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateUniformBuffer();
 

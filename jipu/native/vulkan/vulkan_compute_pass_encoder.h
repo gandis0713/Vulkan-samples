@@ -26,9 +26,6 @@ public:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-
-private:
-    std::optional<VulkanComputePipeline::Ref> m_pipeline = std::nullopt;
 };
 
 } // namespace jipu

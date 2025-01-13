@@ -14,6 +14,7 @@ namespace jipu
 WGPURotatingCube::WGPURotatingCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui.emplace(this);
 }
 
 WGPURotatingCube::~WGPURotatingCube()
@@ -26,7 +27,6 @@ void WGPURotatingCube::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPURotatingCube::onUpdate()
@@ -97,17 +97,19 @@ void WGPURotatingCube::onDraw()
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
 
+    drawImGui(commandEncoder, surfaceTextureView);
+
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
 
     wgpu.QueueSubmit(m_queue, 1, &commandBuffer);
 
-    WGPUQueueWorkDoneCallbackInfo2 callbackInfo{};
-    callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
-    callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* userData1, void* userData2) {
-        spdlog::info("QueueWorkDoneStatus: {}", static_cast<uint32_t>(status));
-    };
-    wgpu.QueueOnSubmittedWorkDone2(m_queue, callbackInfo);
+    // WGPUQueueWorkDoneCallbackInfo2 callbackInfo{};
+    // callbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+    // callbackInfo.callback = [](WGPUQueueWorkDoneStatus status, void* userData1, void* userData2) {
+    //     spdlog::info("QueueWorkDoneStatus: {}", static_cast<uint32_t>(status));
+    // };
+    // wgpu.QueueOnSubmittedWorkDone2(m_queue, callbackInfo);
     wgpu.SurfacePresent(m_surface);
 
     wgpu.CommandBufferRelease(commandBuffer);
@@ -377,7 +379,7 @@ void WGPURotatingCube::createPipeline()
     vertexState.buffers = vertexBufferLayout.data();
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};

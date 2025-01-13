@@ -1,7 +1,7 @@
 #include "file.h"
 #include "image.h"
 #include "model.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/bind_group.h"
@@ -33,7 +33,7 @@
 namespace jipu
 {
 
-class VulkanNBufferingSample : public Sample
+class VulkanNBufferingSample : public NativeSample
 {
 public:
     VulkanNBufferingSample() = delete;

@@ -9,8 +9,10 @@ namespace jipu
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
-    , m_commandEncodingResult(m_commandEncoder->result())
 {
+    createVkCommandBuffer();
+
+    recordToVkCommandBuffer();
 }
 
 VulkanCommandBuffer::~VulkanCommandBuffer()
@@ -27,19 +29,23 @@ VulkanCommandEncoder* VulkanCommandBuffer::getCommandEncoder() const
 {
     return m_commandEncoder;
 }
-
-const CommandEncodingResult& VulkanCommandBuffer::getCommandEncodingResult() const
+const std::vector<std::unique_ptr<Command>>& VulkanCommandBuffer::getCommands()
 {
-    return m_commandEncodingResult;
+    return m_commandRecordResult.commands;
 }
 
-VulkanCommandRecordResult VulkanCommandBuffer::recordToVkCommandBuffer()
+const std::vector<OperationResourceInfo>& VulkanCommandBuffer::getCommandResourceInfos()
 {
-    createVkCommandBuffer();
+    return m_commandRecordResult.resourceSyncResult.notSyncedOperationResourceInfos;
+}
 
-    auto commandRecorder = createCommandRecorder();
+void VulkanCommandBuffer::recordToVkCommandBuffer()
+{
+    auto encodingReslut = m_commandEncoder->extractResult();
+    auto commandRecorder = std::make_unique<VulkanCommandRecorder>(this,
+                                                                   VulkanCommandRecorderDescriptor{ .commandEncodingResult = std::move(encodingReslut) });
 
-    return commandRecorder->record();
+    m_commandRecordResult = commandRecorder->record();
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
@@ -47,16 +53,12 @@ VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
     return m_commandBuffer;
 }
 
-std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
-{
-    return std::make_unique<VulkanCommandRecorder>(this);
-}
-
 void VulkanCommandBuffer::createVkCommandBuffer()
 {
     if (!m_commandBuffer)
     {
-        m_commandBuffer = getDevice()->getCommandPool()->create();
+        VulkanCommandBufferDescriptor descriptor{ .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY };
+        m_commandBuffer = getDevice()->getCommandPool()->create(descriptor);
     }
 }
 

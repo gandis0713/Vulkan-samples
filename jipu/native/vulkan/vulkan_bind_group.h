@@ -20,10 +20,16 @@ public:
     ~VulkanBindGroup() override;
 
 public:
-    BindGroupLayout* getLayout() const override;
+    VulkanDevice* getDevice() const;
     const std::vector<BufferBinding>& getBufferBindings() const override;
     const std::vector<SamplerBinding>& getSmaplerBindings() const override;
     const std::vector<TextureBinding>& getTextureBindings() const override;
+
+public: // for information about bind group layout.
+    const BindGroupLayoutInfo& getLayoutInfo() const;
+    const std::vector<BufferBindingLayout>& getBufferLayouts() const;
+    const std::vector<SamplerBindingLayout>& getSamplerLayouts() const;
+    const std::vector<TextureBindingLayout>& getTextureLayouts() const;
 
 public:
     VkDescriptorSet getVkDescriptorSet() const;
@@ -35,8 +41,8 @@ private:
     VulkanDevice* m_device = nullptr;
     const BindGroupDescriptor m_descriptor;
 
-public:
-    using Ref = std::reference_wrapper<VulkanBindGroup>;
+private: // for information about bind group layout.
+    BindGroupLayoutInfo m_layoutInfo{};
 };
 DOWN_CAST(VulkanBindGroup, BindGroup);
 

@@ -29,10 +29,16 @@ public:
 
     uint32_t getWidth() const;
     uint32_t getHeight() const;
+    uint32_t getWindowWidth() const;
+    uint32_t getWindowHeight() const;
 
     virtual void init();
+    virtual void onBeforeUpdate() {};
     virtual void onUpdate() = 0;
+    virtual void onAfterUpdate() {};
+    virtual void onBeforeDraw() {};
     virtual void onDraw() = 0;
+    virtual void onAfterDraw() {};
     virtual void onResize(uint32_t width, uint32_t height) = 0;
 
     int exec();
@@ -42,8 +48,10 @@ protected:
     void* m_handle = nullptr;
     bool m_initialized = false;
 
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
+    uint32_t m_width = 0;  // render target width
+    uint32_t m_height = 0; // render target height
+    uint32_t m_windowWidth = 0;
+    uint32_t m_windowHeight = 0;
 
     bool m_leftMouseButton = false;
     bool m_rightMouseButton = false;

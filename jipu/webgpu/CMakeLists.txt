@@ -29,6 +29,10 @@ set(WEBGPU_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_bundle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_bundle.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_bundle_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_bundle_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_render_pipeline.cpp

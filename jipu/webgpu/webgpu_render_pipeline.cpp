@@ -5,6 +5,8 @@
 #include "webgpu_shader_module.h"
 #include "webgpu_texture.h"
 
+#include <cstring>
+
 namespace jipu
 {
 
@@ -51,7 +53,8 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             }
         }
 
-        vertexStage.entryPoint = std::string(descriptor->vertex.entryPoint.data, descriptor->vertex.entryPoint.length);
+        vertexStage.entryPoint = std::string(descriptor->vertex.entryPoint.data,
+                                             descriptor->vertex.entryPoint.length != WGPU_STRLEN ? descriptor->vertex.entryPoint.length : strlen(descriptor->vertex.entryPoint.data));
         vertexStage.shaderModule = reinterpret_cast<WebGPUShaderModule*>(descriptor->vertex.module)->getShaderModule();
     }
 
@@ -91,7 +94,8 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             }
         }
 
-        fragmentStage.entryPoint = std::string(descriptor->fragment->entryPoint.data, descriptor->fragment->entryPoint.length);
+        fragmentStage.entryPoint = std::string(descriptor->fragment->entryPoint.data,
+                                               descriptor->fragment->entryPoint.length != WGPU_STRLEN ? descriptor->fragment->entryPoint.length : strlen(descriptor->fragment->entryPoint.data));
         fragmentStage.shaderModule = reinterpret_cast<WebGPUShaderModule*>(descriptor->fragment->module)->getShaderModule();
     }
 

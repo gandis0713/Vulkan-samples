@@ -1,6 +1,6 @@
 #include "camera.h"
 #include "file.h"
-#include "sample.h"
+#include "native_sample.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -22,7 +22,7 @@
 namespace jipu
 {
 
-class QuerySample : public Sample
+class QuerySample : public NativeSample
 {
 public:
     QuerySample() = delete;

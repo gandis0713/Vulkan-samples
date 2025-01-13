@@ -16,15 +16,20 @@ class VulkanComputePipeline;
 
 struct VulkanCommandRecordResult
 {
-    CommandBuffer* commandBuffer = nullptr;
-    CommandResourceSyncResult commandResourceSyncResult{};
+    std::vector<std::unique_ptr<Command>> commands{};
+    ResourceSyncResult resourceSyncResult{};
+};
+
+struct VulkanCommandRecorderDescriptor
+{
+    CommandEncodingResult commandEncodingResult{};
 };
 
 class VULKAN_EXPORT VulkanCommandRecorder final
 {
 public:
     VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
+    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor);
     ~VulkanCommandRecorder();
 
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
@@ -37,7 +42,7 @@ public:
 
 private:
     void beginRecord();
-    void endRecord();
+    VulkanCommandRecordResult endRecord();
 
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
@@ -60,6 +65,7 @@ private:
     void drawIndexed(DrawIndexedCommand* command);
     void beginOcclusionQuery(BeginOcclusionQueryCommand* command);
     void endOcclusionQuery(EndOcclusionQueryCommand* command);
+    void executeBundle(ExecuteBundleCommand* command);
     void endRenderPass(EndRenderPassCommand* command);
 
     // copy
@@ -72,10 +78,8 @@ private:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 private:
-    VulkanCommandRecordResult result();
-
-private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandRecorderDescriptor m_descriptor{};
     VulkanCommandResourceSynchronizer m_commandResourceSyncronizer{};
 
 private:

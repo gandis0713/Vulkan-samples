@@ -32,10 +32,15 @@ struct ResourceInfo
     std::unordered_map<Texture*, TextureUsageInfo> textures;
 };
 
-struct PassResourceInfo
+struct OperationResourceInfo
 {
     ResourceInfo dst{};
     ResourceInfo src{};
+};
+
+struct VulkanResourceTrackingResult
+{
+    std::vector<OperationResourceInfo> operationResourceInfos{};
 };
 
 class VulkanCommandEncoder;
@@ -65,6 +70,7 @@ public:
     void setBlendConstant(SetBlendConstantCommand* command);
     void draw(DrawCommand* command);
     void drawIndexed(DrawIndexedCommand* command);
+    void executeBundle(ExecuteBundleCommand* command);
     void beginOcclusionQuery(BeginOcclusionQueryCommand* command);
     void endOcclusionQuery(EndOcclusionQueryCommand* command);
     void endRenderPass(EndRenderPassCommand* command);
@@ -79,11 +85,11 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    std::vector<PassResourceInfo> result();
+    VulkanResourceTrackingResult finish();
 
 private:
-    std::vector<PassResourceInfo> m_passResourceInfos;
-    PassResourceInfo m_currentPassResourceInfo;
+    std::vector<OperationResourceInfo> m_operationResourceInfos;
+    OperationResourceInfo m_currentOperationResourceInfo;
 };
 
 } // namespace jipu

@@ -14,9 +14,9 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_descriptor_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.cpp
@@ -31,6 +31,8 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_physical_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_query_set.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_bundle.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_bundle_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_pass.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_sampler.cpp
@@ -50,9 +52,9 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_recorder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_deleter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_descriptor_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_inflight_objects.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_adapter.h
@@ -68,6 +70,8 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_query_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_bundle.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_bundle_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_pass.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_sampler.h
@@ -95,6 +99,8 @@ set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/render_bundle.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/render_bundle_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/physical_device.h

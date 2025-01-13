@@ -61,13 +61,97 @@ void WGPUSample::init()
     Window::init();
 }
 
+void WGPUSample::onBeforeUpdate()
+{
+    m_fps.update();
+
+    recordImGui({ [&]() {
+        windowImGui(
+            "Common", { [&]() {
+                           ImGui::Separator();
+                           //    ImGui::Text("API Type");
+                           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "API Type");
+                           if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
+                           {
+                               m_currentAPIType = APIType::kJipu;
+                           }
+                           else if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
+                           {
+                               m_currentAPIType = APIType::kDawn;
+                           }
+                           ImGui::Separator();
+                       },
+                        [&]() {
+                            ImGui::Separator();
+                            // ImGui::Text("Profiling");
+                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Profiling");
+                            drawPolyline("FPS", m_fps.getAll());
+                            ImGui::Separator();
+                        } });
+    } });
+}
+
 void WGPUSample::onUpdate()
 {
+    if (m_currentAPIType != m_apiType)
+    {
+        changeAPI(m_currentAPIType);
+    }
+}
+
+void WGPUSample::onAfterUpdate()
+{
+    buildImGui();
 }
 
 void WGPUSample::onResize(uint32_t width, uint32_t height)
 {
     createSurfaceConfigure();
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().resize();
+    }
+}
+
+void WGPUSample::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().record(cmds);
+    }
+}
+
+void WGPUSample::buildImGui()
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().build();
+    }
+}
+
+void WGPUSample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+{
+    if (m_imgui.has_value())
+    {
+        // set display size and mouse state.
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+            io.MousePos = ImVec2(m_mouseX, m_mouseY);
+            io.MouseDown[0] = m_leftMouseButton;
+            io.MouseDown[1] = m_rightMouseButton;
+            io.MouseDown[2] = m_middleMouseButton;
+        }
+
+        m_imgui.value().window(title, uis);
+    }
+}
+void WGPUSample::drawImGui(WGPUCommandEncoder commandEncoder, WGPUTextureView renderView)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().draw(commandEncoder, renderView);
+    }
 }
 
 void WGPUSample::initializeContext()
@@ -78,10 +162,18 @@ void WGPUSample::initializeContext()
     createDevice();
     createSurfaceConfigure();
     createQueue();
+
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().initialize();
+    }
 }
 
 void WGPUSample::finalizeContext()
 {
+    if (m_imgui.has_value())
+        m_imgui.value().finalize();
+
     if (m_queue)
     {
         wgpu.QueueRelease(m_queue);
@@ -90,7 +182,7 @@ void WGPUSample::finalizeContext()
 
     if (m_device)
     {
-        wgpu.DeviceDestroy(m_device);
+        // wgpu.DeviceDestroy(m_device);
         wgpu.DeviceRelease(m_device);
         m_device = nullptr;
     }
@@ -116,6 +208,8 @@ void WGPUSample::finalizeContext()
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
+    m_fps.clear();
+
     finalizeContext();
 
     m_apiType = type;
@@ -313,6 +407,19 @@ void WGPUSample::createQueue()
     m_queue = wgpu.DeviceGetQueue(m_device);
 
     assert(m_queue);
+}
+
+void WGPUSample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
+{
+    if (data.empty())
+        return;
+
+    const auto size = data.size();
+    const std::string description = fmt::format("{:.1f} {}", data[data.size() - 1], unit.c_str());
+    int offset = 0;
+    if (size > 15)
+        offset = size - 15;
+    ImGui::PlotLines(title.c_str(), &data[offset], size - offset, 0, description.c_str());
 }
 
 } // namespace jipu

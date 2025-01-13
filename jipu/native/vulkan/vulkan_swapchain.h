@@ -92,7 +92,6 @@ class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 public:
     VulkanSwapchain() = delete;
     VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
-    VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
     VulkanSwapchain(const Swapchain&) = delete;

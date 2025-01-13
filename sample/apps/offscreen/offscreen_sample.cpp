@@ -10,7 +10,7 @@ namespace jipu
 {
 
 OffscreenSample::OffscreenSample(const SampleDescriptor& descriptor)
-    : Sample(descriptor)
+    : NativeSample(descriptor)
 {
 }
 
@@ -37,7 +37,7 @@ OffscreenSample::~OffscreenSample()
 
 void OffscreenSample::init()
 {
-    Sample::init();
+    NativeSample::init();
 
     createHPCWatcher();
 
@@ -88,7 +88,7 @@ void OffscreenSample::updateOffscreenUniformBuffer()
 
 void OffscreenSample::onUpdate()
 {
-    Sample::onUpdate();
+    NativeSample::onUpdate();
 
     updateOffscreenUniformBuffer();
 

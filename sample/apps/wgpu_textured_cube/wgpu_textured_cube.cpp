@@ -15,6 +15,7 @@ namespace jipu
 WGPUTexturedCube::WGPUTexturedCube(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
+    m_imgui.emplace(this);
 }
 
 WGPUTexturedCube::~WGPUTexturedCube()
@@ -27,7 +28,6 @@ void WGPUTexturedCube::init()
     WGPUSample::init();
 
     changeAPI(APIType::kJipu);
-    // changeAPI(APIType::kDawn);
 }
 
 void WGPUTexturedCube::onUpdate()
@@ -97,6 +97,8 @@ void WGPUTexturedCube::onDraw()
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 36, 1, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
     wgpu.RenderPassEncoderRelease(renderPassEncoder);
+
+    drawImGui(commandEncoder, surfaceTextureView);
 
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpu.CommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
@@ -482,7 +484,7 @@ void WGPUTexturedCube::createPipeline()
     vertexState.buffers = vertexBufferLayout.data();
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
