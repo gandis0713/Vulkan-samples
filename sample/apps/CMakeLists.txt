@@ -131,6 +131,7 @@ add_subdirectory(wgpu_triangle_msaa)
 add_subdirectory(wgpu_rotating_cube)
 add_subdirectory(wgpu_textured_cube)
 add_subdirectory(wgpu_render_bundles)
+add_subdirectory(wgpu_particles)
 
 # experimental for native
 add_subdirectory(triangle)
