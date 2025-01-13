@@ -85,20 +85,19 @@ void WGPUSample::onBeforeUpdate()
                             ImGui::Separator();
                         } });
     } });
+}
 
+void WGPUSample::onUpdate()
+{
     if (m_currentAPIType != m_apiType)
     {
         changeAPI(m_currentAPIType);
     }
 }
 
-void WGPUSample::onUpdate()
-{
-    buildImGui();
-}
-
 void WGPUSample::onAfterUpdate()
 {
+    buildImGui();
 }
 
 void WGPUSample::onResize(uint32_t width, uint32_t height)
