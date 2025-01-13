@@ -883,17 +883,4 @@ void WGPUImGui::newFrame()
         createDeviceObjects();
 }
 
-void WGPUImGui::drawPolyline(std::string title, std::deque<float> data, std::string unit)
-{
-    if (data.empty())
-        return;
-
-    const auto size = data.size();
-    const std::string description = fmt::format("{:.1f} {}", data[data.size() - 1], unit.c_str());
-    int offset = 0;
-    if (size > 15)
-        offset = size - 15;
-    ImGui::PlotLines(title.c_str(), &data[offset], size - offset, 0, description.c_str());
-}
-
 } // namespace jipu

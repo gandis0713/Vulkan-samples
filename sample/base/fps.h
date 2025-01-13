@@ -16,6 +16,7 @@ public:
     float max();
     float average();
     const std::deque<float>& getAll();
+    void clear();
 
 private:
     std::chrono::milliseconds m_time = std::chrono::milliseconds::zero();

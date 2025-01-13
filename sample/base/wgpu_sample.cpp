@@ -63,22 +63,33 @@ void WGPUSample::init()
 
 void WGPUSample::onUpdate()
 {
+    m_fps.update();
+
     recordImGui({ [&]() {
         windowImGui(
             "Common", { [&]() {
-                           ImGui::Text("Profiling");
-                           ImGui::Separator();
-                           // drawPolyline("FPS", m_fps.getAll());
-                           ImGui::Separator();
+                           ImGui::Text("API Type");
+                           if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
+                           {
+                               m_currentAPIType = APIType::kJipu;
+                           }
+                           else if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
+                           {
+                               m_currentAPIType = APIType::kDawn;
+                           }
                        },
                         [&]() {
-                            ImGui::Text("API Type");
-                            if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
-                                m_apiType = APIType::kDawn;
-                            else if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
-                                m_apiType = APIType::kJipu;
+                            ImGui::Text("Profiling");
+                            ImGui::Separator();
+                            drawPolyline("FPS", m_fps.getAll());
+                            ImGui::Separator();
                         } });
     } });
+
+    if (m_currentAPIType != m_apiType)
+    {
+        changeAPI(m_currentAPIType);
+    }
 
     buildImGui();
 }
@@ -187,6 +198,8 @@ void WGPUSample::finalizeContext()
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
+    m_fps.clear();
+
     finalizeContext();
 
     m_apiType = type;
@@ -384,6 +397,19 @@ void WGPUSample::createQueue()
     m_queue = wgpu.DeviceGetQueue(m_device);
 
     assert(m_queue);
+}
+
+void WGPUSample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
+{
+    if (data.empty())
+        return;
+
+    const auto size = data.size();
+    const std::string description = fmt::format("{:.1f} {}", data[data.size() - 1], unit.c_str());
+    int offset = 0;
+    if (size > 15)
+        offset = size - 15;
+    ImGui::PlotLines(title.c_str(), &data[offset], size - offset, 0, description.c_str());
 }
 
 } // namespace jipu

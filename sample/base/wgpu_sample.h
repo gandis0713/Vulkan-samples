@@ -1,5 +1,6 @@
 #pragma once
 
+#include "fps.h"
 #include "jipu/common/dylib.h"
 
 #include "webgpu_api.h"
@@ -57,10 +58,14 @@ protected:
     WGPUSample::APIType getAPIType();
 
 protected:
+    void drawPolyline(std::string title, std::deque<float> data, std::string unit = "");
+
+protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
 
     APIType m_apiType{ APIType::kJipu };
+    APIType m_currentAPIType{ APIType::kJipu };
 
     std::unordered_map<APIType, DyLib> m_wgpuLibs{};
     std::unordered_map<APIType, WebGPUAPI> m_wgpuAPIs{};
@@ -73,10 +78,10 @@ protected:
     WGPUAdapter m_adapter = nullptr;
     WGPUDevice m_device = nullptr;
     WGPUQueue m_queue = nullptr;
-
     WebGPUAPI wgpu{};
 
     std::optional<WGPUImGui> m_imgui = std::nullopt;
+    FPS m_fps{};
 
     friend class WGPUImGui;
 };
