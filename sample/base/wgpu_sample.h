@@ -28,7 +28,9 @@ public:
 
 public:
     void init() override;
+    void onBeforeUpdate() override;
     void onUpdate() override;
+    void onAfterUpdate() override;
     void onResize(uint32_t width, uint32_t height) override;
 
     void recordImGui(std::vector<std::function<void()>> cmds);

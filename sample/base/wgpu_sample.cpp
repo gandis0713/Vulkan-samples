@@ -61,7 +61,7 @@ void WGPUSample::init()
     Window::init();
 }
 
-void WGPUSample::onUpdate()
+void WGPUSample::onBeforeUpdate()
 {
     m_fps.update();
 
@@ -90,8 +90,15 @@ void WGPUSample::onUpdate()
     {
         changeAPI(m_currentAPIType);
     }
+}
 
+void WGPUSample::onUpdate()
+{
     buildImGui();
+}
+
+void WGPUSample::onAfterUpdate()
+{
 }
 
 void WGPUSample::onResize(uint32_t width, uint32_t height)
