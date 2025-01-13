@@ -17,19 +17,19 @@ JIPU to implement WebGPU headers (https://github.com/webgpu-native/webgpu-header
 
 - vulkan ( currently, only support vulkan )
   - If you're on macOS, MoltelVk must be installed.
-- vcpkg ( 2023.2024.10.21 )
+- vcpkg ( 2024.10.21 )
 - cmake ( 3.22 or higher )
 - ninja ( if you want to build as ninja )
 
 ## How to build
 ### macOS
 ```shell
-$> cmake --preset arm64-osx-ninja-release
-$> cmake --build arm64-osx-ninja-release --target install
+$> cmake --preset arm64-osx-ninja-debug
+$> cmake --build arm64-osx-ninja-debug
 ```
 
 ### Windows
 ```shell
-$> cmake --preset x64-windows-ninja-release
-$> cmake --build x64-windows-ninja-release --target install
+$> cmake --preset x64-windows-ninja-debug
+$> cmake --build x64-windows-ninja-debug
 ```
