@@ -97,8 +97,12 @@ int Window::exec()
             // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
+        onBeforeUpdate();
         onUpdate();
+        onAfterUpdate();
+        onBeforeDraw();
         onDraw();
+        onAfterDraw();
     }
 
     return 0;
