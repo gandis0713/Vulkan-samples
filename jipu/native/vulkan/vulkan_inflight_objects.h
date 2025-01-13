@@ -48,7 +48,7 @@ public:
     bool clear(VkFence fence);
     void clearAll();
 
-    void subscribe(void* ptr, Subscribe sub);
+    void subscribe(void* ptr, std::weak_ptr<Subscribe> sub);
     void unsubscribe(void* ptr);
 
 public:
@@ -77,7 +77,7 @@ private:
     std::unordered_map<VkFence, VulkanInflightObject> m_inflightObjects{};
     VulkanInflightObject m_standByObject{};
 
-    std::unordered_map<void*, Subscribe> m_subs{};
+    std::unordered_map<void*, std::weak_ptr<Subscribe>> m_subs{};
 
     mutable std::mutex m_subscribeMutex{};
     mutable std::mutex m_objectMutex{};

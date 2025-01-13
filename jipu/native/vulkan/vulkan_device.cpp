@@ -55,7 +55,6 @@ VulkanDevice::~VulkanDevice()
     m_frameBufferCache->clear();
     m_renderPassCache->clear();
 
-    // m_inflightObjects->clearAll(); // TODO: fix me
     m_inflightObjects.reset();
     m_deleter.reset();
 

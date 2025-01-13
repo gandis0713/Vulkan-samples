@@ -112,7 +112,10 @@ bool VulkanInflightObjects::clear(VkFence fence)
         std::lock_guard<std::mutex> lock(m_subscribeMutex);
         for (const auto& [_, sub] : m_subs)
         {
-            sub(fence, inflightObject.value());
+            if (auto subLocked = sub.lock())
+            {
+                (*subLocked)(fence, inflightObject.value());
+            }
         }
 
         return true;
@@ -125,10 +128,15 @@ void VulkanInflightObjects::clearAll()
 {
     std::lock_guard<std::mutex> lock(m_objectMutex);
 
+    for (const auto& [fence, inflightObject] : m_inflightObjects)
+    {
+        clear(fence);
+    }
+
     m_inflightObjects.clear();
 }
 
-void VulkanInflightObjects::subscribe(void* ptr, Subscribe sub)
+void VulkanInflightObjects::subscribe(void* ptr, std::weak_ptr<Subscribe> sub)
 {
     std::lock_guard<std::mutex> lock(m_subscribeMutex);
 
