@@ -35,8 +35,6 @@ public:
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
     void drawImGui(WGPUCommandEncoder commandEncoder, WGPUTextureView renderView);
 
-    void profilingWindow();
-
     virtual void initializeContext();
     virtual void finalizeContext();
 

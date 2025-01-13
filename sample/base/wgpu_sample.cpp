@@ -64,14 +64,20 @@ void WGPUSample::init()
 void WGPUSample::onUpdate()
 {
     recordImGui({ [&]() {
-        windowImGui("API Type",
-                    { [&]() {
-                        if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
-                            m_apiType = APIType::kDawn;
-                        else if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
-                            m_apiType = APIType::kJipu;
-                    } });
-        profilingWindow();
+        windowImGui(
+            "Common", { [&]() {
+                           ImGui::Text("Profiling");
+                           ImGui::Separator();
+                           // drawPolyline("FPS", m_fps.getAll());
+                           ImGui::Separator();
+                       },
+                        [&]() {
+                            ImGui::Text("API Type");
+                            if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
+                                m_apiType = APIType::kDawn;
+                            else if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
+                                m_apiType = APIType::kJipu;
+                        } });
     } });
 
     buildImGui();
@@ -125,17 +131,6 @@ void WGPUSample::drawImGui(WGPUCommandEncoder commandEncoder, WGPUTextureView re
     {
         m_imgui.value().draw(commandEncoder, renderView);
     }
-}
-
-void WGPUSample::profilingWindow()
-{
-    windowImGui(
-        "Profiling", { [&]() {
-            ImGui::Text("Common");
-            ImGui::Separator();
-            // drawPolyline("FPS", m_fps.getAll());
-            ImGui::Separator();
-        } });
 }
 
 void WGPUSample::initializeContext()
