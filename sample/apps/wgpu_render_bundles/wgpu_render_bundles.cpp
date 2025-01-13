@@ -31,6 +31,26 @@ void WGPURenderBundles::init()
     changeAPI(APIType::kJipu);
 }
 
+void WGPURenderBundles::onBeforeUpdate()
+{
+    WGPUSample::onBeforeUpdate();
+
+    recordImGui({ [&]() {
+        windowImGui(
+            "Render Bundles", { [&]() {
+                ImGui::Checkbox("Use Render Bundles", &m_useRenderBundles);
+                ImGui::SliderInt("AsteroidCount", &m_asteroidCount, 0, 10000);
+            } });
+    } });
+
+    if (m_currentAsteroidCount != m_asteroidCount)
+    {
+        m_currentAsteroidCount = m_asteroidCount;
+        ensureEnoughAsteroids();
+        createRenderBundle();
+    }
+}
+
 void WGPURenderBundles::onUpdate()
 {
     WGPUSample::onUpdate();
@@ -65,6 +85,8 @@ void WGPURenderBundles::onUpdate()
     }
 
     wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &m_modelViewProjectionMatrix, sizeof(glm::mat4));
+
+    ensureEnoughAsteroids();
 }
 
 void WGPURenderBundles::onDraw()
@@ -657,6 +679,12 @@ void WGPURenderBundles::createPipeline()
 
 void WGPURenderBundles::createRenderBundle()
 {
+    if (m_renderBundle)
+    {
+        wgpu.RenderBundleRelease(m_renderBundle);
+        m_renderBundle = nullptr;
+    }
+
     WGPURenderBundleEncoderDescriptor renderBundleEncoderDescriptor{};
     renderBundleEncoderDescriptor.colorFormatCount = 1;
     renderBundleEncoderDescriptor.colorFormats = &m_surfaceConfigure.format;
@@ -679,7 +707,6 @@ void WGPURenderBundles::createRenderBundle()
 
             // uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
             wgpu.RenderBundleEncoderSetIndexBuffer(renderBundleEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, renderable.indexBufferSize);
-
             wgpu.RenderBundleEncoderDrawIndexed(renderBundleEncoder, renderable.indexCount, 1, 0, 0, 0);
 
             if (++count > m_asteroidCount)

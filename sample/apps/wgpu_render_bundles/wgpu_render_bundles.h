@@ -15,6 +15,7 @@ public:
     ~WGPURenderBundles() override;
 
     void init() override;
+    void onBeforeUpdate() override;
     void onUpdate() override;
     void onDraw() override;
 
@@ -84,7 +85,8 @@ private:
     glm::mat4 m_projectionMatrix{ glm::mat4(1.0) };
     glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
 
-    uint32_t m_asteroidCount = 1000; // TODO: by settings
+    int m_asteroidCount = 1000;
+    int m_currentAsteroidCount = 1000;
     bool m_useRenderBundles = true;
 };
 
