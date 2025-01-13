@@ -68,7 +68,9 @@ void WGPUSample::onBeforeUpdate()
     recordImGui({ [&]() {
         windowImGui(
             "Common", { [&]() {
-                           ImGui::Text("API Type");
+                           ImGui::Separator();
+                           //    ImGui::Text("API Type");
+                           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "API Type");
                            if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
                            {
                                m_currentAPIType = APIType::kJipu;
@@ -77,10 +79,12 @@ void WGPUSample::onBeforeUpdate()
                            {
                                m_currentAPIType = APIType::kDawn;
                            }
+                           ImGui::Separator();
                        },
                         [&]() {
-                            ImGui::Text("Profiling");
                             ImGui::Separator();
+                            // ImGui::Text("Profiling");
+                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Profiling");
                             drawPolyline("FPS", m_fps.getAll());
                             ImGui::Separator();
                         } });
