@@ -180,7 +180,7 @@ const std::vector<TextureBinding>& VulkanBindGroup::getTextureBindings() const
     return m_descriptor.textures;
 }
 
-const BindGroupLayoutMetaData& VulkanBindGroup::getMetaData() const
+const VulkanBindGroupLayoutMetaData& VulkanBindGroup::getMetaData() const
 {
     return m_layoutMetaData;
 }

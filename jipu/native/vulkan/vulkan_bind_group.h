@@ -26,7 +26,7 @@ public:
     const std::vector<TextureBinding>& getTextureBindings() const override;
 
 public: // for information about bind group layout.
-    const BindGroupLayoutMetaData& getMetaData() const;
+    const VulkanBindGroupLayoutMetaData& getMetaData() const;
     const std::vector<BufferBindingLayout>& getBufferLayouts() const;
     const std::vector<SamplerBindingLayout>& getSamplerLayouts() const;
     const std::vector<TextureBindingLayout>& getTextureLayouts() const;
@@ -40,7 +40,7 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const BindGroupDescriptor m_descriptor;
-    BindGroupLayoutMetaData m_layoutMetaData{};
+    VulkanBindGroupLayoutMetaData m_layoutMetaData{};
 };
 DOWN_CAST(VulkanBindGroup, BindGroup);
 

@@ -10,15 +10,15 @@
 namespace jipu
 {
 
-struct BindGroupLayoutInfo
+struct VulkanBindGroupLayoutInfo
 {
     std::vector<BufferBindingLayout> buffers{};
     std::vector<SamplerBindingLayout> samplers{};
     std::vector<TextureBindingLayout> textures{};
 };
-struct BindGroupLayoutMetaData
+struct VulkanBindGroupLayoutMetaData
 {
-    BindGroupLayoutInfo info{};
+    VulkanBindGroupLayoutInfo info{};
     size_t hash = 0;
 };
 
@@ -55,12 +55,12 @@ public:
     VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-    BindGroupLayoutMetaData getMetaData() const;
+    VulkanBindGroupLayoutMetaData getMetaData() const;
 
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanBindGroupLayoutDescriptor m_descriptor{};
-    BindGroupLayoutMetaData m_metaData{};
+    VulkanBindGroupLayoutMetaData m_metaData{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
 
@@ -72,7 +72,7 @@ public:
     ~VulkanBindGroupLayoutCache();
 
 public:
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutMetaData& metaData);
+    VkDescriptorSetLayout getVkDescriptorSetLayout(const VulkanBindGroupLayoutMetaData& metaData);
     void clear();
 
 private:

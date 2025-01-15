@@ -8,7 +8,7 @@
 namespace jipu
 {
 
-static size_t getHash(const BindGroupLayoutInfo& layoutInfo)
+static size_t getHash(const VulkanBindGroupLayoutInfo& layoutInfo)
 {
     size_t hash = 0;
 
@@ -222,7 +222,7 @@ VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
     return m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(m_metaData);
 }
 
-BindGroupLayoutMetaData VulkanBindGroupLayout::getMetaData() const
+VulkanBindGroupLayoutMetaData VulkanBindGroupLayout::getMetaData() const
 {
     return m_metaData;
 }
@@ -239,7 +239,7 @@ VulkanBindGroupLayoutCache::~VulkanBindGroupLayoutCache()
     clear();
 }
 
-VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const BindGroupLayoutMetaData& metaData)
+VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const VulkanBindGroupLayoutMetaData& metaData)
 {
     auto it = m_bindGroupLayouts.find(metaData.hash);
     if (it != m_bindGroupLayouts.end())

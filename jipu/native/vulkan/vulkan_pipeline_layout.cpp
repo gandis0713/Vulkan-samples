@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-static size_t getHash(const PipelineLayoutInfo& layoutInfo)
+static size_t getHash(const VulkanPipelineLayoutInfo& layoutInfo)
 {
     size_t hash = 0;
 
@@ -71,7 +71,7 @@ VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const
     return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutMetaData);
 }
 
-const PipelineLayoutMetaData& VulkanPipelineLayout::getMetaData() const
+const VulkanPipelineLayoutMetaData& VulkanPipelineLayout::getMetaData() const
 {
     return m_layoutMetaData;
 }
@@ -88,7 +88,7 @@ VulkanPipelineLayoutCache::~VulkanPipelineLayoutCache()
     clear();
 }
 
-VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutMetaData& layoutMetaData)
+VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const VulkanPipelineLayoutMetaData& layoutMetaData)
 {
     auto it = m_pipelineLayouts.find(layoutMetaData.hash);
     if (it != m_pipelineLayouts.end())
