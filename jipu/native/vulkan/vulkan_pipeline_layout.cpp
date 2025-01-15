@@ -19,30 +19,6 @@ static size_t getHash(const VulkanPipelineLayoutInfo& layoutInfo)
         combineHash(hash, bindGroupLayoutMetaData.hash);
     }
 
-    // for (const auto& bindGroupLayoutMetaData : layoutInfo.bindGroupLayoutMetaDatas)
-    // {
-    //     const auto& bindGroupLayoutInfo = bindGroupLayoutMetaData.info;
-    //     for (const auto& buffer : bindGroupLayoutInfo.buffers)
-    //     {
-    //         combineHash(hash, buffer.dynamicOffset);
-    //         combineHash(hash, buffer.index);
-    //         combineHash(hash, buffer.stages);
-    //         combineHash(hash, buffer.type);
-    //     }
-
-    //     for (const auto& sampler : bindGroupLayoutInfo.samplers)
-    //     {
-    //         combineHash(hash, sampler.index);
-    //         combineHash(hash, sampler.stages);
-    //     }
-
-    //     for (const auto& texture : bindGroupLayoutInfo.textures)
-    //     {
-    //         combineHash(hash, texture.index);
-    //         combineHash(hash, texture.stages);
-    //     }
-    // }
-
     return hash;
 }
 
