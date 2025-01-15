@@ -7,6 +7,7 @@ namespace jipu
 
 struct ShaderModuleDescriptor
 {
+    // TODO: use std::string_view
     const char* code = nullptr;
     size_t codeSize = 0;
 };
