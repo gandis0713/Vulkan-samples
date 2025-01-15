@@ -18,16 +18,18 @@ public:
     void finalizeContext() override;
 
     void createShaderModule();
-    void createPipelineLayout();
-    void createPipeline();
+    void createRenderPipelineLayout();
+    void createRenderPipeline();
+    void createComputePipelineLayout();
+    void createComputePipeline();
 
 private:
-    WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
-    WGPUShaderModule m_vertSPIRVShaderModule = nullptr;
-    WGPUShaderModule m_fragSPIRVShaderModule = nullptr;
-    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
-    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+    WGPUComputePipeline m_computePipeline = nullptr;
+    WGPUPipelineLayout m_renderPipelineLayout = nullptr;
+    WGPUPipelineLayout m_computePipelineLayout = nullptr;
+    WGPUShaderModule m_wgslParticleShaderModule = nullptr;
+    WGPUShaderModule m_wgslProbablilityMapShaderModule = nullptr;
 };
 
 } // namespace jipu
