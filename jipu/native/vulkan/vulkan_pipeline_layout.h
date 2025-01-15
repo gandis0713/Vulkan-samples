@@ -9,9 +9,9 @@
 namespace jipu
 {
 
-struct PipelineLayoutInfo
+struct PipelineLayoutMetaInfo
 {
-    std::vector<BindGroupLayoutInfo> bindGroupLayoutInfos{};
+    std::vector<BindGroupLayoutMetaInfo> bindGroupLayoutMetaInfos{};
 };
 
 class VulkanDevice;
@@ -24,7 +24,7 @@ public:
 
 public:
     VkPipelineLayout getVkPipelineLayout() const;
-    PipelineLayoutInfo getLayoutInfo() const;
+    PipelineLayoutMetaInfo getLayoutInfo() const;
 
 private:
     VulkanDevice* m_device = nullptr;
@@ -44,7 +44,7 @@ public:
 
 public:
     VkPipelineLayout getVkPipelineLayout(const PipelineLayoutDescriptor& descriptor);
-    VkPipelineLayout getVkPipelineLayout(const PipelineLayoutInfo& layoutInfo);
+    VkPipelineLayout getVkPipelineLayout(const PipelineLayoutMetaInfo& layoutInfo);
     void clear();
 
 private:
@@ -53,10 +53,10 @@ private:
 private:
     struct Functor
     {
-        size_t operator()(const PipelineLayoutInfo& descriptor) const;
-        bool operator()(const PipelineLayoutInfo& lhs, const PipelineLayoutInfo& rhs) const;
+        size_t operator()(const PipelineLayoutMetaInfo& descriptor) const;
+        bool operator()(const PipelineLayoutMetaInfo& lhs, const PipelineLayoutMetaInfo& rhs) const;
     };
-    using Cache = std::unordered_map<PipelineLayoutInfo, VkPipelineLayout, Functor, Functor>;
+    using Cache = std::unordered_map<PipelineLayoutMetaInfo, VkPipelineLayout, Functor, Functor>;
     Cache m_pipelineLayouts{};
 };
 

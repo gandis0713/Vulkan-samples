@@ -156,9 +156,9 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
     // store bind group layout descriptor
     {
         VulkanBindGroupLayout* layout = downcast(m_descriptor.layout);
-        m_layoutInfo.buffers = layout->getBufferBindingLayouts();
-        m_layoutInfo.samplers = layout->getSamplerBindingLayouts();
-        m_layoutInfo.textures = layout->getTextureBindingLayouts();
+        m_layoutMetaInfo.buffers = layout->getBufferBindingLayouts();
+        m_layoutMetaInfo.samplers = layout->getSamplerBindingLayouts();
+        m_layoutMetaInfo.textures = layout->getTextureBindingLayouts();
     }
 }
 
@@ -187,24 +187,24 @@ const std::vector<TextureBinding>& VulkanBindGroup::getTextureBindings() const
     return m_descriptor.textures;
 }
 
-const BindGroupLayoutInfo& VulkanBindGroup::getLayoutInfo() const
+const BindGroupLayoutMetaInfo& VulkanBindGroup::getLayoutInfo() const
 {
-    return m_layoutInfo;
+    return m_layoutMetaInfo;
 }
 
 const std::vector<BufferBindingLayout>& VulkanBindGroup::getBufferLayouts() const
 {
-    return m_layoutInfo.buffers;
+    return m_layoutMetaInfo.buffers;
 }
 
 const std::vector<SamplerBindingLayout>& VulkanBindGroup::getSamplerLayouts() const
 {
-    return m_layoutInfo.samplers;
+    return m_layoutMetaInfo.samplers;
 }
 
 const std::vector<TextureBindingLayout>& VulkanBindGroup::getTextureLayouts() const
 {
-    return m_layoutInfo.textures;
+    return m_layoutMetaInfo.textures;
 }
 
 VkDescriptorSet VulkanBindGroup::getVkDescriptorSet() const

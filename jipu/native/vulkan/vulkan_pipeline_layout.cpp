@@ -26,14 +26,14 @@ VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const
     return m_pipelineLayout;
 }
 
-PipelineLayoutInfo VulkanPipelineLayout::getLayoutInfo() const
+PipelineLayoutMetaInfo VulkanPipelineLayout::getLayoutInfo() const
 {
-    PipelineLayoutInfo layoutInfo{};
-    layoutInfo.bindGroupLayoutInfos.resize(m_descriptor.layouts.size());
+    PipelineLayoutMetaInfo layoutInfo{};
+    layoutInfo.bindGroupLayoutMetaInfos.resize(m_descriptor.layouts.size());
 
-    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutInfos.size(); ++i)
+    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutMetaInfos.size(); ++i)
     {
-        layoutInfo.bindGroupLayoutInfos[i] = BindGroupLayoutInfo{
+        layoutInfo.bindGroupLayoutMetaInfos[i] = BindGroupLayoutMetaInfo{
             .buffers = downcast(m_descriptor.layouts[i])->getBufferBindingLayouts(),
             .samplers = downcast(m_descriptor.layouts[i])->getSamplerBindingLayouts(),
             .textures = downcast(m_descriptor.layouts[i])->getTextureBindingLayouts(),
@@ -57,12 +57,12 @@ VulkanPipelineLayoutCache::~VulkanPipelineLayoutCache()
 
 VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutDescriptor& descriptor)
 {
-    PipelineLayoutInfo layoutInfo{};
-    layoutInfo.bindGroupLayoutInfos.resize(descriptor.layouts.size());
+    PipelineLayoutMetaInfo layoutInfo{};
+    layoutInfo.bindGroupLayoutMetaInfos.resize(descriptor.layouts.size());
 
-    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutInfos.size(); ++i)
+    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutMetaInfos.size(); ++i)
     {
-        layoutInfo.bindGroupLayoutInfos[i] = BindGroupLayoutInfo{
+        layoutInfo.bindGroupLayoutMetaInfos[i] = BindGroupLayoutMetaInfo{
             .buffers = downcast(descriptor.layouts[i])->getBufferBindingLayouts(),
             .samplers = downcast(descriptor.layouts[i])->getSamplerBindingLayouts(),
             .textures = downcast(descriptor.layouts[i])->getTextureBindingLayouts(),
@@ -72,7 +72,7 @@ VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLa
     return getVkPipelineLayout(layoutInfo);
 }
 
-VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutInfo& layoutInfo)
+VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutMetaInfo& layoutInfo)
 {
     auto it = m_pipelineLayouts.find(layoutInfo);
     if (it != m_pipelineLayouts.end())
@@ -81,10 +81,10 @@ VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLa
     }
 
     std::vector<VkDescriptorSetLayout> layouts{};
-    layouts.resize(layoutInfo.bindGroupLayoutInfos.size());
+    layouts.resize(layoutInfo.bindGroupLayoutMetaInfos.size());
     for (uint32_t i = 0; i < layouts.size(); ++i)
     {
-        layouts[i] = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(layoutInfo.bindGroupLayoutInfos[i]);
+        layouts[i] = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(layoutInfo.bindGroupLayoutMetaInfos[i]);
     }
 
     VkPipelineLayoutCreateInfo createInfo{ .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -113,13 +113,13 @@ void VulkanPipelineLayoutCache::clear()
     m_pipelineLayouts.clear();
 }
 
-size_t VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& layoutInfo) const
+size_t VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutMetaInfo& layoutInfo) const
 {
     size_t hash = 0;
 
-    for (const auto& bindGroupLayoutInfo : layoutInfo.bindGroupLayoutInfos)
+    for (const auto& bindGroupLayoutMetaInfo : layoutInfo.bindGroupLayoutMetaInfos)
     {
-        for (const auto& buffer : bindGroupLayoutInfo.buffers)
+        for (const auto& buffer : bindGroupLayoutMetaInfo.buffers)
         {
             combineHash(hash, buffer.dynamicOffset);
             combineHash(hash, buffer.index);
@@ -127,13 +127,13 @@ size_t VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& 
             combineHash(hash, buffer.type);
         }
 
-        for (const auto& sampler : bindGroupLayoutInfo.samplers)
+        for (const auto& sampler : bindGroupLayoutMetaInfo.samplers)
         {
             combineHash(hash, sampler.index);
             combineHash(hash, sampler.stages);
         }
 
-        for (const auto& texture : bindGroupLayoutInfo.textures)
+        for (const auto& texture : bindGroupLayoutMetaInfo.textures)
         {
             combineHash(hash, texture.index);
             combineHash(hash, texture.stages);
@@ -143,47 +143,47 @@ size_t VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& 
     return hash;
 }
 
-bool VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& lhs,
-                                                    const PipelineLayoutInfo& rhs) const
+bool VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutMetaInfo& lhs,
+                                                    const PipelineLayoutMetaInfo& rhs) const
 {
-    if (lhs.bindGroupLayoutInfos.size() != rhs.bindGroupLayoutInfos.size())
+    if (lhs.bindGroupLayoutMetaInfos.size() != rhs.bindGroupLayoutMetaInfos.size())
     {
         return false;
     }
 
-    for (auto i = 0; i < lhs.bindGroupLayoutInfos.size(); ++i)
+    for (auto i = 0; i < lhs.bindGroupLayoutMetaInfos.size(); ++i)
     {
-        if (lhs.bindGroupLayoutInfos[i].buffers.size() != rhs.bindGroupLayoutInfos[i].buffers.size() ||
-            lhs.bindGroupLayoutInfos[i].samplers.size() != rhs.bindGroupLayoutInfos[i].samplers.size() ||
-            lhs.bindGroupLayoutInfos[i].textures.size() != rhs.bindGroupLayoutInfos[i].textures.size())
+        if (lhs.bindGroupLayoutMetaInfos[i].buffers.size() != rhs.bindGroupLayoutMetaInfos[i].buffers.size() ||
+            lhs.bindGroupLayoutMetaInfos[i].samplers.size() != rhs.bindGroupLayoutMetaInfos[i].samplers.size() ||
+            lhs.bindGroupLayoutMetaInfos[i].textures.size() != rhs.bindGroupLayoutMetaInfos[i].textures.size())
         {
             return false;
         }
 
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].buffers.size(); ++j)
+        for (auto j = 0; j < lhs.bindGroupLayoutMetaInfos[i].buffers.size(); ++j)
         {
-            if (lhs.bindGroupLayoutInfos[i].buffers[j].dynamicOffset != rhs.bindGroupLayoutInfos[i].buffers[j].dynamicOffset ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].index != rhs.bindGroupLayoutInfos[i].buffers[j].index ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].stages != rhs.bindGroupLayoutInfos[i].buffers[j].stages ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].type != rhs.bindGroupLayoutInfos[i].buffers[j].type)
+            if (lhs.bindGroupLayoutMetaInfos[i].buffers[j].dynamicOffset != rhs.bindGroupLayoutMetaInfos[i].buffers[j].dynamicOffset ||
+                lhs.bindGroupLayoutMetaInfos[i].buffers[j].index != rhs.bindGroupLayoutMetaInfos[i].buffers[j].index ||
+                lhs.bindGroupLayoutMetaInfos[i].buffers[j].stages != rhs.bindGroupLayoutMetaInfos[i].buffers[j].stages ||
+                lhs.bindGroupLayoutMetaInfos[i].buffers[j].type != rhs.bindGroupLayoutMetaInfos[i].buffers[j].type)
             {
                 return false;
             }
         }
 
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].samplers.size(); ++j)
+        for (auto j = 0; j < lhs.bindGroupLayoutMetaInfos[i].samplers.size(); ++j)
         {
-            if (lhs.bindGroupLayoutInfos[i].samplers[j].index != rhs.bindGroupLayoutInfos[i].samplers[j].index ||
-                lhs.bindGroupLayoutInfos[i].samplers[j].stages != rhs.bindGroupLayoutInfos[i].samplers[j].stages)
+            if (lhs.bindGroupLayoutMetaInfos[i].samplers[j].index != rhs.bindGroupLayoutMetaInfos[i].samplers[j].index ||
+                lhs.bindGroupLayoutMetaInfos[i].samplers[j].stages != rhs.bindGroupLayoutMetaInfos[i].samplers[j].stages)
             {
                 return false;
             }
         }
 
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].textures.size(); ++j)
+        for (auto j = 0; j < lhs.bindGroupLayoutMetaInfos[i].textures.size(); ++j)
         {
-            if (lhs.bindGroupLayoutInfos[i].textures[j].index != rhs.bindGroupLayoutInfos[i].textures[j].index ||
-                lhs.bindGroupLayoutInfos[i].textures[j].stages != rhs.bindGroupLayoutInfos[i].textures[j].stages)
+            if (lhs.bindGroupLayoutMetaInfos[i].textures[j].index != rhs.bindGroupLayoutMetaInfos[i].textures[j].index ||
+                lhs.bindGroupLayoutMetaInfos[i].textures[j].stages != rhs.bindGroupLayoutMetaInfos[i].textures[j].stages)
             {
                 return false;
             }

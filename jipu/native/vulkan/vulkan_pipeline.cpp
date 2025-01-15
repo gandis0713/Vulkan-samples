@@ -16,7 +16,7 @@ namespace jipu
 VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
-    , m_layoutInfo(downcast(descriptor.layout)->getLayoutInfo())
+    , m_layoutMetaInfo(downcast(descriptor.layout)->getLayoutInfo())
 {
     initialize();
 }
@@ -28,7 +28,7 @@ VulkanComputePipeline::~VulkanComputePipeline()
 
 VkPipelineLayout VulkanComputePipeline::getVkPipelineLayout() const
 {
-    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutInfo);
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutMetaInfo);
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -428,7 +428,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPip
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
-    , m_layoutInfo(m_descriptor.layout->getLayoutInfo())
+    , m_layoutMetaInfo(m_descriptor.layout->getLayoutInfo())
 {
     initialize();
 }
@@ -440,7 +440,7 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
 
 VkPipelineLayout VulkanRenderPipeline::getVkPipelineLayout() const
 {
-    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutInfo);
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutMetaInfo);
 }
 
 std::vector<VkShaderModule> VulkanRenderPipeline::getShaderModules() const

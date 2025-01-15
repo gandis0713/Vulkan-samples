@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-struct BindGroupLayoutInfo
+struct BindGroupLayoutMetaInfo
 {
     std::vector<BufferBindingLayout> buffers = {};
     std::vector<SamplerBindingLayout> samplers = {};
@@ -50,7 +50,7 @@ public:
     VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-    BindGroupLayoutInfo getLayoutInfo() const;
+    BindGroupLayoutMetaInfo getLayoutInfo() const;
 
 private:
     VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
@@ -69,8 +69,11 @@ public:
     ~VulkanBindGroupLayoutCache();
 
 public:
+    static size_t getHash(const BindGroupLayoutMetaInfo& layoutInfo);
+
+public:
     VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutDescriptor& descriptor);
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutInfo& layoutInfo);
+    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutMetaInfo& layoutInfo);
     void clear();
 
 private:
@@ -79,10 +82,10 @@ private:
 private:
     struct Functor
     {
-        size_t operator()(const BindGroupLayoutInfo& descriptor) const;
-        bool operator()(const BindGroupLayoutInfo& lhs, const BindGroupLayoutInfo& rhs) const;
+        size_t operator()(const BindGroupLayoutMetaInfo& descriptor) const;
+        bool operator()(const BindGroupLayoutMetaInfo& lhs, const BindGroupLayoutMetaInfo& rhs) const;
     };
-    using Cache = std::unordered_map<BindGroupLayoutInfo, VkDescriptorSetLayout, Functor, Functor>;
+    using Cache = std::unordered_map<BindGroupLayoutMetaInfo, VkDescriptorSetLayout, Functor, Functor>;
     Cache m_bindGroupLayouts{};
 };
 
