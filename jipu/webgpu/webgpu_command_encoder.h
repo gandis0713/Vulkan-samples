@@ -13,6 +13,7 @@ namespace jipu
 
 class WebGPUDevice;
 class WebGPURenderPassEncoder;
+class WebGPUComputePassEncoder;
 class WebGPUCommandBuffer;
 class WebGPUCommandEncoder : public RefCounted
 {
@@ -32,6 +33,7 @@ public:
 
 public: // WebGPU API
     WebGPURenderPassEncoder* beginRenderPass(WGPURenderPassDescriptor const* descriptor);
+    WebGPUComputePassEncoder* beginComputePass(WGPUComputePassDescriptor const* descriptor);
     void copyBufferToBuffer(WGPUBuffer source, uint64_t sourceOffset, WGPUBuffer destination, uint64_t destinationOffset, uint64_t size);
     void copyBufferToTexture(WGPUImageCopyBuffer const* source, WGPUImageCopyTexture const* destination, WGPUExtent3D const* copySize);
     void copyTextureToBuffer(WGPUImageCopyTexture const* source, WGPUImageCopyBuffer const* destination, WGPUExtent3D const* copySize);
