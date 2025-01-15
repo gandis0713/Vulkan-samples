@@ -1,4 +1,6 @@
 #include "vulkan_shader_module.h"
+
+#include "jipu/common/hash.h"
 #include "vulkan_api.h"
 #include "vulkan_device.h"
 
@@ -8,20 +10,23 @@
 namespace jipu
 {
 
+size_t getHash(const ShaderModuleInfo& info)
+{
+    size_t hash = 0;
+
+    combineHash(hash, info.code);
+
+    return hash;
+}
+
 VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor)
     : m_device(device)
+    , m_descriptor(descriptor)
 {
-    VkShaderModuleCreateInfo shaderModuleCreateInfo{};
-    shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleCreateInfo.codeSize = descriptor.codeSize;
-    shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(descriptor.code);
-
-    auto vulkanDevice = downcast(m_device);
-    auto result = vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getVkDevice(), &shaderModuleCreateInfo, nullptr, &m_shaderModule);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("Failed to create shader module. [Result: {}]", static_cast<int32_t>(result)));
-    }
+    m_metaData.info = ShaderModuleInfo{
+        .code = std::string(descriptor.code, descriptor.codeSize)
+    };
+    m_metaData.hash = getHash(m_metaData.info);
 }
 
 VulkanShaderModule::~VulkanShaderModule()
@@ -31,7 +36,61 @@ VulkanShaderModule::~VulkanShaderModule()
 
 VkShaderModule VulkanShaderModule::getVkShaderModule() const
 {
-    return m_shaderModule;
+    return m_device->getShaderModuleCache()->getVkShaderModule(m_metaData);
+}
+
+const ShaderModuleMetaData& VulkanShaderModule::getMetaData() const
+{
+    return m_metaData;
+}
+
+// VulkanShaderModuleCache
+
+VulkanShaderModuleCache::VulkanShaderModuleCache(VulkanDevice* device)
+    : m_device(device)
+{
+}
+
+VulkanShaderModuleCache::~VulkanShaderModuleCache()
+{
+    clear();
+}
+
+VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const ShaderModuleMetaData& metaData)
+{
+    auto it = m_shaderModules.find(metaData.hash);
+    if (it != m_shaderModules.end())
+    {
+        return it->second;
+    }
+
+    VkShaderModuleCreateInfo shaderModuleCreateInfo{};
+    shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    shaderModuleCreateInfo.codeSize = metaData.info.code.size();
+    shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(metaData.info.code.data());
+
+    auto vulkanDevice = downcast(m_device);
+
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+    auto result = vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getVkDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create shader module. [Result: {}]", static_cast<int32_t>(result)));
+    }
+
+    m_shaderModules.insert({ getHash(metaData.info), shaderModule });
+
+    return shaderModule;
+}
+
+void VulkanShaderModuleCache::clear()
+{
+    for (auto& [descriptor, shaderModule] : m_shaderModules)
+    {
+        m_device->getDeleter()->safeDestroy(shaderModule);
+    }
+
+    m_shaderModules.clear();
 }
 
 } // namespace jipu
