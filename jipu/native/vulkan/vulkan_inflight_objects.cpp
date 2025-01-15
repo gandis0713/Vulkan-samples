@@ -310,26 +310,6 @@ bool VulkanInflightObjects::isInflight(VkPipelineLayout pipelineLayout) const
     return false;
 }
 
-bool VulkanInflightObjects::isInflight(VkShaderModule shaderModule) const
-{
-    std::lock_guard<std::mutex> lock(m_objectMutex);
-
-    for (const auto& [_, inflightObject] : m_inflightObjects)
-    {
-        if (inflightObject.shaderModules.contains(shaderModule))
-        {
-            return true;
-        }
-    }
-
-    if (m_standByObject.shaderModules.contains(shaderModule))
-    {
-        return true;
-    }
-
-    return false;
-}
-
 bool VulkanInflightObjects::isInflight(VkDescriptorSet descriptorSet) const
 {
     std::lock_guard<std::mutex> lock(m_objectMutex);

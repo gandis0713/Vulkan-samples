@@ -67,11 +67,6 @@ void VulkanSubmit::add(VkPipelineLayout pipelineLayout)
     object.pipelineLayouts.insert(pipelineLayout);
 }
 
-void VulkanSubmit::add(const std::vector<VkShaderModule>& shaderModules)
-{
-    object.shaderModules.insert(shaderModules.begin(), shaderModules.end());
-}
-
 void VulkanSubmit::add(VkDescriptorSet descriptorSet)
 {
     object.descriptorSet.insert(descriptorSet);
@@ -135,7 +130,6 @@ void VulkanSubmit::add(SetComputePipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
     add(downcast(command->pipeline)->getVkPipelineLayout());
-    add({ downcast(command->pipeline)->getShaderModule() });
 }
 
 void VulkanSubmit::addComputeBindGroup(SetBindGroupCommand* command)
@@ -216,7 +210,6 @@ void VulkanSubmit::add(SetRenderPipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
     add(downcast(command->pipeline)->getVkPipelineLayout());
-    add(downcast(command->pipeline)->getShaderModules());
 }
 
 void VulkanSubmit::add(SetVertexBufferCommand* command)

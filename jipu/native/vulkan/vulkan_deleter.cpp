@@ -82,14 +82,6 @@ VulkanDeleter::VulkanDeleter(VulkanDevice* device)
             }
         }
 
-        for (auto shaderModule : object.shaderModules)
-        {
-            if (contains(shaderModule))
-            {
-                safeDestroy(shaderModule);
-            }
-        }
-
         for (auto descriptorSet : object.descriptorSet)
         {
             if (contains(descriptorSet))
@@ -161,7 +153,6 @@ VulkanDeleter::~VulkanDeleter()
         samplers = std::move(m_samplers);
         pipelines = std::move(m_pipelines);
         pipelineLayouts = std::move(m_pipelineLayouts);
-        shaderModules = std::move(m_shaderModules);
         descriptorSets = std::move(m_descriptorSets);
         descriptorSetLayouts = std::move(m_descriptorSetLayouts);
         framebuffers = std::move(m_framebuffers);
@@ -350,15 +341,7 @@ void VulkanDeleter::safeDestroy(VkPipelineLayout pipelineLayout)
 
 void VulkanDeleter::safeDestroy(VkShaderModule shaderModule)
 {
-    if (m_device->getInflightObjects()->isInflight(shaderModule))
-    {
-        insert(shaderModule);
-    }
-    else
-    {
-        erase(shaderModule);
-        destroy(shaderModule);
-    }
+    destroy(shaderModule);
 }
 
 void VulkanDeleter::safeDestroy(VkDescriptorSet descriptorSet)
@@ -556,13 +539,6 @@ void VulkanDeleter::insert(VkPipelineLayout pipelineLayout)
     m_pipelineLayouts.insert(pipelineLayout);
 }
 
-void VulkanDeleter::insert(VkShaderModule shaderModule)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    m_shaderModules.insert(shaderModule);
-}
-
 void VulkanDeleter::insert(VkDescriptorSet descriptorSet)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -654,13 +630,6 @@ void VulkanDeleter::erase(VkPipelineLayout pipelineLayout)
     m_pipelineLayouts.erase(pipelineLayout);
 }
 
-void VulkanDeleter::erase(VkShaderModule shaderModule)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    m_shaderModules.erase(shaderModule);
-}
-
 void VulkanDeleter::erase(VkDescriptorSet descriptorSet)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -750,13 +719,6 @@ bool VulkanDeleter::contains(VkPipelineLayout pipelineLayout) const
     std::lock_guard<std::mutex> lock(m_mutex);
 
     return m_pipelineLayouts.contains(pipelineLayout);
-}
-
-bool VulkanDeleter::contains(VkShaderModule shaderModule) const
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    return m_shaderModules.contains(shaderModule);
 }
 
 bool VulkanDeleter::contains(VkDescriptorSet descriptorSet) const
