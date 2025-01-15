@@ -11,14 +11,14 @@
 namespace jipu
 {
 
-struct ShaderModuleInfo
+struct VulkanShaderModuleInfo
 {
     std::string code;
 };
 
-struct ShaderModuleMetaData
+struct VulkanShaderModuleMetaData
 {
-    ShaderModuleInfo info{};
+    VulkanShaderModuleInfo info{};
     size_t hash = 0;
 };
 
@@ -31,7 +31,7 @@ public:
     ~VulkanShaderModule() override;
 
     VkShaderModule getVkShaderModule() const;
-    const ShaderModuleMetaData& getMetaData() const;
+    const VulkanShaderModuleMetaData& getMetaData() const;
 
 private:
     VulkanDevice* m_device = nullptr;
@@ -39,7 +39,7 @@ private:
 private:
     VkShaderModule m_shaderModule = VK_NULL_HANDLE;
     const ShaderModuleDescriptor m_descriptor{};
-    ShaderModuleMetaData m_metaData{};
+    VulkanShaderModuleMetaData m_metaData{};
 };
 DOWN_CAST(VulkanShaderModule, ShaderModule);
 
@@ -51,7 +51,7 @@ public:
     ~VulkanShaderModuleCache();
 
 public:
-    VkShaderModule getVkShaderModule(const ShaderModuleMetaData& metaData);
+    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData);
     void clear();
 
 private:

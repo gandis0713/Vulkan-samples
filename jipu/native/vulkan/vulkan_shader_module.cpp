@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-size_t getHash(const ShaderModuleInfo& info)
+size_t getHash(const VulkanShaderModuleInfo& info)
 {
     size_t hash = 0;
 
@@ -23,7 +23,7 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleD
     : m_device(device)
     , m_descriptor(descriptor)
 {
-    m_metaData.info = ShaderModuleInfo{
+    m_metaData.info = VulkanShaderModuleInfo{
         .code = std::string(descriptor.code, descriptor.codeSize)
     };
     m_metaData.hash = getHash(m_metaData.info);
@@ -39,7 +39,7 @@ VkShaderModule VulkanShaderModule::getVkShaderModule() const
     return m_device->getShaderModuleCache()->getVkShaderModule(m_metaData);
 }
 
-const ShaderModuleMetaData& VulkanShaderModule::getMetaData() const
+const VulkanShaderModuleMetaData& VulkanShaderModule::getMetaData() const
 {
     return m_metaData;
 }
@@ -56,7 +56,7 @@ VulkanShaderModuleCache::~VulkanShaderModuleCache()
     clear();
 }
 
-VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const ShaderModuleMetaData& metaData)
+VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModuleMetaData& metaData)
 {
     auto it = m_shaderModules.find(metaData.hash);
     if (it != m_shaderModules.end())
