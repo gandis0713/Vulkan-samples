@@ -10,11 +10,16 @@
 namespace jipu
 {
 
-struct BindGroupLayoutMetaInfo
+struct BindGroupLayoutInfo
 {
-    std::vector<BufferBindingLayout> buffers = {};
-    std::vector<SamplerBindingLayout> samplers = {};
-    std::vector<TextureBindingLayout> textures = {};
+    std::vector<BufferBindingLayout> buffers{};
+    std::vector<SamplerBindingLayout> samplers{};
+    std::vector<TextureBindingLayout> textures{};
+};
+struct BindGroupLayoutMetaData
+{
+    BindGroupLayoutInfo info{};
+    size_t hash = 0;
 };
 
 struct VulkanBindGroupLayoutDescriptor
@@ -50,14 +55,12 @@ public:
     VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-    BindGroupLayoutMetaInfo getLayoutInfo() const;
-
-private:
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+    BindGroupLayoutMetaData getMetaData() const;
 
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanBindGroupLayoutDescriptor m_descriptor{};
+    BindGroupLayoutMetaData m_metaData{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
 
@@ -69,23 +72,14 @@ public:
     ~VulkanBindGroupLayoutCache();
 
 public:
-    static size_t getHash(const BindGroupLayoutMetaInfo& layoutInfo);
-
-public:
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutDescriptor& descriptor);
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutMetaInfo& layoutInfo);
+    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutMetaData& metaData);
     void clear();
 
 private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    struct Functor
-    {
-        size_t operator()(const BindGroupLayoutMetaInfo& descriptor) const;
-        bool operator()(const BindGroupLayoutMetaInfo& lhs, const BindGroupLayoutMetaInfo& rhs) const;
-    };
-    using Cache = std::unordered_map<BindGroupLayoutMetaInfo, VkDescriptorSetLayout, Functor, Functor>;
+    using Cache = std::unordered_map<size_t, VkDescriptorSetLayout>;
     Cache m_bindGroupLayouts{};
 };
 
