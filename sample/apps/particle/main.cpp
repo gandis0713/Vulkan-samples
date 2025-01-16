@@ -433,7 +433,7 @@ void ParticleSample::createRenderPipeline()
         const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
         ShaderModuleDescriptor shaderModuleDescriptor{};
         shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-        shaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+        shaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
         m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
 
@@ -476,7 +476,7 @@ void ParticleSample::createRenderPipeline()
     const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
     ShaderModuleDescriptor shaderModuleDescriptor{};
     shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-    shaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+    shaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
     m_fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
     FragmentStage::Target target{};

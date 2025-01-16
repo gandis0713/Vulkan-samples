@@ -836,7 +836,7 @@ void DeferredSample::createOffscreenPipeline()
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-        shaderModuleDescriptor.code = std::string_view(vertexSource.data(), static_cast<uint32_t>(vertexSource.size()));
+        shaderModuleDescriptor.code = std::string_view(vertexSource.data(), vertexSource.size());
 
         m_offscreen.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
@@ -887,7 +887,7 @@ void DeferredSample::createOffscreenPipeline()
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-        shaderModuleDescriptor.code = std::string_view(fragmentSource.data(), static_cast<uint32_t>(fragmentSource.size()));
+        shaderModuleDescriptor.code = std::string_view(fragmentSource.data(), fragmentSource.size());
 
         m_offscreen.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
@@ -1107,7 +1107,7 @@ void DeferredSample::createCompositionPipeline()
 
     ShaderModuleDescriptor shaderModuleDescriptor{};
     shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-    shaderModuleDescriptor.code = std::string_view(vertexSource.data(), static_cast<uint32_t>(vertexSource.size()));
+    shaderModuleDescriptor.code = std::string_view(vertexSource.data(), vertexSource.size());
     vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
     VertexStage vertexStage{
@@ -1129,7 +1129,7 @@ void DeferredSample::createCompositionPipeline()
 
     ShaderModuleDescriptor fragShaderModuleDescriptor{};
     fragShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-    fragShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+    fragShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
     fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
 
     FragmentStage::Target target{};

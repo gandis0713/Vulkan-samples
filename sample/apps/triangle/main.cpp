@@ -290,7 +290,7 @@ void TriangleSample::createRenderPipeline()
         ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "triangle.vert.spv", m_handle);
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+        descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -331,7 +331,7 @@ void TriangleSample::createRenderPipeline()
         ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+        descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }

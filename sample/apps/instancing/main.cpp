@@ -426,7 +426,7 @@ void InstancingSample::createInstancingRenderPipeline()
 
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+        descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -480,7 +480,7 @@ void InstancingSample::createInstancingRenderPipeline()
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "instancing.frag.spv", m_handle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+        descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -606,7 +606,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "non_instancing.vert.spv", m_handle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+        descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -649,7 +649,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "non_instancing.frag.spv", m_handle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
-        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+        descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }

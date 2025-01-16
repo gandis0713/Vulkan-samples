@@ -53,7 +53,7 @@ TEST_F(DeviceTest, createShaderModule)
 
     ShaderModuleDescriptor descriptor{};
     descriptor.type = ShaderModuleType::kSPIRV;
-    descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+    descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
     auto shaderModule = m_device->createShaderModule(descriptor);
     ASSERT_NE(shaderModule, nullptr);

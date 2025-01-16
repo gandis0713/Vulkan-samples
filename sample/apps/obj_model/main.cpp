@@ -530,7 +530,7 @@ void OBJModelSample::createRenderPipeline()
         const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "obj_model.frag.spv", m_handle);
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
         fragmentShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-        fragmentShaderModuleDescriptor.code = std::string_view(fragShaderCode.data(), static_cast<uint32_t>(fragShaderCode.size()));
+        fragmentShaderModuleDescriptor.code = std::string_view(fragShaderCode.data(), fragShaderCode.size());
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
     }
 

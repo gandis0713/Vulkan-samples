@@ -332,7 +332,7 @@ void NativeImGui::init(Device* device, Queue* queue, Swapchain* swapchain)
 
             ShaderModuleDescriptor vertexShaderModuleDescriptor{};
             vertexShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-            vertexShaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
+            vertexShaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
             vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
         }
@@ -375,7 +375,7 @@ void NativeImGui::init(Device* device, Queue* queue, Swapchain* swapchain)
             ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
 
             fragmentShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
-            fragmentShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
+            fragmentShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
 
             fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
         }
