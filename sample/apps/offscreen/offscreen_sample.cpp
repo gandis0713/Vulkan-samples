@@ -288,10 +288,10 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
-        descriptor.code = vertexShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -329,10 +329,10 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
-        descriptor.code = fragmentShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -458,10 +458,10 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "onscreen.vert.spv", m_handle);
-        descriptor.code = vertexShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -499,10 +499,10 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "onscreen.frag.spv", m_handle);
-        descriptor.code = fragmentShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }

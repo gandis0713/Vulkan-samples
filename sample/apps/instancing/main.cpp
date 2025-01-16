@@ -422,10 +422,11 @@ void InstancingSample::createInstancingRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "instancing.vert.spv", m_handle);
-        descriptor.code = vertexShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -476,10 +477,10 @@ void InstancingSample::createInstancingRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "instancing.frag.spv", m_handle);
-        descriptor.code = fragmentShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -602,10 +603,10 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "non_instancing.vert.spv", m_handle);
-        descriptor.code = vertexShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -645,10 +646,10 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "non_instancing.frag.spv", m_handle);
-        descriptor.code = fragmentShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+        ShaderModuleDescriptor descriptor{};
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }

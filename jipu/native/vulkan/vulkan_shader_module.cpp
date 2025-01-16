@@ -24,7 +24,7 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleD
     , m_descriptor(descriptor)
 {
     m_metaData.info = VulkanShaderModuleInfo{
-        .code = std::string(descriptor.code, descriptor.codeSize)
+        .code = std::string(descriptor.code)
     };
     m_metaData.hash = getHash(m_metaData.info);
 }

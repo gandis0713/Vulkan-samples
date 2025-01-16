@@ -835,8 +835,8 @@ void DeferredSample::createOffscreenPipeline()
         std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
-        shaderModuleDescriptor.code = vertexSource.data();
-        shaderModuleDescriptor.codeSize = vertexSource.size();
+        shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+        shaderModuleDescriptor.code = std::string_view(vertexSource.data(), static_cast<uint32_t>(vertexSource.size()));
 
         m_offscreen.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
@@ -886,8 +886,8 @@ void DeferredSample::createOffscreenPipeline()
         std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
-        shaderModuleDescriptor.code = fragmentSource.data();
-        shaderModuleDescriptor.codeSize = fragmentSource.size();
+        shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+        shaderModuleDescriptor.code = std::string_view(fragmentSource.data(), static_cast<uint32_t>(fragmentSource.size()));
 
         m_offscreen.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
@@ -1106,8 +1106,8 @@ void DeferredSample::createCompositionPipeline()
     std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
 
     ShaderModuleDescriptor shaderModuleDescriptor{};
-    shaderModuleDescriptor.code = vertexSource.data();
-    shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
+    shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+    shaderModuleDescriptor.code = std::string_view(vertexSource.data(), static_cast<uint32_t>(vertexSource.size()));
     vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
     VertexStage vertexStage{
@@ -1128,8 +1128,8 @@ void DeferredSample::createCompositionPipeline()
     std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
 
     ShaderModuleDescriptor fragShaderModuleDescriptor{};
-    fragShaderModuleDescriptor.code = fragmentShaderSource.data();
-    fragShaderModuleDescriptor.codeSize = fragmentShaderSource.size();
+    fragShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+    fragShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
     fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
 
     FragmentStage::Target target{};

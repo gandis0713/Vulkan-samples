@@ -2,6 +2,7 @@
 
 #include <fmt/format.h>
 #include <stdexcept>
+#include <string_view>
 
 namespace jipu
 {
@@ -326,9 +327,12 @@ void NativeImGui::init(Device* device, Queue* queue, Swapchain* swapchain)
         }
 
         {
+            std::vector<char> vertexShaderSource(vertexShaderSourceSpv.size() * sizeof(uint32_t));
+            std::memcpy(vertexShaderSource.data(), vertexShaderSourceSpv.data(), vertexShaderSource.size());
+
             ShaderModuleDescriptor vertexShaderModuleDescriptor{};
-            vertexShaderModuleDescriptor.code = reinterpret_cast<const char*>(vertexShaderSourceSpv.data());
-            vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSourceSpv.size() * 4);
+            vertexShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+            vertexShaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), static_cast<uint32_t>(vertexShaderSource.size()));
 
             vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
         }
@@ -364,9 +368,14 @@ void NativeImGui::init(Device* device, Queue* queue, Swapchain* swapchain)
         };
 
         {
+
+            std::vector<char> fragmentShaderSource(fragmentShaderSourceSpv.size() * sizeof(uint32_t));
+            std::memcpy(fragmentShaderSource.data(), fragmentShaderSourceSpv.data(), fragmentShaderSource.size());
+
             ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
-            fragmentShaderModuleDescriptor.code = reinterpret_cast<const char*>(fragmentShaderSourceSpv.data());
-            fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSourceSpv.size() * 4);
+
+            fragmentShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+            fragmentShaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), static_cast<uint32_t>(fragmentShaderSource.size()));
 
             fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
         }
