@@ -322,16 +322,10 @@ void WGPURenderBundles::finalizeContext()
         m_pipelineLayout = nullptr;
     }
 
-    if (m_vertWGSLShaderModule)
+    if (m_wgslShaderModule)
     {
-        wgpu.ShaderModuleRelease(m_vertWGSLShaderModule);
-        m_vertWGSLShaderModule = nullptr;
-    }
-
-    if (m_fragWGSLShaderModule)
-    {
-        wgpu.ShaderModuleRelease(m_fragWGSLShaderModule);
-        m_fragWGSLShaderModule = nullptr;
+        wgpu.ShaderModuleRelease(m_wgslShaderModule);
+        m_wgslShaderModule = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -558,33 +552,17 @@ void WGPURenderBundles::createBindingGroup()
 
 void WGPURenderBundles::createShaderModule()
 {
-    std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "render_bundles.vert.wgsl", m_handle);
-    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "render_bundles.frag.wgsl", m_handle);
+    std::vector<char> shaderSource = utils::readFile(m_appDir / "render_bundles.wgsl", m_handle);
 
-    std::string vertexShaderCode(vertexShaderSource.begin(), vertexShaderSource.end());
-    std::string fragmentShaderCode(fragmentShaderSource.begin(), fragmentShaderSource.end());
+    WGPUShaderModuleWGSLDescriptor shaderModuleWGSLDescriptor{};
+    shaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+    shaderModuleWGSLDescriptor.code = WGPUStringView{ .data = shaderSource.data(), .length = shaderSource.size() };
 
-    WGPUShaderModuleWGSLDescriptor vertexShaderModuleWGSLDescriptor{};
-    vertexShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-    vertexShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = vertexShaderCode.data(), .length = vertexShaderCode.size() };
+    WGPUShaderModuleDescriptor shaderModuleDescriptor{};
+    shaderModuleDescriptor.nextInChain = &shaderModuleWGSLDescriptor.chain;
 
-    WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
-    vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
-
-    m_vertWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
-
-    assert(m_vertWGSLShaderModule);
-
-    WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
-    fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-    fragShaderModuleWGSLDescriptor.code = WGPUStringView{ .data = fragmentShaderCode.data(), .length = fragmentShaderCode.size() };
-
-    WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
-    fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
-
-    m_fragWGSLShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
-
-    assert(m_fragWGSLShaderModule);
+    m_wgslShaderModule = wgpu.DeviceCreateShaderModule(m_device, &shaderModuleDescriptor);
+    assert(m_wgslShaderModule);
 }
 
 void WGPURenderBundles::createPipelineLayout()
@@ -638,10 +616,10 @@ void WGPURenderBundles::createPipeline()
     vertexBufferLayout[0].attributeCount = static_cast<uint32_t>(attributes.size());
     vertexBufferLayout[0].arrayStride = sizeof(float) * 8;
 
-    std::string entryPoint = "main";
+    std::string vertexEntryPoint = "vertexMain";
     WGPUVertexState vertexState{};
-    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-    vertexState.module = m_vertWGSLShaderModule;
+    vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
+    vertexState.module = m_wgslShaderModule;
     vertexState.bufferCount = static_cast<uint32_t>(vertexBufferLayout.size());
     vertexState.buffers = vertexBufferLayout.data();
 
@@ -649,9 +627,10 @@ void WGPURenderBundles::createPipeline()
     colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
+    std::string fragEntryPoint = "fragmentMain";
     WGPUFragmentState fragState{};
-    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-    fragState.module = m_fragWGSLShaderModule;
+    fragState.entryPoint = WGPUStringView{ .data = fragEntryPoint.data(), .length = fragEntryPoint.size() };
+    fragState.module = m_wgslShaderModule;
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
 

@@ -31,7 +31,7 @@ public:
     VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor);
     ~VulkanShaderModule() override;
 
-    VkShaderModule getVkShaderModule() const;
+    VkShaderModule getVkShaderModule(const std::string_view entryPoint) const;
     const VulkanShaderModuleMetaData& getMetaData() const;
 
 private:
@@ -52,19 +52,19 @@ public:
     ~VulkanShaderModuleCache();
 
 public:
-    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData);
+    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint);
     void clear();
 
 private:
-    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData);
+    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint);
     VkShaderModule createSPIRVShaderModule(const VulkanShaderModuleMetaData& metaData);
 
 private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    using Cache = std::unordered_map<size_t, VkShaderModule>;
-    Cache m_shaderModules{};
+    using Cache = std::unordered_map<size_t, std::unordered_map<std::string_view, VkShaderModule>>;
+    Cache m_shaderModuleCache{};
 };
 
 } // namespace jipu

@@ -65,9 +65,9 @@ VulkanShaderModule::~VulkanShaderModule()
     m_device->getDeleter()->safeDestroy(m_shaderModule);
 }
 
-VkShaderModule VulkanShaderModule::getVkShaderModule() const
+VkShaderModule VulkanShaderModule::getVkShaderModule(const std::string_view entryPoint) const
 {
-    return m_device->getShaderModuleCache()->getVkShaderModule(m_metaData);
+    return m_device->getShaderModuleCache()->getVkShaderModule(m_metaData, entryPoint);
 }
 
 const VulkanShaderModuleMetaData& VulkanShaderModule::getMetaData() const
@@ -87,26 +87,29 @@ VulkanShaderModuleCache::~VulkanShaderModuleCache()
     clear();
 }
 
-VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModuleMetaData& metaData)
+VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint)
 {
-    auto it = m_shaderModules.find(metaData.hash);
-    if (it != m_shaderModules.end())
+    auto hash = metaData.hash;
+    if (!m_shaderModuleCache.contains(hash))
     {
-        return it->second;
+        hash = getHash(metaData.info);
+        if (!m_shaderModuleCache.contains(hash))
+        {
+            m_shaderModuleCache[hash] = {};
+        }
     }
 
-    auto hash = getHash(metaData.info);
-    it = m_shaderModules.find(hash);
-    if (it != m_shaderModules.end())
+    auto& shaderModules = m_shaderModuleCache[hash];
+    if (shaderModules.contains(entryPoint))
     {
-        return it->second;
+        return shaderModules.at(entryPoint);
     }
 
     VkShaderModule shaderModule = VK_NULL_HANDLE;
     switch (metaData.info.type)
     {
     case ShaderModuleType::kWGSL:
-        shaderModule = createWGSLShaderModule(metaData);
+        shaderModule = createWGSLShaderModule(metaData, entryPoint);
         break;
     case ShaderModuleType::kSPIRV:
         shaderModule = createSPIRVShaderModule(metaData);
@@ -116,24 +119,26 @@ VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModu
         break;
     }
 
-    m_shaderModules.insert({ hash, shaderModule });
+    shaderModules.insert({ entryPoint, shaderModule });
 
     return shaderModule;
 }
 
 void VulkanShaderModuleCache::clear()
 {
-    for (auto& [descriptor, shaderModule] : m_shaderModules)
+    for (auto& [_, shaderModules] : m_shaderModuleCache)
     {
-        m_device->getDeleter()->safeDestroy(shaderModule);
+        for (auto& [_, shaderModule] : shaderModules)
+        {
+            m_device->getDeleter()->safeDestroy(shaderModule);
+        }
     }
 
-    m_shaderModules.clear();
+    m_shaderModuleCache.clear();
 }
 
-VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData)
+VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint)
 {
-
     auto tintFile = std::make_unique<tint::Source::File>("", std::string_view(metaData.info.code));
 
     tint::wgsl::reader::Options wgslReaderOptions;
@@ -146,11 +151,11 @@ VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShade
     tint::ast::transform::Manager transformManager;
     tint::ast::transform::DataMap transformInputs;
 
-    // // Many Vulkan drivers can't handle multi-entrypoint shader modules.
-    // // Run before the renamer so that the entry point name matches `entryPointName` still.
-    // transformManager.append(std::make_unique<tint::ast::transform::SingleEntryPoint>());
-    // transformInputs.Add<tint::ast::transform::SingleEntryPoint::Config>(
-    //     std::string(descriptor.));
+    // Many Vulkan drivers can't handle multi-entrypoint shader modules.
+    // Run before the renamer so that the entry point name matches `entryPointName` still.
+    transformManager.append(std::make_unique<tint::ast::transform::SingleEntryPoint>());
+    transformInputs.Add<tint::ast::transform::SingleEntryPoint::Config>(
+        std::string(entryPoint));
 
     tint::ast::transform::DataMap transform_outputs;
     tint::Program tintProgram2 = transformManager.Run(tintProgram, transformInputs, transform_outputs);
