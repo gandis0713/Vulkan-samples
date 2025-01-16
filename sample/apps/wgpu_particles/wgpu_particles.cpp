@@ -21,7 +21,7 @@ void WGPUParticlesSample::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kJipu);
+    changeAPI(APIType::kDawn);
 }
 
 void WGPUParticlesSample::onUpdate()
@@ -75,16 +75,42 @@ void WGPUParticlesSample::initializeContext()
 {
     WGPUSample::initializeContext();
 
-    createShaderModule();
-    createRenderPipelineLayout();
-    createRenderPipeline();
+    createParticleBuffer();
+    createUniformBuffer();
+    createDepthTexture();
+    createParticleShaderModule();
+    createProbabilityMapShaderModule();
+    createProbabilityMapImportLevelPipelineLayout();
+    createProbabilityMapImportLevelPipeline();
+    createProbabilityMapExportLevelPipelineLayout();
+    createProbabilityMapExportLevelPipeline();
     createComputePipelineLayout();
     createComputePipeline();
+    createRenderPipelineLayout();
+    createRenderPipeline();
 }
 
 void WGPUParticlesSample::finalizeContext()
 {
     // TODO: check ways release and destory.
+
+    if (m_particleBuffer)
+    {
+        wgpu.BufferRelease(m_particleBuffer);
+        m_particleBuffer = nullptr;
+    }
+
+    if (m_uniformBuffer)
+    {
+        wgpu.BufferRelease(m_uniformBuffer);
+        m_uniformBuffer = nullptr;
+    }
+
+    if (m_depthTexture)
+    {
+        wgpu.TextureRelease(m_depthTexture);
+        m_depthTexture = nullptr;
+    }
 
     if (m_computePipeline)
     {
@@ -96,6 +122,30 @@ void WGPUParticlesSample::finalizeContext()
     {
         wgpu.PipelineLayoutRelease(m_computePipelineLayout);
         m_computePipelineLayout = nullptr;
+    }
+
+    if (m_probabilityMapExportLevelPipeline)
+    {
+        wgpu.ComputePipelineRelease(m_probabilityMapExportLevelPipeline);
+        m_probabilityMapExportLevelPipeline = nullptr;
+    }
+
+    if (m_probabilityMapExportLevelPipelineLayout)
+    {
+        wgpu.PipelineLayoutRelease(m_probabilityMapExportLevelPipelineLayout);
+        m_probabilityMapExportLevelPipelineLayout = nullptr;
+    }
+
+    if (m_probabilityMapImportLevelPipeline)
+    {
+        wgpu.ComputePipelineRelease(m_probabilityMapImportLevelPipeline);
+        m_probabilityMapImportLevelPipeline = nullptr;
+    }
+
+    if (m_probabilityMapImportLevelPipelineLayout)
+    {
+        wgpu.PipelineLayoutRelease(m_probabilityMapImportLevelPipelineLayout);
+        m_probabilityMapImportLevelPipelineLayout = nullptr;
     }
 
     if (m_renderPipeline)
@@ -125,10 +175,58 @@ void WGPUParticlesSample::finalizeContext()
     WGPUSample::finalizeContext();
 }
 
-void WGPUParticlesSample::createShaderModule()
+void WGPUParticlesSample::createParticleBuffer()
+{
+    WGPUBufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = m_numParticles * m_particleInstanceByteSize;
+    bufferDescriptor.usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_Storage;
+    bufferDescriptor.mappedAtCreation = false;
+
+    m_particleBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
+
+    assert(m_particleBuffer);
+}
+
+void WGPUParticlesSample::createUniformBuffer()
+{
+    const uint32_t uniformBufferSize =
+        4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4f
+        3 * 4 +     // right : vec3f
+        4 +         // padding
+        3 * 4 +     // up : vec3f
+        4 +         // padding
+        0;
+
+    WGPUBufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = uniformBufferSize;
+    bufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+    bufferDescriptor.mappedAtCreation = false;
+
+    m_uniformBuffer = wgpu.DeviceCreateBuffer(m_device, &bufferDescriptor);
+
+    assert(m_uniformBuffer);
+}
+
+void WGPUParticlesSample::createDepthTexture()
+{
+    WGPUTextureDescriptor textureDescriptor{};
+    textureDescriptor.dimension = WGPUTextureDimension_2D;
+    textureDescriptor.size.width = m_width;
+    textureDescriptor.size.height = m_height;
+    textureDescriptor.size.depthOrArrayLayers = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.format = WGPUTextureFormat_Depth24Plus;
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.usage = WGPUTextureUsage_RenderAttachment;
+
+    m_depthTexture = wgpu.DeviceCreateTexture(m_device, &textureDescriptor);
+
+    assert(m_depthTexture);
+}
+
+void WGPUParticlesSample::createParticleShaderModule()
 {
     std::vector<char> particleShaderSource = utils::readFile(m_appDir / "particle.wgsl", m_handle);
-    std::vector<char> probablilityShaderSource = utils::readFile(m_appDir / "probabilityMap.wgsl", m_handle);
 
     std::string particleShaderCode(particleShaderSource.begin(), particleShaderSource.end());
     std::string probablilityShaderCode(probablilityShaderSource.begin(), probablilityShaderSource.end());
@@ -143,6 +241,11 @@ void WGPUParticlesSample::createShaderModule()
     m_wgslParticleShaderModule = wgpu.DeviceCreateShaderModule(m_device, &particleShaderModuleDescriptor);
 
     assert(m_wgslParticleShaderModule);
+}
+
+void WGPUParticlesSample::createProbabilityMapShaderModule()
+{
+    std::vector<char> probablilityShaderSource = utils::readFile(m_appDir / "probabilityMap.wgsl", m_handle);
 
     WGPUShaderModuleWGSLDescriptor probablilityShaderModuleWGSLDescriptor{};
     probablilityShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -154,6 +257,69 @@ void WGPUParticlesSample::createShaderModule()
     m_wgslProbablilityMapShaderModule = wgpu.DeviceCreateShaderModule(m_device, &probablilityShaderModuleDescriptor);
 
     assert(m_wgslProbablilityMapShaderModule);
+}
+
+void WGPUParticlesSample::createProbabilityMapImportLevelPipelineLayout()
+{
+    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    m_probabilityMapImportLevelPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+
+    assert(m_probabilityMapImportLevelPipelineLayout);
+}
+
+void WGPUParticlesSample::createProbabilityMapImportLevelPipeline()
+{
+    std::string entryPoint = "import_level";
+    WGPUComputePipelineDescriptor computePipelineDescriptor{};
+    computePipelineDescriptor.layout = m_probabilityMapImportLevelPipelineLayout;
+    computePipelineDescriptor.compute.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
+    computePipelineDescriptor.compute.module = m_wgslProbablilityMapShaderModule;
+
+    m_probabilityMapImportLevelPipeline = wgpu.DeviceCreateComputePipeline(m_device, &computePipelineDescriptor);
+
+    assert(m_probabilityMapImportLevelPipeline);
+}
+
+void WGPUParticlesSample::createProbabilityMapExportLevelPipelineLayout()
+{
+    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    m_probabilityMapExportLevelPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+
+    assert(m_probabilityMapExportLevelPipelineLayout);
+}
+
+void WGPUParticlesSample::createProbabilityMapExportLevelPipeline()
+{
+    std::string entryPoint = "export_level";
+    WGPUComputePipelineDescriptor computePipelineDescriptor{};
+    computePipelineDescriptor.layout = m_probabilityMapExportLevelPipelineLayout;
+    computePipelineDescriptor.compute.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
+    computePipelineDescriptor.compute.module = m_wgslProbablilityMapShaderModule;
+
+    m_probabilityMapExportLevelPipeline = wgpu.DeviceCreateComputePipeline(m_device, &computePipelineDescriptor);
+
+    assert(m_probabilityMapExportLevelPipeline);
+}
+
+void WGPUParticlesSample::createComputePipelineLayout()
+{
+    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    m_computePipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+
+    assert(m_computePipelineLayout);
+}
+
+void WGPUParticlesSample::createComputePipeline()
+{
+    std::string entryPoint = "simulate";
+    WGPUComputePipelineDescriptor computePipelineDescriptor{};
+    computePipelineDescriptor.layout = m_computePipelineLayout;
+    computePipelineDescriptor.compute.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
+    computePipelineDescriptor.compute.module = m_wgslParticleShaderModule;
+
+    m_computePipeline = wgpu.DeviceCreateComputePipeline(m_device, &computePipelineDescriptor);
+
+    assert(m_computePipeline);
 }
 
 void WGPUParticlesSample::createRenderPipelineLayout()
@@ -172,18 +338,19 @@ void WGPUParticlesSample::createRenderPipeline()
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
-    std::string entryPoint = "main";
+    std::string vertexEntryPoint = "main";
     WGPUVertexState vertexState{};
-    vertexState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
+    vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
     vertexState.module = m_wgslParticleShaderModule;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
+    std::string fragEntryPoint = "main";
     WGPUFragmentState fragState{};
-    fragState.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
-    fragState.module = m_wgslProbablilityMapShaderModule;
+    fragState.entryPoint = WGPUStringView{ .data = fragEntryPoint.data(), .length = fragEntryPoint.size() };
+    fragState.module = m_wgslParticleShaderModule;
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
 
@@ -204,26 +371,6 @@ void WGPUParticlesSample::createRenderPipeline()
     m_renderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
 
     assert(m_renderPipeline);
-}
-
-void WGPUParticlesSample::createComputePipeline()
-{
-    WGPUComputePipelineDescriptor computePipelineDescriptor{};
-    computePipelineDescriptor.layout = m_computePipelineLayout;
-    computePipelineDescriptor.compute.entryPoint = WGPUStringView{ .data = "main", .length = 4 };
-    computePipelineDescriptor.compute.module = m_wgslParticleShaderModule;
-
-    m_computePipeline = wgpu.DeviceCreateComputePipeline(m_device, &computePipelineDescriptor);
-
-    assert(m_computePipeline);
-}
-
-void WGPUParticlesSample::createComputePipelineLayout()
-{
-    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    m_computePipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
-
-    assert(m_computePipelineLayout);
 }
 
 } // namespace jipu
