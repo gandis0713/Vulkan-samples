@@ -35,6 +35,7 @@ void WGPUParticlesSample::onDraw()
     wgpu.SurfaceGetCurrentTexture(m_surface, &surfaceTexture);
 
     WGPUTextureView surfaceTextureView = wgpu.TextureCreateView(surfaceTexture.texture, NULL);
+    WGPUTextureView depthTextureView = wgpu.TextureCreateView(m_depthTexture, NULL);
 
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
     WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
@@ -46,9 +47,16 @@ void WGPUParticlesSample::onDraw()
     colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
     colorAttachment.clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
 
+    WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
+    depthStencilAttachment.view = depthTextureView;
+    depthStencilAttachment.depthLoadOp = WGPULoadOp_Clear;
+    depthStencilAttachment.depthStoreOp = WGPUStoreOp_Store;
+    depthStencilAttachment.depthClearValue = 1.0f;
+
     WGPURenderPassDescriptor renderPassDescriptor{};
     renderPassDescriptor.colorAttachmentCount = 1;
     renderPassDescriptor.colorAttachments = &colorAttachment;
+    renderPassDescriptor.depthStencilAttachment = &depthStencilAttachment;
 
     WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
 
@@ -229,7 +237,6 @@ void WGPUParticlesSample::createParticleShaderModule()
     std::vector<char> particleShaderSource = utils::readFile(m_appDir / "particle.wgsl", m_handle);
 
     std::string particleShaderCode(particleShaderSource.begin(), particleShaderSource.end());
-    std::string probablilityShaderCode(probablilityShaderSource.begin(), probablilityShaderSource.end());
 
     WGPUShaderModuleWGSLDescriptor particleShaderModuleWGSLDescriptor{};
     particleShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -246,6 +253,7 @@ void WGPUParticlesSample::createParticleShaderModule()
 void WGPUParticlesSample::createProbabilityMapShaderModule()
 {
     std::vector<char> probablilityShaderSource = utils::readFile(m_appDir / "probabilityMap.wgsl", m_handle);
+    std::string probablilityShaderCode(probablilityShaderSource.begin(), probablilityShaderSource.end());
 
     WGPUShaderModuleWGSLDescriptor probablilityShaderModuleWGSLDescriptor{};
     probablilityShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -338,24 +346,76 @@ void WGPUParticlesSample::createRenderPipeline()
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
-    std::string vertexEntryPoint = "main";
+    std::vector<WGPUVertexAttribute> attributes0{};
+    {
+        WGPUVertexAttribute attribute{};
+        attribute.format = WGPUVertexFormat_Float32x3;
+        attribute.offset = m_particlePositionOffset;
+        attribute.shaderLocation = 0;
+
+        attributes0.push_back(attribute);
+    }
+    {
+        WGPUVertexAttribute attribute{};
+        attribute.format = WGPUVertexFormat_Float32x4;
+        attribute.offset = m_particleColorOffset;
+        attribute.shaderLocation = 1;
+
+        attributes0.push_back(attribute);
+    }
+
+    std::vector<WGPUVertexBufferLayout> vertexBufferLayout(2);
+    vertexBufferLayout[0].stepMode = WGPUVertexStepMode_Instance;
+    vertexBufferLayout[0].attributes = attributes0.data();
+    vertexBufferLayout[0].attributeCount = static_cast<uint32_t>(attributes0.size());
+    vertexBufferLayout[0].arrayStride = m_particleInstanceByteSize;
+
+    std::vector<WGPUVertexAttribute> attributes1{};
+    {
+        WGPUVertexAttribute attribute{};
+        attribute.format = WGPUVertexFormat_Float32x2;
+        attribute.offset = 0;
+        attribute.shaderLocation = 2;
+
+        attributes1.push_back(attribute);
+    }
+
+    vertexBufferLayout[1].stepMode = WGPUVertexStepMode_Vertex;
+    vertexBufferLayout[1].attributes = attributes1.data();
+    vertexBufferLayout[1].attributeCount = static_cast<uint32_t>(attributes1.size());
+    vertexBufferLayout[1].arrayStride = 2 * 4;
+
+    std::string vertexEntryPoint = "vs_main";
     WGPUVertexState vertexState{};
     vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
     vertexState.module = m_wgslParticleShaderModule;
+    vertexState.bufferCount = static_cast<uint32_t>(vertexBufferLayout.size());
+    vertexState.buffers = vertexBufferLayout.data();
+
+    WGPUBlendState blendState = {};
+    blendState.alpha.srcFactor = WGPUBlendFactor_OneMinusSrcAlpha;
+    blendState.alpha.dstFactor = WGPUBlendFactor_One;
+    blendState.alpha.operation = WGPUBlendOperation_Add;
+    blendState.color.srcFactor = WGPUBlendFactor_Zero;
+    blendState.color.dstFactor = WGPUBlendFactor_One;
+    blendState.color.operation = WGPUBlendOperation_Add;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_surfaceConfigure.format;
+    colorTargetState.format = WGPUTextureFormat_RGBA16Float;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
+    colorTargetState.blend = &blendState;
 
-    std::string fragEntryPoint = "main";
+    std::string fragEntryPoint = "fs_main";
     WGPUFragmentState fragState{};
     fragState.entryPoint = WGPUStringView{ .data = fragEntryPoint.data(), .length = fragEntryPoint.size() };
     fragState.module = m_wgslParticleShaderModule;
     fragState.targetCount = 1;
     fragState.targets = &colorTargetState;
 
-    // WGPUDepthStencilState depthStencilState{};
-    // depthStencilState.format = WGPUTextureFormat_Depth24PlusStencil8;
+    WGPUDepthStencilState depthStencilState{};
+    depthStencilState.depthWriteEnabled = WGPUOptionalBool_True;
+    depthStencilState.depthCompare = WGPUCompareFunction_Less;
+    depthStencilState.format = WGPUTextureFormat_Depth24Plus;
 
     WGPUMultisampleState multisampleState{};
     multisampleState.count = 1;
@@ -364,6 +424,7 @@ void WGPUParticlesSample::createRenderPipeline()
     WGPURenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.layout = m_renderPipelineLayout;
     renderPipelineDescriptor.primitive = primitiveState;
+    renderPipelineDescriptor.depthStencil = &depthStencilState;
     renderPipelineDescriptor.multisample = multisampleState;
     renderPipelineDescriptor.vertex = vertexState;
     renderPipelineDescriptor.fragment = &fragState;
