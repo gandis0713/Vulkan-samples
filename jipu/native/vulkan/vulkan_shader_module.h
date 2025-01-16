@@ -7,6 +7,7 @@
 #include "jipu/common/cast.h"
 
 #include <string>
+#include <unordered_map>
 
 namespace jipu
 {
@@ -52,11 +53,11 @@ public:
     ~VulkanShaderModuleCache();
 
 public:
-    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint);
+    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint);
     void clear();
 
 private:
-    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint);
+    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint);
     VkShaderModule createSPIRVShaderModule(const VulkanShaderModuleMetaData& metaData);
 
 private:

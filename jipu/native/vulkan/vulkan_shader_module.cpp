@@ -87,7 +87,7 @@ VulkanShaderModuleCache::~VulkanShaderModuleCache()
     clear();
 }
 
-VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint)
+VkShaderModule VulkanShaderModuleCache::getVkShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint)
 {
     auto hash = metaData.hash;
     if (!m_shaderModuleCache.contains(hash))
@@ -137,7 +137,7 @@ void VulkanShaderModuleCache::clear()
     m_shaderModuleCache.clear();
 }
 
-VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, const std::string_view entryPoint)
+VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint)
 {
     auto tintFile = std::make_unique<tint::Source::File>("", std::string_view(metaData.info.code));
 
