@@ -2,17 +2,6 @@
 
 #include "webgpu_device.h"
 
-#define TINT_BUILD_SPV_READER 1
-#define TINT_BUILD_WGSL_READER 1
-#define TINT_BUILD_SPV_WRITER 1
-#define TINT_BUILD_WGSL_WRITER 1
-
-#undef TINT_BUILD_GLSL_WRITER
-#undef TINT_BUILD_HLSL_WRITER
-#undef TINT_BUILD_MSL_WRITER
-
-#include "tint/tint.h"
-
 namespace jipu
 {
 
@@ -29,56 +18,11 @@ WebGPUShaderModule* WebGPUShaderModule::create(WebGPUDevice* wgpuDevice, WGPUSha
 
             WGPUShaderModuleWGSLDescriptor const* wgslDescriptor = reinterpret_cast<WGPUShaderModuleWGSLDescriptor const*>(current);
 
-            auto tintFile = std::make_unique<tint::Source::File>("", wgslDescriptor->code.data);
-
-            tint::wgsl::reader::Options wgslReaderOptions;
-            {
-                wgslReaderOptions.allowed_features = tint::wgsl::AllowedFeatures::Everything();
-            }
-
-            tint::Program tintProgram = tint::wgsl::reader::Parse(tintFile.get(), wgslReaderOptions);
-
-            auto ir = tint::wgsl::reader::ProgramToLoweredIR(tintProgram);
-            if (ir != tint::Success)
-            {
-                std::string msg = ir.Failure().reason.Str();
-                throw std::runtime_error(msg.c_str());
-            }
-
-            tint::spirv::writer::Options sprivWriterOptions;
-            {
-                sprivWriterOptions.bindings = {};
-
-                sprivWriterOptions.disable_robustness = false;
-                sprivWriterOptions.disable_image_robustness = true;
-                sprivWriterOptions.disable_runtime_sized_array_index_clamping = true;
-
-                sprivWriterOptions.use_zero_initialize_workgroup_memory_extension = true;
-                sprivWriterOptions.use_storage_input_output_16 = true;
-                sprivWriterOptions.emit_vertex_point_size = false;
-                sprivWriterOptions.clamp_frag_depth = false;
-
-                sprivWriterOptions.experimental_require_subgroup_uniform_control_flow = false;
-                sprivWriterOptions.use_vulkan_memory_model = false;
-
-                sprivWriterOptions.polyfill_dot_4x8_packed = false;
-                sprivWriterOptions.disable_polyfill_integer_div_mod = false;
-
-                sprivWriterOptions.disable_workgroup_init = false;
-            }
-
-            auto tintResult = tint::spirv::writer::Generate(ir.Get(), sprivWriterOptions);
-            if (tintResult != tint::Success)
-            {
-                std::string msg = tintResult.Failure().reason.Str();
-                throw std::runtime_error(msg.c_str());
-            }
-
-            std::vector<uint32_t> spriv = std::move(tintResult.Get().spirv);
-
             ShaderModuleDescriptor shaderModuleDescriptor{};
-            shaderModuleDescriptor.code = reinterpret_cast<const char*>(spriv.data());
-            shaderModuleDescriptor.codeSize = spriv.size() * sizeof(uint32_t);
+            shaderModuleDescriptor.type = ShaderModuleType::kWGSL;
+
+            shaderModuleDescriptor.code = std::string_view(wgslDescriptor->code.data,
+                                                           wgslDescriptor->code.length != WGPU_STRLEN ? wgslDescriptor->code.length : strlen(wgslDescriptor->code.data));
 
             auto device = wgpuDevice->getDevice();
             shaderModule = device->createShaderModule(shaderModuleDescriptor);
@@ -87,9 +31,12 @@ WebGPUShaderModule* WebGPUShaderModule::create(WebGPUDevice* wgpuDevice, WGPUSha
         case WGPUSType_ShaderSourceSPIRV: {
             WGPUShaderModuleSPIRVDescriptor const* spirvDescriptor = reinterpret_cast<WGPUShaderModuleSPIRVDescriptor const*>(current);
 
+            std::vector<char> spirvData(spirvDescriptor->codeSize * sizeof(uint32_t));
+            std::memcpy(spirvData.data(), spirvDescriptor->code, spirvData.size());
+
             ShaderModuleDescriptor shaderModuleDescriptor{};
-            shaderModuleDescriptor.code = reinterpret_cast<const char*>(spirvDescriptor->code);
-            shaderModuleDescriptor.codeSize = spirvDescriptor->codeSize;
+            shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+            shaderModuleDescriptor.code = std::string_view(spirvData.data(), spirvData.size());
 
             auto device = wgpuDevice->getDevice();
             shaderModule = device->createShaderModule(shaderModuleDescriptor);

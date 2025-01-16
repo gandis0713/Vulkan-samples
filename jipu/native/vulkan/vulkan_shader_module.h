@@ -13,6 +13,7 @@ namespace jipu
 
 struct VulkanShaderModuleInfo
 {
+    ShaderModuleType type = ShaderModuleType::kUndefined;
     std::string code;
 };
 
@@ -53,6 +54,10 @@ public:
 public:
     VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData);
     void clear();
+
+private:
+    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData);
+    VkShaderModule createSPIRVShaderModule(const VulkanShaderModuleMetaData& metaData);
 
 private:
     VulkanDevice* m_device = nullptr;
