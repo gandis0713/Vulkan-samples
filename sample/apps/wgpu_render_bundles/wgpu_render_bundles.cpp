@@ -686,7 +686,7 @@ void WGPURenderBundles::createRenderBundle()
 
             // uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
             wgpu.RenderBundleEncoderSetIndexBuffer(renderBundleEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, renderable.indexBufferSize);
-            wgpu.RenderBundleEncoderDrawIndexed(renderBundleEncoder, renderable.indexCount, 1, 0, 0, 0);
+            wgpu.RenderBundleEncoderDrawIndexed(renderBundleEncoder, static_cast<uint32_t>(renderable.indexCount), 1, 0, 0, 0);
 
             if (++count > m_asteroidCount)
             {
@@ -712,7 +712,7 @@ void WGPURenderBundles::renderScene(WGPURenderPassEncoder passEncoder)
 
         // uint64_t indexBufferSize = wgpu.BufferGetSize(renderable.indexBuffer);
         wgpu.RenderPassEncoderSetIndexBuffer(passEncoder, renderable.indexBuffer, WGPUIndexFormat_Uint16, 0, renderable.indexBufferSize);
-        wgpu.RenderPassEncoderDrawIndexed(passEncoder, renderable.indexCount, 1, 0, 0, 0);
+        wgpu.RenderPassEncoderDrawIndexed(passEncoder, static_cast<uint32_t>(renderable.indexCount), 1, 0, 0, 0);
 
         if (++count > m_asteroidCount)
         {
