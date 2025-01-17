@@ -103,6 +103,13 @@ private:
         4 * 4 + // seed
         0;
 
+    const uint32_t m_probabilityMapUBOBufferSize =
+        1 * 4 + // stride
+        3 * 4 + // padding
+        0;
+
+    uint32_t m_probabilityMapBufferSize = 0;
+
     uint32_t m_textureWidth = 1;
     uint32_t m_textureHeight = 1;
     uint32_t m_numMipLevels = 1;

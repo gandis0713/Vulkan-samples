@@ -50,6 +50,9 @@ void WGPUParticlesSample::onUpdate()
         ubo.seedW = 1.0f + dis1(gen);
 
         wgpu.QueueWriteBuffer(m_queue, m_simulationUBOBuffer, 0, &ubo, sizeof(SimulationUBO));
+
+        // spdlog::debug("SimulationUBO size: {}", sizeof(SimulationUBO));
+        // spdlog::debug("m_simulationUBOBufferSize: {}", m_simulationUBOBufferSize);
     }
     {
         float aspect = static_cast<float>(m_width) / static_cast<float>(m_height); // 종횡비
@@ -70,7 +73,17 @@ void WGPUParticlesSample::onUpdate()
         ubo.right = glm::vec3(view[0][0], view[1][0], view[2][0]);
         ubo.padding1 = 0.0f;
         ubo.up = glm::vec3(view[0][1], view[1][1], view[2][1]);
+        // ubo.up = glm::vec3(view[0][1], view[1][1], view[1][2]);
         ubo.padding2 = 0.0f;
+
+        // spdlog::debug("view");
+        // spdlog::debug("  {}, {}, {}, {}", view[0][0], view[1][0], view[2][0], view[3][0]);
+        // spdlog::debug("  {}, {}, {}, {}", view[0][1], view[1][1], view[2][1], view[3][1]);
+        // spdlog::debug("  {}, {}, {}, {}", view[0][2], view[1][2], view[2][2], view[3][2]);
+        // spdlog::debug("  {}, {}, {}, {}", view[0][3], view[1][3], view[2][3], view[3][3]);
+
+        // spdlog::debug("MatrixUBO size: {}", sizeof(MatrixUBO));
+        // spdlog::debug("m_uniformBufferSize: {}", m_uniformBufferSize);
 
         wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &ubo, sizeof(MatrixUBO));
     }
@@ -107,6 +120,7 @@ void WGPUParticlesSample::onDraw()
     wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, m_computeBindGroup, 0, nullptr);
     wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(m_numParticles / 64), 1, 1);
     wgpu.ComputePassEncoderEnd(computePassEncoder);
+    wgpu.ComputePassEncoderRelease(computePassEncoder);
 
     WGPURenderPassDescriptor renderPassDescriptor{};
     renderPassDescriptor.colorAttachmentCount = 1;
@@ -118,8 +132,9 @@ void WGPUParticlesSample::onDraw()
     wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_uniformBindGroup, 0, nullptr);
     wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_particleBuffer, 0, m_numParticles * m_particleInstanceByteSize);
     wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 1, m_quadBuffer, 0, 6 * 2 * 4);
-    wgpu.RenderPassEncoderDraw(renderPassEncoder, 6, m_numParticles, 0, 0);
+    wgpu.RenderPassEncoderDraw(renderPassEncoder, 6, static_cast<uint32_t>(m_numParticles), 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
+    wgpu.RenderPassEncoderRelease(renderPassEncoder);
 
     drawImGui(commandEncoder, surfaceTextureView);
 
@@ -363,7 +378,7 @@ void WGPUParticlesSample::createQuadBuffer()
     // memcpy(mappedVertexPtr, sphereMesh.vertices.data(), vertexBufferSize);
     // wgpu.BufferUnmap(vertexBuffer);
 
-    wgpu.QueueWriteBuffer(m_queue, m_quadBuffer, 0, &vertexData, bufferDescriptor.size);
+    wgpu.QueueWriteBuffer(m_queue, m_quadBuffer, 0, &vertexData[0], bufferDescriptor.size);
 }
 
 void WGPUParticlesSample::createParticleBuffer()
@@ -471,6 +486,8 @@ void WGPUParticlesSample::createImageTexture()
 #endif
 
     wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
+
+    m_probabilityMapBufferSize = m_textureWidth * m_textureHeight * channel * sizeof(float);
 }
 
 void WGPUParticlesSample::createImageTextureView()
@@ -525,13 +542,8 @@ void WGPUParticlesSample::createProbabilityMapShaderModule()
 
 void WGPUParticlesSample::createProbabilityMapUBOBuffer()
 {
-    uint32_t probabilityMapUBOBufferSize =
-        1 * 4 + // stride
-        3 * 4 + // padding
-        0;
-
     WGPUBufferDescriptor probabilityMapUBOBufferDescriptor{};
-    probabilityMapUBOBufferDescriptor.size = probabilityMapUBOBufferSize;
+    probabilityMapUBOBufferDescriptor.size = m_probabilityMapUBOBufferSize;
     probabilityMapUBOBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
     probabilityMapUBOBufferDescriptor.mappedAtCreation = false;
 
@@ -544,7 +556,7 @@ void WGPUParticlesSample::createProbabilityMapUBOBuffer()
 void WGPUParticlesSample::createProbabilityMapBufferA()
 {
     WGPUBufferDescriptor probabilityMapBufferDescriptor{};
-    probabilityMapBufferDescriptor.size = m_textureWidth * m_textureHeight * 4;
+    probabilityMapBufferDescriptor.size = m_probabilityMapBufferSize;
     probabilityMapBufferDescriptor.usage = WGPUBufferUsage_Storage;
     probabilityMapBufferDescriptor.mappedAtCreation = false;
 
@@ -555,7 +567,7 @@ void WGPUParticlesSample::createProbabilityMapBufferA()
 void WGPUParticlesSample::createProbabilityMapBufferB()
 {
     WGPUBufferDescriptor probabilityMapBufferDescriptor{};
-    probabilityMapBufferDescriptor.size = m_textureWidth * m_textureHeight * 4;
+    probabilityMapBufferDescriptor.size = m_probabilityMapBufferSize;
     probabilityMapBufferDescriptor.usage = WGPUBufferUsage_Storage;
     probabilityMapBufferDescriptor.mappedAtCreation = false;
 
@@ -695,9 +707,9 @@ void WGPUParticlesSample::generateProbabilityMap()
         textureViews.push_back(imageTextureView);
 
         WGPUBindGroupEntry bindGroupEntries[4] = {
-            WGPUBindGroupEntry{ .binding = 0, .buffer = m_probabilityMapUBOBuffer, .offset = 0, .size = sizeof(uint32_t) },
-            WGPUBindGroupEntry{ .binding = 1, .buffer = level & 1 ? m_probabilityMapBufferA : m_probabilityMapBufferB, .offset = 0, .size = m_textureWidth * m_textureHeight * 4 },
-            WGPUBindGroupEntry{ .binding = 2, .buffer = level & 1 ? m_probabilityMapBufferB : m_probabilityMapBufferA, .offset = 0, .size = m_textureWidth * m_textureHeight * 4 },
+            WGPUBindGroupEntry{ .binding = 0, .buffer = m_probabilityMapUBOBuffer, .offset = 0, .size = m_probabilityMapUBOBufferSize },
+            WGPUBindGroupEntry{ .binding = 1, .buffer = level == 0 ? m_probabilityMapBufferA : m_probabilityMapBufferB, .offset = 0, .size = m_probabilityMapBufferSize },
+            WGPUBindGroupEntry{ .binding = 2, .buffer = level == 0 ? m_probabilityMapBufferB : m_probabilityMapBufferA, .offset = 0, .size = m_probabilityMapBufferSize },
             WGPUBindGroupEntry{ .binding = 3, .textureView = imageTextureView },
         };
 
@@ -854,6 +866,7 @@ void WGPUParticlesSample::createRenderPipelineLayout()
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
     pipelineLayoutDescriptor.bindGroupLayouts = &m_uniformBindGroupLayout;
+
     m_renderPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 
     assert(m_renderPipelineLayout);
@@ -863,7 +876,7 @@ void WGPUParticlesSample::createRenderPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
-    primitiveState.cullMode = WGPUCullMode_Back;
+    primitiveState.cullMode = WGPUCullMode_None;
     primitiveState.frontFace = WGPUFrontFace_CCW;
     // primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
 
@@ -888,7 +901,7 @@ void WGPUParticlesSample::createRenderPipeline()
     std::vector<WGPUVertexBufferLayout> vertexBufferLayout(2);
     vertexBufferLayout[0].stepMode = WGPUVertexStepMode_Instance;
     vertexBufferLayout[0].attributes = attributes0.data();
-    vertexBufferLayout[0].attributeCount = static_cast<uint32_t>(attributes0.size());
+    vertexBufferLayout[0].attributeCount = attributes0.size();
     vertexBufferLayout[0].arrayStride = m_particleInstanceByteSize;
 
     std::vector<WGPUVertexAttribute> attributes1{};
@@ -903,23 +916,23 @@ void WGPUParticlesSample::createRenderPipeline()
 
     vertexBufferLayout[1].stepMode = WGPUVertexStepMode_Vertex;
     vertexBufferLayout[1].attributes = attributes1.data();
-    vertexBufferLayout[1].attributeCount = static_cast<uint32_t>(attributes1.size());
+    vertexBufferLayout[1].attributeCount = attributes1.size();
     vertexBufferLayout[1].arrayStride = 2 * 4;
 
     std::string vertexEntryPoint = "vs_main";
     WGPUVertexState vertexState{};
     vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
     vertexState.module = m_wgslParticleShaderModule;
-    vertexState.bufferCount = static_cast<uint32_t>(vertexBufferLayout.size());
+    vertexState.bufferCount = vertexBufferLayout.size();
     vertexState.buffers = vertexBufferLayout.data();
 
     WGPUBlendState blendState = {};
-    blendState.alpha.srcFactor = WGPUBlendFactor_OneMinusSrcAlpha;
-    blendState.alpha.dstFactor = WGPUBlendFactor_One;
-    blendState.alpha.operation = WGPUBlendOperation_Add;
-    blendState.color.srcFactor = WGPUBlendFactor_Zero;
+    blendState.color.srcFactor = WGPUBlendFactor_SrcAlpha;
     blendState.color.dstFactor = WGPUBlendFactor_One;
     blendState.color.operation = WGPUBlendOperation_Add;
+    blendState.alpha.srcFactor = WGPUBlendFactor_Zero;
+    blendState.alpha.dstFactor = WGPUBlendFactor_One;
+    blendState.alpha.operation = WGPUBlendOperation_Add;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceConfigure.format;
@@ -934,7 +947,7 @@ void WGPUParticlesSample::createRenderPipeline()
     fragState.targets = &colorTargetState;
 
     WGPUDepthStencilState depthStencilState{};
-    depthStencilState.depthWriteEnabled = WGPUOptionalBool_True;
+    depthStencilState.depthWriteEnabled = WGPUOptionalBool_False;
     depthStencilState.depthCompare = WGPUCompareFunction_Less;
     depthStencilState.format = WGPUTextureFormat_Depth24Plus;
 
