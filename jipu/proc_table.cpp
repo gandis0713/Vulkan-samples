@@ -520,6 +520,12 @@ WGPUComputePipeline procDeviceCreateComputePipeline(WGPUDevice device, WGPUCompu
     return reinterpret_cast<WGPUComputePipeline>(webgpuDevice->createComputePipeline(descriptor));
 }
 
+void procComputePipelineRelease(WGPUComputePipeline computePipeline)
+{
+    WebGPUComputePipeline* webgpuComputePipeline = reinterpret_cast<WebGPUComputePipeline*>(computePipeline);
+    return webgpuComputePipeline->release();
+}
+
 namespace
 {
 
@@ -604,6 +610,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuComputePassEncoderSetPipeline", reinterpret_cast<WGPUProc>(procComputePassEncoderSetPipeline) },
     { "wgpuComputePassEncoderRelease", reinterpret_cast<WGPUProc>(procComputePassEncoderRelease) },
     { "wgpuDeviceCreateComputePipeline", reinterpret_cast<WGPUProc>(procDeviceCreateComputePipeline) },
+    { "wgpuComputePipelineRelease", reinterpret_cast<WGPUProc>(procComputePipelineRelease) },
 };
 
 } // namespace

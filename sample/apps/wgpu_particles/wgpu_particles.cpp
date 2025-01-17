@@ -116,8 +116,8 @@ void WGPUParticlesSample::onDraw()
     WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
     wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
     wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_uniformBindGroup, 0, nullptr);
-    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_quadBuffer, 0, 0);
-    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 1, m_quadBuffer, 0, 0);
+    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_particleBuffer, 0, m_numParticles * m_particleInstanceByteSize);
+    wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 1, m_quadBuffer, 0, 6 * 2 * 4);
     wgpu.RenderPassEncoderDraw(renderPassEncoder, 6, m_numParticles, 0, 0);
     wgpu.RenderPassEncoderEnd(renderPassEncoder);
 
@@ -380,16 +380,8 @@ void WGPUParticlesSample::createParticleBuffer()
 
 void WGPUParticlesSample::createUniformBuffer()
 {
-    const uint32_t uniformBufferSize =
-        4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4f
-        3 * 4 +     // right : vec3f
-        4 +         // padding
-        3 * 4 +     // up : vec3f
-        4 +         // padding
-        0;
-
     WGPUBufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = uniformBufferSize;
+    bufferDescriptor.size = m_uniformBufferSize;
     bufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
     bufferDescriptor.mappedAtCreation = false;
 
@@ -400,15 +392,8 @@ void WGPUParticlesSample::createUniformBuffer()
 
 void WGPUParticlesSample::createSimulationUBOBuffer()
 {
-    const uint32_t simulationUBOBufferSize =
-        1 * 4 + // deltaTime
-        1 * 4 + // brightnessFactor
-        2 * 4 + // padding
-        4 * 4 + // seed
-        0;
-
     WGPUBufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = simulationUBOBufferSize;
+    bufferDescriptor.size = m_simulationUBOBufferSize;
     bufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
     bufferDescriptor.mappedAtCreation = false;
 
@@ -550,7 +535,7 @@ void WGPUParticlesSample::createProbabilityMapUBOBuffer()
     probabilityMapUBOBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
     probabilityMapUBOBufferDescriptor.mappedAtCreation = false;
 
-    WGPUBuffer m_probabilityMapUBOBuffer = wgpu.DeviceCreateBuffer(m_device, &probabilityMapUBOBufferDescriptor);
+    m_probabilityMapUBOBuffer = wgpu.DeviceCreateBuffer(m_device, &probabilityMapUBOBufferDescriptor);
     assert(m_probabilityMapUBOBuffer);
 
     wgpu.QueueWriteBuffer(m_queue, m_probabilityMapUBOBuffer, 0, &m_textureWidth, sizeof(uint32_t));
@@ -563,7 +548,7 @@ void WGPUParticlesSample::createProbabilityMapBufferA()
     probabilityMapBufferDescriptor.usage = WGPUBufferUsage_Storage;
     probabilityMapBufferDescriptor.mappedAtCreation = false;
 
-    WGPUBuffer m_probabilityMapBufferA = wgpu.DeviceCreateBuffer(m_device, &probabilityMapBufferDescriptor);
+    m_probabilityMapBufferA = wgpu.DeviceCreateBuffer(m_device, &probabilityMapBufferDescriptor);
     assert(m_probabilityMapBufferA);
 }
 
@@ -574,7 +559,7 @@ void WGPUParticlesSample::createProbabilityMapBufferB()
     probabilityMapBufferDescriptor.usage = WGPUBufferUsage_Storage;
     probabilityMapBufferDescriptor.mappedAtCreation = false;
 
-    WGPUBuffer m_probabilityMapBufferB = wgpu.DeviceCreateBuffer(m_device, &probabilityMapBufferDescriptor);
+    m_probabilityMapBufferB = wgpu.DeviceCreateBuffer(m_device, &probabilityMapBufferDescriptor);
     assert(m_probabilityMapBufferB);
 }
 
@@ -586,11 +571,11 @@ void WGPUParticlesSample::createProbabilityMapImportLevelBindGroupLayout()
                                   .buffer = { .type = WGPUBufferBindingType_Uniform } },
         WGPUBindGroupLayoutEntry{ .binding = 1,
                                   .visibility = WGPUShaderStage_Compute,
-                                  .buffer = { .type = WGPUBufferBindingType_Storage } },
+                                  .buffer = { .type = WGPUBufferBindingType_ReadOnlyStorage } },
         WGPUBindGroupLayoutEntry{ .binding = 2,
                                   .visibility = WGPUShaderStage_Compute,
                                   .buffer = { .type = WGPUBufferBindingType_Storage } },
-        WGPUBindGroupLayoutEntry{ .binding = 2,
+        WGPUBindGroupLayoutEntry{ .binding = 3,
                                   .visibility = WGPUShaderStage_Compute,
                                   .texture = { .sampleType = WGPUTextureSampleType_Float,
                                                .viewDimension = WGPUTextureViewDimension_2D,
@@ -613,15 +598,15 @@ void WGPUParticlesSample::createProbabilityMapExportLevelBindGroupLayout()
                                   .buffer = { .type = WGPUBufferBindingType_Uniform } },
         WGPUBindGroupLayoutEntry{ .binding = 1,
                                   .visibility = WGPUShaderStage_Compute,
-                                  .buffer = { .type = WGPUBufferBindingType_Storage } },
+                                  .buffer = { .type = WGPUBufferBindingType_ReadOnlyStorage } },
         WGPUBindGroupLayoutEntry{ .binding = 2,
                                   .visibility = WGPUShaderStage_Compute,
                                   .buffer = { .type = WGPUBufferBindingType_Storage } },
-        WGPUBindGroupLayoutEntry{ .binding = 2,
+        WGPUBindGroupLayoutEntry{ .binding = 3,
                                   .visibility = WGPUShaderStage_Compute,
-                                  .texture = { .sampleType = WGPUTextureSampleType_Float,
-                                               .viewDimension = WGPUTextureViewDimension_2D,
-                                               .multisampled = WGPUOptionalBool_False } },
+                                  .storageTexture = { .access = WGPUStorageTextureAccess_WriteOnly,
+                                                      .format = WGPUTextureFormat_RGBA8Unorm,
+                                                      .viewDimension = WGPUTextureViewDimension_2D } },
     };
 
     WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
@@ -710,9 +695,9 @@ void WGPUParticlesSample::generateProbabilityMap()
         textureViews.push_back(imageTextureView);
 
         WGPUBindGroupEntry bindGroupEntries[4] = {
-            WGPUBindGroupEntry{ .binding = 0, .buffer = m_probabilityMapUBOBuffer },
-            WGPUBindGroupEntry{ .binding = 1, .buffer = level & 1 ? m_probabilityMapBufferA : m_probabilityMapBufferB },
-            WGPUBindGroupEntry{ .binding = 2, .buffer = level & 1 ? m_probabilityMapBufferB : m_probabilityMapBufferA },
+            WGPUBindGroupEntry{ .binding = 0, .buffer = m_probabilityMapUBOBuffer, .offset = 0, .size = sizeof(uint32_t) },
+            WGPUBindGroupEntry{ .binding = 1, .buffer = level & 1 ? m_probabilityMapBufferA : m_probabilityMapBufferB, .offset = 0, .size = m_textureWidth * m_textureHeight * 4 },
+            WGPUBindGroupEntry{ .binding = 2, .buffer = level & 1 ? m_probabilityMapBufferB : m_probabilityMapBufferA, .offset = 0, .size = m_textureWidth * m_textureHeight * 4 },
             WGPUBindGroupEntry{ .binding = 3, .textureView = imageTextureView },
         };
 
@@ -775,7 +760,7 @@ void WGPUParticlesSample::createComputeBindGroupLayout()
     };
 
     WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
-    bindGroupLayoutDescriptor.entryCount = 2;
+    bindGroupLayoutDescriptor.entryCount = 3;
     bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries;
 
     m_computeBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
@@ -802,7 +787,9 @@ void WGPUParticlesSample::createUniformBindGroup()
 {
     WGPUBindGroupEntry bindGroupEntries[1] = {
         WGPUBindGroupEntry{ .binding = 0,
-                            .buffer = m_uniformBuffer },
+                            .buffer = m_uniformBuffer,
+                            .offset = 0,
+                            .size = m_uniformBufferSize },
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
@@ -818,7 +805,9 @@ void WGPUParticlesSample::createComputeBindGroup()
 {
     WGPUBindGroupEntry bindGroupEntries[3] = {
         WGPUBindGroupEntry{ .binding = 0,
-                            .buffer = m_simulationUBOBuffer },
+                            .buffer = m_simulationUBOBuffer,
+                            .offset = 0,
+                            .size = m_simulationUBOBufferSize },
         WGPUBindGroupEntry{ .binding = 1,
                             .buffer = m_particleBuffer,
                             .offset = 0,
@@ -829,7 +818,7 @@ void WGPUParticlesSample::createComputeBindGroup()
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
     bindGroupDescriptor.layout = m_computeBindGroupLayout;
-    bindGroupDescriptor.entryCount = 2;
+    bindGroupDescriptor.entryCount = 3;
     bindGroupDescriptor.entries = bindGroupEntries;
 
     m_computeBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
@@ -839,6 +828,9 @@ void WGPUParticlesSample::createComputeBindGroup()
 void WGPUParticlesSample::createComputePipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_computeBindGroupLayout;
+
     m_computePipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 
     assert(m_computePipelineLayout);
@@ -860,6 +852,8 @@ void WGPUParticlesSample::createComputePipeline()
 void WGPUParticlesSample::createRenderPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_uniformBindGroupLayout;
     m_renderPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 
     assert(m_renderPipelineLayout);
@@ -928,7 +922,7 @@ void WGPUParticlesSample::createRenderPipeline()
     blendState.color.operation = WGPUBlendOperation_Add;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = WGPUTextureFormat_RGBA16Float;
+    colorTargetState.format = m_surfaceConfigure.format;
     colorTargetState.writeMask = WGPUColorWriteMask_All;
     colorTargetState.blend = &blendState;
 

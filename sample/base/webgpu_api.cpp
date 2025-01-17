@@ -86,7 +86,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     // GET_PROC(ComputePipelineGetBindGroupLayout);
     // GET_PROC(ComputePipelineSetLabel);
     // GET_PROC(ComputePipelineAddRef);
-    // GET_PROC(ComputePipelineRelease);
+    GET_PROC(ComputePipelineRelease);
     GET_PROC(DeviceCreateBindGroup);
     GET_PROC(DeviceCreateBindGroupLayout);
     GET_PROC(DeviceCreateBuffer);

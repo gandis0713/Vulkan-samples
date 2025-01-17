@@ -88,6 +88,21 @@ private:
         1 * 4 + // padding
         0;
 
+    const uint32_t m_uniformBufferSize =
+        4 * 4 * 4 + // modelViewProjectionMatrix : mat4x4f
+        3 * 4 +     // right : vec3f
+        4 +         // padding
+        3 * 4 +     // up : vec3f
+        4 +         // padding
+        0;
+
+    const uint32_t m_simulationUBOBufferSize =
+        1 * 4 + // deltaTime
+        1 * 4 + // brightnessFactor
+        2 * 4 + // padding
+        4 * 4 + // seed
+        0;
+
     uint32_t m_textureWidth = 1;
     uint32_t m_textureHeight = 1;
     uint32_t m_numMipLevels = 1;
