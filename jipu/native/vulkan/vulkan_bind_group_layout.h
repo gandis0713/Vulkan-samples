@@ -15,6 +15,7 @@ struct VulkanBindGroupLayoutInfo
     std::vector<BufferBindingLayout> buffers{};
     std::vector<SamplerBindingLayout> samplers{};
     std::vector<TextureBindingLayout> textures{};
+    std::vector<StorageTextureBindingLayout> storageTextures{};
 };
 struct VulkanBindGroupLayoutMetaData
 {
@@ -42,6 +43,7 @@ public:
     std::vector<BufferBindingLayout> getBufferBindingLayouts() const override;
     std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const override;
     std::vector<TextureBindingLayout> getTextureBindingLayouts() const override;
+    std::vector<StorageTextureBindingLayout> getStorageTextureBindingLayouts() const override;
 
     std::vector<VkDescriptorSetLayoutBinding> getDescriptorSetLayouts() const;
 
@@ -59,7 +61,8 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const VulkanBindGroupLayoutDescriptor m_descriptor{};
+    const BindGroupLayoutDescriptor m_descriptor{};
+    const VulkanBindGroupLayoutDescriptor m_vkdescriptor{};
     VulkanBindGroupLayoutMetaData m_metaData{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
@@ -87,6 +90,7 @@ private:
 VulkanBindGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor);
 
 // Convert Helper
+VkDescriptorType ToVkDescriptorType(StorageTextureBindingType type);
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);

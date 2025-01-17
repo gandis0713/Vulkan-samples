@@ -32,6 +32,13 @@ static size_t getHash(const VulkanBindGroupLayoutInfo& layoutInfo)
         combineHash(hash, texture.stages);
     }
 
+    for (const auto& storageTexture : layoutInfo.storageTextures)
+    {
+        combineHash(hash, storageTexture.index);
+        combineHash(hash, storageTexture.stages);
+        combineHash(hash, storageTexture.type);
+    }
+
     return hash;
 }
 
@@ -42,10 +49,11 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();
     const uint64_t textureSize = descriptor.textures.size();
+    const uint64_t storageTextureSize = descriptor.storageTextures.size();
 
     vkdescriptor.buffers.resize(bufferSize);
     vkdescriptor.samplers.resize(samplerSize);
-    vkdescriptor.textures.resize(textureSize);
+    vkdescriptor.textures.resize(textureSize + storageTextureSize);
 
     for (uint64_t i = 0; i < bufferSize; ++i)
     {
@@ -77,6 +85,16 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
                                      .pImmutableSamplers = nullptr };
     }
 
+    for (uint64_t i = textureSize; i < storageTextureSize + textureSize; ++i)
+    {
+        const auto& storageTexture = descriptor.storageTextures[i];
+        vkdescriptor.textures[i] = { .binding = storageTexture.index,
+                                     .descriptorType = ToVkDescriptorType(storageTexture.type),
+                                     .descriptorCount = 1,
+                                     .stageFlags = ToVkShaderStageFlags(storageTexture.stages),
+                                     .pImmutableSamplers = nullptr };
+    }
+
     return vkdescriptor;
 }
 
@@ -104,12 +122,14 @@ VkDescriptorSetLayout createDescriptorSetLayout(VulkanDevice* device, const Vulk
 
 VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor)
     : m_device(device)
-    , m_descriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
+    , m_descriptor(descriptor)
+    , m_vkdescriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
 {
     m_metaData.info = {
         .buffers = getBufferBindingLayouts(),
         .samplers = getSamplerBindingLayouts(),
         .textures = getTextureBindingLayouts(),
+        .storageTextures = getStorageTextureBindingLayouts(),
     };
     m_metaData.hash = getHash(m_metaData.info);
 }
@@ -121,100 +141,81 @@ VulkanBindGroupLayout::~VulkanBindGroupLayout()
 
 std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const
 {
-    std::vector<BufferBindingLayout> layouts{};
-    for (const auto& buffer : m_descriptor.buffers)
-    {
-        layouts.push_back({ .index = buffer.binding,
-                            .stages = ToBindingStageFlags(buffer.stageFlags),
-                            .type = ToBufferBindingType(buffer.descriptorType),
-                            .dynamicOffset = buffer.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
-                                             buffer.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC });
-    }
-
-    return layouts;
+    return m_descriptor.buffers;
 }
 
 std::vector<SamplerBindingLayout> VulkanBindGroupLayout::getSamplerBindingLayouts() const
 {
-    std::vector<SamplerBindingLayout> layouts{};
-    for (const auto& sampler : m_descriptor.samplers)
-    {
-        layouts.push_back({ .index = sampler.binding,
-                            .stages = ToBindingStageFlags(sampler.stageFlags) });
-    }
-
-    return layouts;
+    return m_descriptor.samplers;
 }
 
 std::vector<TextureBindingLayout> VulkanBindGroupLayout::getTextureBindingLayouts() const
 {
-    std::vector<TextureBindingLayout> layouts{};
-    for (const auto& texture : m_descriptor.textures)
-    {
-        layouts.push_back({ .index = texture.binding,
-                            .stages = ToBindingStageFlags(texture.stageFlags) });
-    }
+    return m_descriptor.textures;
+}
 
-    return layouts;
+std::vector<StorageTextureBindingLayout> VulkanBindGroupLayout::getStorageTextureBindingLayouts() const
+{
+    return m_descriptor.storageTextures;
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getDescriptorSetLayouts() const
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
 
-    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
-    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
-    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.buffers.begin(), m_vkdescriptor.buffers.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.samplers.begin(), m_vkdescriptor.samplers.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.textures.begin(), m_vkdescriptor.textures.end());
 
     return bindings;
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getBufferDescriptorSetLayouts() const
 {
-    return m_descriptor.buffers;
+    return m_vkdescriptor.buffers;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getBufferDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.buffers.empty())
+    if (m_vkdescriptor.buffers.empty())
         throw std::runtime_error("Failed to find buffer binding layout due to empty.");
 
-    if (m_descriptor.buffers.size() <= index)
+    if (m_vkdescriptor.buffers.size() <= index)
         throw std::runtime_error("Failed to find buffer binding layout due to over index.");
 
-    return m_descriptor.buffers[index];
+    return m_vkdescriptor.buffers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getSamplerDescriptorSetLayouts() const
 {
-    return m_descriptor.samplers;
+    return m_vkdescriptor.samplers;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getSamplerDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.samplers.empty())
+    if (m_vkdescriptor.samplers.empty())
         throw std::runtime_error("Failed to find sampler binding layout due to empty.");
 
-    if (m_descriptor.samplers.size() <= index)
+    if (m_vkdescriptor.samplers.size() <= index)
         throw std::runtime_error("Failed to find sampler binding layout due to over index.");
 
-    return m_descriptor.samplers[index];
+    return m_vkdescriptor.samplers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getTextureDescriptorSetLayouts() const
 {
-    return m_descriptor.textures;
+    return m_vkdescriptor.textures;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getTextureDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.textures.empty())
+    if (m_vkdescriptor.textures.empty())
         throw std::runtime_error("Failed to find texture binding layout due to empty.");
 
-    if (m_descriptor.textures.size() <= index)
+    if (m_vkdescriptor.textures.size() <= index)
         throw std::runtime_error("Failed to find texture binding layout due to over index.");
 
-    return m_descriptor.textures[index];
+    return m_vkdescriptor.textures[index];
 }
 
 VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
@@ -253,6 +254,7 @@ VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const
     descriptor.buffers = metaData.info.buffers;
     descriptor.samplers = metaData.info.samplers;
     descriptor.textures = metaData.info.textures;
+    descriptor.storageTextures = metaData.info.storageTextures;
 
     VkDescriptorSetLayout layout = createDescriptorSetLayout(m_device, generateVulkanBindGroupLayoutDescriptor(descriptor));
 
@@ -272,6 +274,23 @@ void VulkanBindGroupLayoutCache::clear()
 }
 
 // Convert Helper
+
+VkDescriptorType ToVkDescriptorType(StorageTextureBindingType type)
+{
+    switch (type)
+    {
+    case StorageTextureBindingType::kReadOnly:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    case StorageTextureBindingType::kWriteOnly:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    case StorageTextureBindingType::kReadWrite:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    default:
+    case StorageTextureBindingType::kUndefined:
+        throw std::runtime_error(fmt::format("Failed to support type [{}] for VkDescriptorType.", static_cast<int32_t>(type)));
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    }
+}
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
 {
     switch (type)
@@ -283,6 +302,11 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
     case BufferBindingType::kStorage:
+        if (dynamicOffset)
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        else
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    case BufferBindingType::kReadOnlyStorage:
         if (dynamicOffset)
             return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         else

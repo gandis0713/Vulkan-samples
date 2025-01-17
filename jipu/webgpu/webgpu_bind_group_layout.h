@@ -40,9 +40,11 @@ private:
 // Conert from JIPU to WebGPU
 WGPUShaderStage ToWGPUShaderStage(BindingStageFlags stages);
 WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type);
+WGPUStorageTextureAccess ToWGPUStorageTextureAccess(StorageTextureBindingType type);
 
 // Convert from WebGPU to JIPU
 BindingStageFlags WGPUToBindingStageFlags(WGPUShaderStage stages);
 BufferBindingType WGPUToBufferBindingType(WGPUBufferBindingType type);
+StorageTextureBindingType WGPUToStorageTextureBindingType(WGPUStorageTextureAccess access);
 
 } // namespace jipu

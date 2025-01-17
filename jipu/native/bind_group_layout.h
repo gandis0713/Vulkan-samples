@@ -15,6 +15,14 @@ enum class BufferBindingType
     kReadOnlyStorage,
 };
 
+enum class StorageTextureBindingType
+{
+    kUndefined = 0,
+    kWriteOnly,
+    kReadOnly,
+    kReadWrite,
+};
+
 struct BindingStageFlagBits
 {
     static constexpr uint32_t kUndefined = 1 << 0;     // 0x00000000
@@ -47,11 +55,20 @@ struct TextureBindingLayout
     BindingStageFlags stages = 0u;
 };
 
+struct StorageTextureBindingLayout
+{
+    /// @brief The index of binding.
+    uint32_t index = 0;
+    BindingStageFlags stages = 0u;
+    StorageTextureBindingType type = StorageTextureBindingType::kUndefined;
+};
+
 struct BindGroupLayoutDescriptor
 {
     std::vector<BufferBindingLayout> buffers = {};
     std::vector<SamplerBindingLayout> samplers = {};
     std::vector<TextureBindingLayout> textures = {};
+    std::vector<StorageTextureBindingLayout> storageTextures = {};
 };
 
 class Device;
@@ -67,6 +84,7 @@ public:
     virtual std::vector<BufferBindingLayout> getBufferBindingLayouts() const = 0;
     virtual std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const = 0;
     virtual std::vector<TextureBindingLayout> getTextureBindingLayouts() const = 0;
+    virtual std::vector<StorageTextureBindingLayout> getStorageTextureBindingLayouts() const = 0;
 
 protected:
     BindGroupLayout() = default;

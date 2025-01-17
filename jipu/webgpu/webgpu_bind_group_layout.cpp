@@ -38,6 +38,15 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
                 .stages = WGPUToBindingStageFlags(entry.visibility),
             });
         }
+
+        if (entry.storageTexture.access)
+        {
+            layoutDescriptor.storageTextures.push_back(StorageTextureBindingLayout{
+                .index = entry.binding,
+                .stages = WGPUToBindingStageFlags(entry.visibility),
+                .type = WGPUToStorageTextureBindingType(entry.storageTexture.access),
+            });
+        }
     }
 
     auto device = wgpuDevice->getDevice();
@@ -92,6 +101,21 @@ WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type)
     }
 }
 
+WGPUStorageTextureAccess ToWGPUStorageTextureAccess(StorageTextureBindingType type)
+{
+    switch (type)
+    {
+    case StorageTextureBindingType::kWriteOnly:
+        return WGPUStorageTextureAccess_WriteOnly;
+    case StorageTextureBindingType::kReadOnly:
+        return WGPUStorageTextureAccess_ReadOnly;
+    case StorageTextureBindingType::kReadWrite:
+        return WGPUStorageTextureAccess_ReadWrite;
+    default:
+        return WGPUStorageTextureAccess_Undefined;
+    }
+}
+
 // Convert from WebGPU to JIPU
 BindingStageFlags WGPUToBindingStageFlags(WGPUShaderStage stages)
 {
@@ -123,6 +147,21 @@ BufferBindingType WGPUToBufferBindingType(WGPUBufferBindingType type)
         return BufferBindingType::kReadOnlyStorage;
     default:
         return BufferBindingType::kUndefined;
+    }
+}
+
+StorageTextureBindingType WGPUToStorageTextureBindingType(WGPUStorageTextureAccess access)
+{
+    switch (access)
+    {
+    case WGPUStorageTextureAccess_WriteOnly:
+        return StorageTextureBindingType::kWriteOnly;
+    case WGPUStorageTextureAccess_ReadOnly:
+        return StorageTextureBindingType::kReadOnly;
+    case WGPUStorageTextureAccess_ReadWrite:
+        return StorageTextureBindingType::kReadWrite;
+    default:
+        return StorageTextureBindingType::kUndefined;
     }
 }
 
