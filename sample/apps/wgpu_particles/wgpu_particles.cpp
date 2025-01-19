@@ -118,7 +118,7 @@ void WGPUParticlesSample::onDraw()
 
     wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_computePipeline);
     wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, m_computeBindGroup, 0, nullptr);
-    wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(m_numParticles / 64), 1, 1);
+    wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(static_cast<float>(m_numParticles) / 64), 1, 1);
     wgpu.ComputePassEncoderEnd(computePassEncoder);
     wgpu.ComputePassEncoderRelease(computePassEncoder);
 
@@ -736,15 +736,13 @@ void WGPUParticlesSample::generateProbabilityMap()
 
         bindGroups.push_back(bindGroup);
 
-        auto ceilLevelWidth = std::ceil(levelWidth / 64);
         if (level == 0)
         {
             WGPUComputePassDescriptor computePassDescriptor{};
             WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
             wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_probabilityMapImportLevelPipeline);
             wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, bindGroup, 0, nullptr);
-            // wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
-            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, levelWidth, levelHeight, 1);
+            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(static_cast<float>(levelWidth) / 64), levelHeight, 1);
             wgpu.ComputePassEncoderEnd(computePassEncoder);
         }
         else
@@ -753,8 +751,7 @@ void WGPUParticlesSample::generateProbabilityMap()
             WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
             wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_probabilityMapExportLevelPipeline);
             wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, bindGroup, 0, nullptr);
-            // wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
-            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, levelWidth, levelHeight, 1);
+            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(static_cast<float>(levelWidth) / 64), levelHeight, 1);
             wgpu.ComputePassEncoderEnd(computePassEncoder);
         }
     }
