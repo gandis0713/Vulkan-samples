@@ -443,9 +443,6 @@ void WGPUParticlesSample::createImageTexture()
     uint32_t height = image->getHeight();
     uint32_t channel = image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
-    // uint32_t mipLevelCount = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
-    // if (mipLevelCount > 10)
-    //     mipLevelCount = 10;
 
     while (m_textureWidth < width || m_textureHeight < height)
     {
@@ -470,24 +467,42 @@ void WGPUParticlesSample::createImageTexture()
     m_imageTexture = wgpu.DeviceCreateTexture(m_device, &descriptor);
     assert(m_imageTexture);
 
-    WGPUImageCopyTexture imageCopyTexture{};
-    imageCopyTexture.texture = m_imageTexture;
-    imageCopyTexture.mipLevel = 0;
-    imageCopyTexture.origin = { .x = 0, .y = 0, .z = 0 };
-    imageCopyTexture.aspect = WGPUTextureAspect_All;
+    // copy image data to texture
+    {
+        WGPUImageCopyTexture imageCopyTexture{};
+        imageCopyTexture.texture = m_imageTexture;
+        imageCopyTexture.mipLevel = 0;
+        imageCopyTexture.origin = { 0, 0, 0 };
+        imageCopyTexture.aspect = WGPUTextureAspect_All;
 
-    WGPUTextureDataLayout dataLayout{};
-    dataLayout.offset = 0;
-    dataLayout.bytesPerRow = sizeof(unsigned char) * width * channel;
+        WGPUTextureDataLayout dataLayout{};
+        dataLayout.offset = 0;
+        dataLayout.bytesPerRow = width * channel * sizeof(unsigned char);
 #if defined(USE_DAWN_HEADER)
-    dataLayout.rowsPerImage = height;
+        dataLayout.rowsPerImage = height;
 #else
-    dataLayout.rowsPerTexture = height;
+        dataLayout.rowsPerTexture = height;
 #endif
 
-    wgpu.QueueWriteTexture(m_queue, &imageCopyTexture, pixels, imageSize, &dataLayout, &descriptor.size);
+        WGPUExtent3D copySize{};
+        copySize.width = width;
+        copySize.height = height;
+        copySize.depthOrArrayLayers = 1;
 
-    m_probabilityMapBufferSize = m_textureWidth * m_textureHeight * channel * sizeof(float);
+        uint64_t imageSize = static_cast<uint64_t>(width) *
+                             static_cast<uint64_t>(height) *
+                             channel * sizeof(unsigned char);
+
+        wgpu.QueueWriteTexture(
+            m_queue,
+            &imageCopyTexture,
+            pixels,
+            imageSize,
+            &dataLayout,
+            &copySize);
+    }
+
+    m_probabilityMapBufferSize = m_textureWidth * m_textureHeight * channel * sizeof(unsigned char);
 }
 
 void WGPUParticlesSample::createImageTextureView()
@@ -690,8 +705,6 @@ void WGPUParticlesSample::generateProbabilityMap()
         uint32_t levelWidth = m_textureWidth >> level;
         uint32_t levelHeight = m_textureHeight >> level;
 
-        auto bindGroupLayout = level == 0 ? m_probabilityMapImportLevelBindGroupLayout : m_probabilityMapExportLevelBindGroupLayout;
-
         WGPUTextureViewDescriptor descriptor{};
         descriptor.format = WGPUTextureFormat_RGBA8Unorm;
         descriptor.dimension = WGPUTextureViewDimension_2D;
@@ -708,13 +721,13 @@ void WGPUParticlesSample::generateProbabilityMap()
 
         WGPUBindGroupEntry bindGroupEntries[4] = {
             WGPUBindGroupEntry{ .binding = 0, .buffer = m_probabilityMapUBOBuffer, .offset = 0, .size = m_probabilityMapUBOBufferSize },
-            WGPUBindGroupEntry{ .binding = 1, .buffer = level == 0 ? m_probabilityMapBufferA : m_probabilityMapBufferB, .offset = 0, .size = m_probabilityMapBufferSize },
-            WGPUBindGroupEntry{ .binding = 2, .buffer = level == 0 ? m_probabilityMapBufferB : m_probabilityMapBufferA, .offset = 0, .size = m_probabilityMapBufferSize },
+            WGPUBindGroupEntry{ .binding = 1, .buffer = level & 1 ? m_probabilityMapBufferA : m_probabilityMapBufferB, .offset = 0, .size = m_probabilityMapBufferSize },
+            WGPUBindGroupEntry{ .binding = 2, .buffer = level & 1 ? m_probabilityMapBufferB : m_probabilityMapBufferA, .offset = 0, .size = m_probabilityMapBufferSize },
             WGPUBindGroupEntry{ .binding = 3, .textureView = imageTextureView },
         };
 
         WGPUBindGroupDescriptor bindGroupDescriptor{};
-        bindGroupDescriptor.layout = bindGroupLayout;
+        bindGroupDescriptor.layout = level == 0 ? m_probabilityMapImportLevelBindGroupLayout : m_probabilityMapExportLevelBindGroupLayout;
         bindGroupDescriptor.entryCount = 4;
         bindGroupDescriptor.entries = bindGroupEntries;
 
@@ -723,13 +736,15 @@ void WGPUParticlesSample::generateProbabilityMap()
 
         bindGroups.push_back(bindGroup);
 
+        auto ceilLevelWidth = std::ceil(levelWidth / 64);
         if (level == 0)
         {
             WGPUComputePassDescriptor computePassDescriptor{};
             WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
             wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_probabilityMapImportLevelPipeline);
             wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, bindGroup, 0, nullptr);
-            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
+            // wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
+            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, levelWidth, levelHeight, 1);
             wgpu.ComputePassEncoderEnd(computePassEncoder);
         }
         else
@@ -738,7 +753,8 @@ void WGPUParticlesSample::generateProbabilityMap()
             WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
             wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_probabilityMapExportLevelPipeline);
             wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, bindGroup, 0, nullptr);
-            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
+            // wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(levelWidth / 64), levelHeight, 1);
+            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, levelWidth, levelHeight, 1);
             wgpu.ComputePassEncoderEnd(computePassEncoder);
         }
     }
