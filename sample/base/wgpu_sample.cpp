@@ -73,11 +73,11 @@ void WGPUSample::onBeforeUpdate()
                            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "API Type");
                            if (ImGui::RadioButton("Jipu", m_apiType == APIType::kJipu))
                            {
-                               m_currentAPIType = APIType::kJipu;
+                               m_changeAPIType = APIType::kJipu;
                            }
                            else if (ImGui::RadioButton("Dawn", m_apiType == APIType::kDawn))
                            {
-                               m_currentAPIType = APIType::kDawn;
+                               m_changeAPIType = APIType::kDawn;
                            }
                            ImGui::Separator();
                        },
@@ -93,10 +93,7 @@ void WGPUSample::onBeforeUpdate()
 
 void WGPUSample::onUpdate()
 {
-    if (m_currentAPIType != m_apiType)
-    {
-        changeAPI(m_currentAPIType);
-    }
+    changeAPI(m_changeAPIType);
 }
 
 void WGPUSample::onAfterUpdate()
@@ -208,6 +205,11 @@ void WGPUSample::finalizeContext()
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
+    m_changeAPIType = type;
+
+    if (m_apiType == m_changeAPIType)
+        return;
+
     m_fps.clear();
 
     finalizeContext();

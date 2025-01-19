@@ -67,7 +67,7 @@ protected:
     std::filesystem::path m_appDir;
 
     APIType m_apiType{ APIType::kJipu };
-    APIType m_currentAPIType{ APIType::kJipu };
+    APIType m_changeAPIType{ APIType::kJipu };
 
     std::unordered_map<APIType, DyLib> m_wgpuLibs{};
     std::unordered_map<APIType, WebGPUAPI> m_wgpuAPIs{};
