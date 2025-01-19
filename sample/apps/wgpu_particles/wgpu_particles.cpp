@@ -25,7 +25,7 @@ void WGPUParticlesSample::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kDawn);
+    changeAPI(APIType::kJipu);
 }
 
 void WGPUParticlesSample::onUpdate()
@@ -50,22 +50,18 @@ void WGPUParticlesSample::onUpdate()
         ubo.seedW = 1.0f + dis1(gen);
 
         wgpu.QueueWriteBuffer(m_queue, m_simulationUBOBuffer, 0, &ubo, sizeof(SimulationUBO));
-
-        // spdlog::debug("SimulationUBO size: {}", sizeof(SimulationUBO));
-        // spdlog::debug("m_simulationUBOBufferSize: {}", m_simulationUBOBufferSize);
     }
     {
-        float aspect = static_cast<float>(m_width) / static_cast<float>(m_height); // 종횡비
-        float fov = (2.0f * glm::pi<float>()) / 5.0f;                              // (2 * PI) / 5 라디안
+        float aspect = static_cast<float>(m_width) / static_cast<float>(m_height);
+        float fov = (2.0f * glm::pi<float>()) / 5.0f;
         float nearPlane = 1.0f;
         float farPlane = 100.0f;
         glm::mat4 projection = glm::perspective(fov, aspect, nearPlane, farPlane);
 
-        glm::mat4 view = glm::mat4(1.0f);                                                // 단위 행렬로 초기화
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));                       // (0, 0, -3)으로 이동
-        view = glm::rotate(view, -0.2f * glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f)); // X축을 기준으로 -0.2 * PI 라디안 회전
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::rotate(view, -0.2f * glm::pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        // 5. 프로젝션 행렬과 뷰 행렬을 곱하여 MVP 행렬 생성
         glm::mat4 mvp = projection * view;
 
         MatrixUBO ubo;
@@ -73,17 +69,7 @@ void WGPUParticlesSample::onUpdate()
         ubo.right = glm::vec3(view[0][0], view[1][0], view[2][0]);
         ubo.padding1 = 0.0f;
         ubo.up = glm::vec3(view[0][1], view[1][1], view[2][1]);
-        // ubo.up = glm::vec3(view[0][1], view[1][1], view[1][2]);
         ubo.padding2 = 0.0f;
-
-        // spdlog::debug("view");
-        // spdlog::debug("  {}, {}, {}, {}", view[0][0], view[1][0], view[2][0], view[3][0]);
-        // spdlog::debug("  {}, {}, {}, {}", view[0][1], view[1][1], view[2][1], view[3][1]);
-        // spdlog::debug("  {}, {}, {}, {}", view[0][2], view[1][2], view[2][2], view[3][2]);
-        // spdlog::debug("  {}, {}, {}, {}", view[0][3], view[1][3], view[2][3], view[3][3]);
-
-        // spdlog::debug("MatrixUBO size: {}", sizeof(MatrixUBO));
-        // spdlog::debug("m_uniformBufferSize: {}", m_uniformBufferSize);
 
         wgpu.QueueWriteBuffer(m_queue, m_uniformBuffer, 0, &ubo, sizeof(MatrixUBO));
     }
