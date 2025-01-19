@@ -205,8 +205,10 @@ void WGPUSample::finalizeContext()
 
 void WGPUSample::changeAPI(WGPUSample::APIType type)
 {
-    m_changeAPIType = type;
+    if (type == APIType::kUndefined)
+        return;
 
+    m_changeAPIType = type;
     if (m_apiType == m_changeAPIType)
         return;
 
