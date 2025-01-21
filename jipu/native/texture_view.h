@@ -31,6 +31,10 @@ struct TextureViewDescriptor
 {
     TextureViewDimension dimension = TextureViewDimension::kUndefined;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
+    uint32_t baseMipLevel{ 0 };
+    uint32_t mipLevelCount{ 1 };
+    uint32_t baseArrayLayer{ 0 };
+    uint32_t arrayLayerCount{ 1 };
 };
 
 class Texture;
