@@ -4,6 +4,8 @@
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 
+#include "vulkan_pipeline_layout.h"
+
 #include "jipu/common/cast.h"
 
 #include <string>
@@ -18,12 +20,6 @@ struct VulkanShaderModuleInfo
     std::string code;
 };
 
-struct VulkanShaderModuleMetaData
-{
-    VulkanShaderModuleInfo info{};
-    size_t hash = 0;
-};
-
 class VulkanDevice;
 class VULKAN_EXPORT VulkanShaderModule : public ShaderModule
 {
@@ -32,8 +28,9 @@ public:
     VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor);
     ~VulkanShaderModule() override;
 
-    VkShaderModule getVkShaderModule(const std::string_view entryPoint) const;
-    const VulkanShaderModuleMetaData& getMetaData() const;
+    VkShaderModule getVkShaderModule(const VulkanPipelineLayoutMetaData& layoutMetaData,
+                                     const std::string_view entryPoint) const;
+    const VulkanShaderModuleInfo& getInfo() const;
 
 private:
     VulkanDevice* m_device = nullptr;
@@ -41,9 +38,16 @@ private:
 private:
     VkShaderModule m_shaderModule = VK_NULL_HANDLE;
     const ShaderModuleDescriptor m_descriptor{};
-    VulkanShaderModuleMetaData m_metaData{};
+    VulkanShaderModuleInfo m_info{};
 };
 DOWN_CAST(VulkanShaderModule, ShaderModule);
+
+struct VulkanShaderModuleMetaData
+{
+    VulkanShaderModuleInfo modulInfo{};
+    VulkanPipelineLayoutInfo layoutInfo{};
+    std::string entryPoint;
+};
 
 class VulkanShaderModuleCache
 {
@@ -53,18 +57,23 @@ public:
     ~VulkanShaderModuleCache();
 
 public:
-    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint);
+    VkShaderModule getVkShaderModule(const VulkanShaderModuleMetaData& metaData);
     void clear();
 
 private:
-    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData, std::string_view entryPoint);
+    VkShaderModule createWGSLShaderModule(const VulkanShaderModuleMetaData& metaData);
     VkShaderModule createSPIRVShaderModule(const VulkanShaderModuleMetaData& metaData);
 
 private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    using Cache = std::unordered_map<size_t, std::unordered_map<std::string_view, VkShaderModule>>;
+    struct Functor
+    {
+        size_t operator()(const VulkanShaderModuleMetaData& metaData) const;
+        bool operator()(const VulkanShaderModuleMetaData& lhs, const VulkanShaderModuleMetaData& rhs) const;
+    };
+    using Cache = std::unordered_map<VulkanShaderModuleMetaData, VkShaderModule, Functor, Functor>;
     Cache m_shaderModuleCache{};
 };
 
