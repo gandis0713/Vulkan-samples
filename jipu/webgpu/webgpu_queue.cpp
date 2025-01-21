@@ -104,7 +104,9 @@ void WebGPUQueue::writeTexture(WGPUImageCopyTexture const* destination, void con
     auto wgpuTexture = reinterpret_cast<WebGPUTexture*>(destination->texture);
     CopyTexture dstCopyTexture{
         .texture = wgpuTexture->getTexture(),
-        .aspect = WGPUToTextureAspectFlags(wgpuTexture, destination->aspect)
+        .aspect = WGPUToTextureAspectFlags(wgpuTexture, destination->aspect),
+        .mipLevel = destination->mipLevel,
+        // TODO: origin
     };
 
     CommandEncoderDescriptor commandEncoderDescriptor{};

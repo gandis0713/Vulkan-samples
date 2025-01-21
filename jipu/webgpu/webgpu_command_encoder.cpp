@@ -66,6 +66,8 @@ void WebGPUCommandEncoder::copyBufferToTexture(WGPUImageCopyBuffer const* source
     CopyTexture texture{
         .texture = wgpuTexture->getTexture(),
         .aspect = WGPUToTextureAspectFlags(wgpuTexture, destination->aspect),
+        .mipLevel = destination->mipLevel,
+        // TODO: origin
     };
 
     Extent3D extent{

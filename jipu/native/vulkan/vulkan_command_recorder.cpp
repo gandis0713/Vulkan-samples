@@ -505,8 +505,8 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
 
     VkImageSubresourceRange range;
     range.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    range.baseMipLevel = 0;
-    range.levelCount = texture.texture->getMipLevels();
+    range.baseMipLevel = texture.mipLevel;
+    range.levelCount = 1;
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
@@ -522,7 +522,7 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
     region.bufferImageHeight = 0;
 
     region.imageSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.mipLevel = texture.mipLevel;
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
 
@@ -542,52 +542,52 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
                                1,
                                &region);
 
-    if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
-    {
-        VkImage image = vulkanTexture->getVkImage();
+    // if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
+    // {
+    //     VkImage image = vulkanTexture->getVkImage();
 
-        int32_t width = static_cast<int32_t>(texture.texture->getWidth());
-        int32_t height = static_cast<int32_t>(texture.texture->getHeight());
-        for (uint32_t i = 1; i < mipLevels; ++i)
-        {
+    //     int32_t width = static_cast<int32_t>(texture.texture->getWidth());
+    //     int32_t height = static_cast<int32_t>(texture.texture->getHeight());
+    //     for (uint32_t i = 1; i < mipLevels; ++i)
+    //     {
 
-            VkImageSubresourceRange srcSubresourceRange{};
-            srcSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
-            srcSubresourceRange.baseMipLevel = i - 1;
-            srcSubresourceRange.levelCount = 1;
-            srcSubresourceRange.baseArrayLayer = 0;
-            srcSubresourceRange.layerCount = 1;
+    //         VkImageSubresourceRange srcSubresourceRange{};
+    //         srcSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
+    //         srcSubresourceRange.baseMipLevel = i - 1;
+    //         srcSubresourceRange.levelCount = 1;
+    //         srcSubresourceRange.baseArrayLayer = 0;
+    //         srcSubresourceRange.layerCount = 1;
 
-            // set pipeline barrier for src
-            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
+    //         // set pipeline barrier for src
+    //         vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
 
-            VkImageBlit blit{};
-            blit.srcOffsets[0] = { 0, 0, 0 };
-            blit.srcOffsets[1] = { width, height, 1 };
-            blit.srcSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-            blit.srcSubresource.mipLevel = i - 1;
-            blit.srcSubresource.baseArrayLayer = 0;
-            blit.srcSubresource.layerCount = 1;
-            blit.dstOffsets[0] = { 0, 0, 0 };
-            blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
-            blit.dstSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-            blit.dstSubresource.mipLevel = i;
-            blit.dstSubresource.baseArrayLayer = 0;
-            blit.dstSubresource.layerCount = 1;
+    //         VkImageBlit blit{};
+    //         blit.srcOffsets[0] = { 0, 0, 0 };
+    //         blit.srcOffsets[1] = { width, height, 1 };
+    //         blit.srcSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
+    //         blit.srcSubresource.mipLevel = i - 1;
+    //         blit.srcSubresource.baseArrayLayer = 0;
+    //         blit.srcSubresource.layerCount = 1;
+    //         blit.dstOffsets[0] = { 0, 0, 0 };
+    //         blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
+    //         blit.dstSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
+    //         blit.dstSubresource.mipLevel = i;
+    //         blit.dstSubresource.baseArrayLayer = 0;
+    //         blit.dstSubresource.layerCount = 1;
 
-            vkAPI.CmdBlitImage(commandBuffer,
-                               image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                               image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                               1, &blit,
-                               VK_FILTER_LINEAR);
+    //         vkAPI.CmdBlitImage(commandBuffer,
+    //                            image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    //                            image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    //                            1, &blit,
+    //                            VK_FILTER_LINEAR);
 
-            // set pipeline barrier for dst
-            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
+    //         // set pipeline barrier for dst
+    //         vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
 
-            width = std::max(width >> 1, 1);
-            height = std::max(height >> 1, 1);
-        }
-    }
+    //         width = std::max(width >> 1, 1);
+    //         height = std::max(height >> 1, 1);
+    //     }
+    // }
 
     // set pipeline barrier to restore final layout
     vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vulkanTexture->getFinalLayout(), range);
