@@ -24,10 +24,10 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
     imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
     imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
-    imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-    imageViewCreateInfo.subresourceRange.levelCount = texture->getMipLevels();
-    imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    imageViewCreateInfo.subresourceRange.layerCount = 1;
+    imageViewCreateInfo.subresourceRange.baseMipLevel = descriptor.baseMipLevel;
+    imageViewCreateInfo.subresourceRange.levelCount = descriptor.mipLevelCount;
+    imageViewCreateInfo.subresourceRange.baseArrayLayer = descriptor.baseArrayLayer;
+    imageViewCreateInfo.subresourceRange.layerCount = descriptor.arrayLayerCount;
 
     if (m_device->vkAPI.CreateImageView(m_device->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {

@@ -13,6 +13,10 @@ WebGPUTextureView* WebGPUTextureView::create(WebGPUTexture* wgpuTexture, WGPUTex
     TextureViewDescriptor viewDescriptor{};
     viewDescriptor.dimension = WGPUToTextureViewDimension(wgpuDescriptor.dimension);
     viewDescriptor.aspect = WGPUToTextureAspectFlags(wgpuTexture, wgpuDescriptor.aspect);
+    viewDescriptor.baseMipLevel = wgpuDescriptor.baseMipLevel;
+    viewDescriptor.mipLevelCount = wgpuDescriptor.mipLevelCount;
+    viewDescriptor.baseArrayLayer = wgpuDescriptor.baseArrayLayer;
+    viewDescriptor.arrayLayerCount = wgpuDescriptor.arrayLayerCount;
 
     auto textureView = wgpuTexture->getTexture()->createTextureView(viewDescriptor);
 
