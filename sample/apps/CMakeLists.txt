@@ -5,6 +5,7 @@ if(APPLE)
     set(CMAKE_XCODE_SCHEME_ENVIRONMENT
         VK_ICD_FILENAMES=$ENV{VULKAN_SDK}/share/vulkan/icd.d/MoltenVK_icd.json
         VK_LAYER_PATH=$ENV{VULKAN_SDK}/share/vulkan/explicit_layer.d
+        DYLD_LIBRARY_PATH=$ENV{VULKAN_SDK}/lib
     )
 endif()
 
