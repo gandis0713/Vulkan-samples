@@ -17,11 +17,6 @@ struct VulkanBindGroupLayoutInfo
     std::vector<TextureBindingLayout> textures{};
     std::vector<StorageTextureBindingLayout> storageTextures{};
 };
-struct VulkanBindGroupLayoutMetaData
-{
-    VulkanBindGroupLayoutInfo info{};
-    size_t hash = 0;
-};
 
 struct VulkanBindGroupLayoutDescriptor
 {
@@ -57,16 +52,20 @@ public:
     VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-    VulkanBindGroupLayoutMetaData getMetaData() const;
+    const VulkanBindGroupLayoutInfo& getInfo() const;
 
 private:
     VulkanDevice* m_device = nullptr;
     const BindGroupLayoutDescriptor m_descriptor{};
     const VulkanBindGroupLayoutDescriptor m_vkdescriptor{};
-    VulkanBindGroupLayoutMetaData m_metaData{};
+    VulkanBindGroupLayoutInfo m_info{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
 
+struct VulkanBindGroupLayoutMetaData
+{
+    VulkanBindGroupLayoutInfo info{};
+};
 class VulkanBindGroupLayoutCache
 {
 public:
@@ -82,7 +81,12 @@ private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    using Cache = std::unordered_map<size_t, VkDescriptorSetLayout>;
+    struct Functor
+    {
+        size_t operator()(const VulkanBindGroupLayoutMetaData& metaData) const;
+        bool operator()(const VulkanBindGroupLayoutMetaData& lhs, const VulkanBindGroupLayoutMetaData& rhs) const;
+    };
+    using Cache = std::unordered_map<VulkanBindGroupLayoutMetaData, VkDescriptorSetLayout, Functor, Functor>;
     Cache m_bindGroupLayouts{};
 };
 

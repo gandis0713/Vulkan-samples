@@ -8,40 +8,6 @@
 namespace jipu
 {
 
-static size_t getHash(const VulkanBindGroupLayoutInfo& layoutInfo)
-{
-    size_t hash = 0;
-
-    for (const auto& buffer : layoutInfo.buffers)
-    {
-        combineHash(hash, buffer.dynamicOffset);
-        combineHash(hash, buffer.index);
-        combineHash(hash, buffer.stages);
-        combineHash(hash, buffer.type);
-    }
-
-    for (const auto& sampler : layoutInfo.samplers)
-    {
-        combineHash(hash, sampler.index);
-        combineHash(hash, sampler.stages);
-    }
-
-    for (const auto& texture : layoutInfo.textures)
-    {
-        combineHash(hash, texture.index);
-        combineHash(hash, texture.stages);
-    }
-
-    for (const auto& storageTexture : layoutInfo.storageTextures)
-    {
-        combineHash(hash, storageTexture.index);
-        combineHash(hash, storageTexture.stages);
-        combineHash(hash, storageTexture.type);
-    }
-
-    return hash;
-}
-
 VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor)
 {
     VulkanBindGroupLayoutDescriptor vkdescriptor{};
@@ -125,13 +91,12 @@ VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGro
     , m_descriptor(descriptor)
     , m_vkdescriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
 {
-    m_metaData.info = {
+    m_info = {
         .buffers = getBufferBindingLayouts(),
         .samplers = getSamplerBindingLayouts(),
         .textures = getTextureBindingLayouts(),
         .storageTextures = getStorageTextureBindingLayouts(),
     };
-    m_metaData.hash = getHash(m_metaData.info);
 }
 
 VulkanBindGroupLayout::~VulkanBindGroupLayout()
@@ -220,15 +185,105 @@ VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getTextureDescriptorSetLayou
 
 VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
 {
-    return m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(m_metaData);
+    VulkanBindGroupLayoutMetaData metaData{
+        .info = m_info,
+    };
+    return m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(metaData);
 }
 
-VulkanBindGroupLayoutMetaData VulkanBindGroupLayout::getMetaData() const
+const VulkanBindGroupLayoutInfo& VulkanBindGroupLayout::getInfo() const
 {
-    return m_metaData;
+    return m_info;
 }
 
 // VulkanBindGroupLayoutCache
+
+size_t VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayoutMetaData& metaData) const
+{
+    size_t hash = 0;
+
+    for (const auto& buffer : metaData.info.buffers)
+    {
+        combineHash(hash, buffer.dynamicOffset);
+        combineHash(hash, buffer.index);
+        combineHash(hash, buffer.stages);
+        combineHash(hash, buffer.type);
+    }
+
+    for (const auto& sampler : metaData.info.samplers)
+    {
+        combineHash(hash, sampler.index);
+        combineHash(hash, sampler.stages);
+    }
+
+    for (const auto& texture : metaData.info.textures)
+    {
+        combineHash(hash, texture.index);
+        combineHash(hash, texture.stages);
+    }
+
+    for (const auto& storageTexture : metaData.info.storageTextures)
+    {
+        combineHash(hash, storageTexture.index);
+        combineHash(hash, storageTexture.stages);
+        combineHash(hash, storageTexture.type);
+    }
+
+    return hash;
+}
+
+bool VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayoutMetaData& lhs,
+                                                     const VulkanBindGroupLayoutMetaData& rhs) const
+{
+    if (lhs.info.buffers.size() != rhs.info.buffers.size() ||
+        lhs.info.samplers.size() != rhs.info.samplers.size() ||
+        lhs.info.textures.size() != rhs.info.textures.size() ||
+        lhs.info.storageTextures.size() != rhs.info.storageTextures.size())
+    {
+        return false;
+    }
+
+    for (auto i = 0; i < lhs.info.buffers.size(); ++i)
+    {
+        if (lhs.info.buffers[i].dynamicOffset != rhs.info.buffers[i].dynamicOffset ||
+            lhs.info.buffers[i].index != rhs.info.buffers[i].index ||
+            lhs.info.buffers[i].stages != rhs.info.buffers[i].stages ||
+            lhs.info.buffers[i].type != rhs.info.buffers[i].type)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.samplers.size(); ++i)
+    {
+        if (lhs.info.samplers[i].index != rhs.info.samplers[i].index ||
+            lhs.info.samplers[i].stages != rhs.info.samplers[i].stages)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.textures.size(); ++i)
+    {
+        if (lhs.info.textures[i].index != rhs.info.textures[i].index ||
+            lhs.info.textures[i].stages != rhs.info.textures[i].stages)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.storageTextures.size(); ++i)
+    {
+        if (lhs.info.storageTextures[i].index != rhs.info.storageTextures[i].index ||
+            lhs.info.storageTextures[i].stages != rhs.info.storageTextures[i].stages ||
+            lhs.info.storageTextures[i].type != rhs.info.storageTextures[i].type)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 VulkanBindGroupLayoutCache::VulkanBindGroupLayoutCache(VulkanDevice* device)
     : m_device(device)
@@ -242,13 +297,11 @@ VulkanBindGroupLayoutCache::~VulkanBindGroupLayoutCache()
 
 VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const VulkanBindGroupLayoutMetaData& metaData)
 {
-    auto it = m_bindGroupLayouts.find(metaData.hash);
+    auto it = m_bindGroupLayouts.find(metaData);
     if (it != m_bindGroupLayouts.end())
     {
         return it->second;
     }
-
-    auto hash = getHash(metaData.info);
 
     BindGroupLayoutDescriptor descriptor{};
     descriptor.buffers = metaData.info.buffers;
@@ -258,14 +311,14 @@ VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const
 
     VkDescriptorSetLayout layout = createDescriptorSetLayout(m_device, generateVulkanBindGroupLayoutDescriptor(descriptor));
 
-    m_bindGroupLayouts.insert({ hash, layout });
+    m_bindGroupLayouts.insert({ metaData, layout });
 
     return layout;
 }
 
 void VulkanBindGroupLayoutCache::clear()
 {
-    for (auto& [descriptor, layout] : m_bindGroupLayouts)
+    for (auto& [_, layout] : m_bindGroupLayouts)
     {
         m_device->getDeleter()->safeDestroy(layout);
     }

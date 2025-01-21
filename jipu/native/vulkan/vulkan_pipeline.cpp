@@ -16,7 +16,7 @@ namespace jipu
 VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
-    , m_layoutMetaData(downcast(descriptor.layout)->getMetaData())
+    , m_layoutInfo(downcast(descriptor.layout)->getInfo())
 {
     initialize();
 }
@@ -28,7 +28,10 @@ VulkanComputePipeline::~VulkanComputePipeline()
 
 VkPipelineLayout VulkanComputePipeline::getVkPipelineLayout() const
 {
-    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutMetaData);
+    VulkanPipelineLayoutMetaData layoutMetaData{
+        .info = m_layoutInfo,
+    };
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(layoutMetaData);
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -38,7 +41,7 @@ VkPipeline VulkanComputePipeline::getVkPipeline() const
 
 VkShaderModule VulkanComputePipeline::getShaderModule() const
 {
-    return downcast(m_descriptor.compute.shaderModule)->getVkShaderModule(m_descriptor.compute.entryPoint);
+    return downcast(m_descriptor.compute.shaderModule)->getVkShaderModule(downcast(m_descriptor.layout)->getInfo(), m_descriptor.compute.entryPoint);
 }
 
 void VulkanComputePipeline::initialize()
@@ -258,7 +261,7 @@ VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const Render
 std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor)
 {
     // Vertex Stage
-    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule)->getVkShaderModule(descriptor.vertex.entryPoint);
+    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule)->getVkShaderModule(downcast(descriptor.layout)->getInfo(), descriptor.vertex.entryPoint);
 
     VkPipelineShaderStageCreateInfo vertexStageInfo{};
     vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -267,7 +270,7 @@ std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const
     vertexStageInfo.pName = descriptor.vertex.entryPoint.c_str();
 
     // Fragment Stage
-    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule)->getVkShaderModule(descriptor.fragment.entryPoint);
+    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule)->getVkShaderModule(downcast(descriptor.layout)->getInfo(), descriptor.fragment.entryPoint);
 
     VkPipelineShaderStageCreateInfo fragmentStageInfo{};
     fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -428,7 +431,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPip
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
-    , m_layoutMetaData(m_descriptor.layout->getMetaData())
+    , m_layoutInfo(m_descriptor.layout->getInfo())
 {
     initialize();
 }
@@ -440,7 +443,10 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
 
 VkPipelineLayout VulkanRenderPipeline::getVkPipelineLayout() const
 {
-    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(m_layoutMetaData);
+    VulkanPipelineLayoutMetaData metaData{
+        .info = m_layoutInfo,
+    };
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(metaData);
 }
 
 std::vector<VkShaderModule> VulkanRenderPipeline::getShaderModules() const

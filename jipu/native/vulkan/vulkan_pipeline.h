@@ -39,7 +39,7 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const ComputePipelineDescriptor m_descriptor;
-    VulkanPipelineLayoutMetaData m_layoutMetaData{};
+    VulkanPipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
@@ -119,7 +119,7 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanRenderPipelineDescriptor m_descriptor;
-    VulkanPipelineLayoutMetaData m_layoutMetaData{};
+    VulkanPipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;

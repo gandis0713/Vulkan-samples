@@ -76,7 +76,7 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
     : BindGroup()
     , m_device(device)
     , m_descriptor(descriptor)
-    , m_layoutMetaData(downcast(m_descriptor.layout)->getMetaData())
+    , m_layoutInfo(downcast(m_descriptor.layout)->getInfo())
 {
     auto vkdescriptor = generateVulkanBindGroupDescriptor(descriptor);
 
@@ -180,24 +180,24 @@ const std::vector<TextureBinding>& VulkanBindGroup::getTextureBindings() const
     return m_descriptor.textures;
 }
 
-const VulkanBindGroupLayoutMetaData& VulkanBindGroup::getMetaData() const
+const VulkanBindGroupLayoutInfo& VulkanBindGroup::getLayoutInfo() const
 {
-    return m_layoutMetaData;
+    return m_layoutInfo;
 }
 
 const std::vector<BufferBindingLayout>& VulkanBindGroup::getBufferLayouts() const
 {
-    return m_layoutMetaData.info.buffers;
+    return m_layoutInfo.buffers;
 }
 
 const std::vector<SamplerBindingLayout>& VulkanBindGroup::getSamplerLayouts() const
 {
-    return m_layoutMetaData.info.samplers;
+    return m_layoutInfo.samplers;
 }
 
 const std::vector<TextureBindingLayout>& VulkanBindGroup::getTextureLayouts() const
 {
-    return m_layoutMetaData.info.textures;
+    return m_layoutInfo.textures;
 }
 
 VkDescriptorSet VulkanBindGroup::getVkDescriptorSet() const
