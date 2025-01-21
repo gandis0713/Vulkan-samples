@@ -8,7 +8,7 @@
         {
             "repository": "https://github.com/gandis0713/vcpkg-registry",
             "kind": "git",
-            "baseline": "78ab551229824ceed38811849f29eac70406771a",
+            "baseline": "e552bf3049f396fe0db615ff05f03cb28b2bee08",
             "packages": [
                 "hwcpipe",
                 "webgpu-headers",

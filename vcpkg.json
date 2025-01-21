@@ -36,6 +36,10 @@
     {
       "name": "imgui",
       "version": "1.91.6"
+    },
+    {
+      "name": "dawn",
+      "version": "2024-10-31#0"
     }
   ]
 }
