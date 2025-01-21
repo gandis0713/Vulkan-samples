@@ -45,16 +45,6 @@ void saveSPIRV(const std::vector<uint32_t>& spriv, const std::string& dir)
 namespace jipu
 {
 
-size_t getHash(const VulkanShaderModuleInfo& info)
-{
-    size_t hash = 0;
-
-    combineHash(hash, info.type);
-    combineHash(hash, info.code);
-
-    return hash;
-}
-
 static tint::spirv::writer::Options getSprivWriterOptions()
 {
     tint::spirv::writer::Options sprivWriterOptions;
@@ -90,12 +80,12 @@ VulkanShaderModule::~VulkanShaderModule()
     m_device->getDeleter()->safeDestroy(m_shaderModule);
 }
 
-VkShaderModule VulkanShaderModule::getVkShaderModule(const VulkanPipelineLayoutMetaData& layoutMetaData,
+VkShaderModule VulkanShaderModule::getVkShaderModule(const VulkanPipelineLayoutInfo& layoutInfo,
                                                      std::string_view entryPoint) const
 {
     VulkanShaderModuleMetaData metaData{
         .modulInfo = m_info,
-        .layoutInfo = layoutMetaData.info,
+        .layoutInfo = layoutInfo,
         .entryPoint = std::string(entryPoint)
     };
 
@@ -118,9 +108,9 @@ size_t VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMeta
     combineHash(hash, metaData.modulInfo.type);
     combineHash(hash, metaData.modulInfo.code);
 
-    for (const auto& bindGroupLayoutMetaData : metaData.layoutInfo.bindGroupLayoutMetaDatas)
+    for (const auto& bindGroupLayoutInfo : metaData.layoutInfo.bindGroupLayoutInfos)
     {
-        for (const auto& buffer : bindGroupLayoutMetaData.info.buffers)
+        for (const auto& buffer : bindGroupLayoutInfo.buffers)
         {
             combineHash(hash, buffer.dynamicOffset);
             combineHash(hash, buffer.index);
@@ -128,19 +118,19 @@ size_t VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMeta
             combineHash(hash, buffer.type);
         }
 
-        for (const auto& sampler : bindGroupLayoutMetaData.info.samplers)
+        for (const auto& sampler : bindGroupLayoutInfo.samplers)
         {
             combineHash(hash, sampler.index);
             combineHash(hash, sampler.stages);
         }
 
-        for (const auto& texture : bindGroupLayoutMetaData.info.textures)
+        for (const auto& texture : bindGroupLayoutInfo.textures)
         {
             combineHash(hash, texture.index);
             combineHash(hash, texture.stages);
         }
 
-        for (const auto& storageTexture : bindGroupLayoutMetaData.info.storageTextures)
+        for (const auto& storageTexture : bindGroupLayoutInfo.storageTextures)
         {
             combineHash(hash, storageTexture.index);
             combineHash(hash, storageTexture.stages);
@@ -157,55 +147,55 @@ bool VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMetaDa
     if (lhs.entryPoint != rhs.entryPoint ||
         lhs.modulInfo.type != rhs.modulInfo.type ||
         lhs.modulInfo.code != rhs.modulInfo.code ||
-        lhs.layoutInfo.bindGroupLayoutMetaDatas.size() != rhs.layoutInfo.bindGroupLayoutMetaDatas.size())
+        lhs.layoutInfo.bindGroupLayoutInfos.size() != rhs.layoutInfo.bindGroupLayoutInfos.size())
     {
         return false;
     }
 
-    for (auto i = 0; i < lhs.layoutInfo.bindGroupLayoutMetaDatas.size(); ++i)
+    for (auto i = 0; i < lhs.layoutInfo.bindGroupLayoutInfos.size(); ++i)
     {
-        if (lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers.size() != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers.size() ||
-            lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers.size() != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers.size() ||
-            lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures.size() != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures.size() ||
-            lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures.size() != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures.size())
+        if (lhs.layoutInfo.bindGroupLayoutInfos[i].buffers.size() != rhs.layoutInfo.bindGroupLayoutInfos[i].buffers.size() ||
+            lhs.layoutInfo.bindGroupLayoutInfos[i].samplers.size() != rhs.layoutInfo.bindGroupLayoutInfos[i].samplers.size() ||
+            lhs.layoutInfo.bindGroupLayoutInfos[i].textures.size() != rhs.layoutInfo.bindGroupLayoutInfos[i].textures.size() ||
+            lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures.size() != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures.size())
         {
             return false;
         }
 
-        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers.size(); ++j)
+        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutInfos[i].buffers.size(); ++j)
         {
-            if (lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].dynamicOffset != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].dynamicOffset ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].index != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].index ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].stages != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].stages ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].type != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.buffers[j].type)
+            if (lhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].dynamicOffset != rhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].dynamicOffset ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].index != rhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].index ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].stages != rhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].stages ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].type != rhs.layoutInfo.bindGroupLayoutInfos[i].buffers[j].type)
             {
                 return false;
             }
         }
 
-        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers.size(); ++j)
+        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutInfos[i].samplers.size(); ++j)
         {
-            if (lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers[j].index != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers[j].index ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers[j].stages != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.samplers[j].stages)
+            if (lhs.layoutInfo.bindGroupLayoutInfos[i].samplers[j].index != rhs.layoutInfo.bindGroupLayoutInfos[i].samplers[j].index ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].samplers[j].stages != rhs.layoutInfo.bindGroupLayoutInfos[i].samplers[j].stages)
             {
                 return false;
             }
         }
 
-        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures.size(); ++j)
+        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutInfos[i].textures.size(); ++j)
         {
-            if (lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures[j].index != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures[j].index ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures[j].stages != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.textures[j].stages)
+            if (lhs.layoutInfo.bindGroupLayoutInfos[i].textures[j].index != rhs.layoutInfo.bindGroupLayoutInfos[i].textures[j].index ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].textures[j].stages != rhs.layoutInfo.bindGroupLayoutInfos[i].textures[j].stages)
             {
                 return false;
             }
         }
 
-        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures.size(); ++j)
+        for (auto j = 0; j < lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures.size(); ++j)
         {
-            if (lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].index != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].index ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].stages != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].stages ||
-                lhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].type != rhs.layoutInfo.bindGroupLayoutMetaDatas[i].info.storageTextures[j].type)
+            if (lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].index != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].index ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].stages != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].stages ||
+                lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].type != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].type)
             {
                 return false;
             }
