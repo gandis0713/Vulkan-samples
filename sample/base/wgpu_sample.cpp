@@ -179,7 +179,7 @@ void WGPUSample::finalizeContext()
 
     if (m_device)
     {
-        // wgpu.DeviceDestroy(m_device);
+        wgpu.DeviceDestroy(m_device);
         wgpu.DeviceRelease(m_device);
         m_device = nullptr;
     }
