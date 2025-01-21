@@ -17,33 +17,78 @@
 #undef TINT_BUILD_MSL_WRITER
 #include "tint/tint.h"
 
-#define SAVE_SPIRV_FOR_TEST
-#if defined(SAVE_SPIRV_FOR_TEST) && defined(__APPLE__)
-#include "src/tint/lang/wgsl/ast/transform/canonicalize_entry_point_io.h"
-#include <fstream>
-
-uint32_t shaderCount = 0;
-void saveSPIRV(const std::vector<uint32_t>& spriv, const std::string& dir)
-{
-    auto save = [&](const std::vector<uint32_t>& spirv, const std::string& filename) -> void {
-        std::ofstream file(filename, std::ios::binary);
-
-        if (!file.is_open())
-        {
-            throw std::runtime_error("Failed to open file for writing: " + filename);
-        }
-
-        file.write(reinterpret_cast<const char*>(spirv.data()), spirv.size() * sizeof(uint32_t));
-        file.close();
-    };
-
-    save(spriv, dir + "test" + std::to_string(shaderCount) + ".spv");
-    shaderCount++;
-}
-#endif
-
 namespace jipu
 {
+
+static tint::spirv::writer::Bindings generateBindings(const VulkanPipelineLayoutInfo& layoutInfo)
+{
+    tint::spirv::writer::Bindings bindings{};
+
+    for (auto groupIndex = 0; groupIndex < layoutInfo.bindGroupLayoutInfos.size(); ++groupIndex)
+    {
+        const auto& bindGroupLayoutInfo = layoutInfo.bindGroupLayoutInfos[groupIndex];
+        for (const auto& buffer : bindGroupLayoutInfo.buffers)
+        {
+            if (buffer.type == BufferBindingType::kUniform)
+            {
+                tint::BindingPoint bindingPoint{};
+                tint::spirv::writer::binding::Uniform uniform;
+
+                uniform.binding = buffer.index;
+                uniform.group = groupIndex;
+
+                bindingPoint.group = uniform.group;
+                bindingPoint.binding = uniform.binding;
+
+                bindings.uniform[bindingPoint] = uniform;
+            }
+        }
+
+        for (const auto& sampler : bindGroupLayoutInfo.samplers)
+        {
+            tint::BindingPoint bindingPoint{};
+            tint::spirv::writer::binding::Sampler samplerBinding;
+
+            samplerBinding.binding = sampler.index;
+            samplerBinding.group = groupIndex;
+
+            bindingPoint.group = samplerBinding.group;
+            bindingPoint.binding = samplerBinding.binding;
+
+            bindings.sampler[bindingPoint] = samplerBinding;
+        }
+
+        for (const auto& texture : bindGroupLayoutInfo.textures)
+        {
+            tint::BindingPoint bindingPoint{};
+            tint::spirv::writer::binding::Texture textureBinding;
+
+            textureBinding.binding = texture.index;
+            textureBinding.group = groupIndex;
+
+            bindingPoint.group = textureBinding.group;
+            bindingPoint.binding = textureBinding.binding;
+
+            bindings.texture[bindingPoint] = textureBinding;
+        }
+
+        for (const auto& storageTexture : bindGroupLayoutInfo.storageTextures)
+        {
+            tint::BindingPoint bindingPoint{};
+            tint::spirv::writer::binding::StorageTexture storageTextureBinding;
+
+            storageTextureBinding.binding = storageTexture.index;
+            storageTextureBinding.group = groupIndex;
+
+            bindingPoint.group = storageTextureBinding.group;
+            bindingPoint.binding = storageTextureBinding.binding;
+
+            bindings.storage_texture[bindingPoint] = storageTextureBinding;
+        }
+    }
+
+    return bindings;
+}
 
 static tint::spirv::writer::Options getSprivWriterOptions()
 {
@@ -256,10 +301,9 @@ VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShade
 {
     auto tintFile = std::make_unique<tint::Source::File>("", std::string_view(metaData.modulInfo.code));
 
-    tint::wgsl::reader::Options wgslReaderOptions;
-    {
-        wgslReaderOptions.allowed_features = tint::wgsl::AllowedFeatures::Everything();
-    }
+    tint::wgsl::reader::Options wgslReaderOptions{
+        .allowed_features = tint::wgsl::AllowedFeatures::Everything(),
+    };
 
     tint::Program tintProgram = tint::wgsl::reader::Parse(tintFile.get(), wgslReaderOptions);
 
@@ -283,6 +327,7 @@ VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShade
     }
 
     tint::spirv::writer::Options sprivWriterOptions = getSprivWriterOptions();
+    sprivWriterOptions.bindings = generateBindings(metaData.layoutInfo);
     auto tintResult = tint::spirv::writer::Generate(ir.Get(), sprivWriterOptions);
     if (tintResult != tint::Success)
     {
@@ -291,10 +336,6 @@ VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShade
     }
 
     std::vector<uint32_t> spirv = std::move(tintResult.Get().spirv);
-#if defined(SAVE_SPIRV_FOR_TEST) && defined(__APPLE__)
-    saveSPIRV(spirv, std::string("/Users/changhyun/Desktop/git/github/gandis/jipu/"));
-#endif
-
     std::vector<char> spirvData(spirv.size() * sizeof(uint32_t));
     std::memcpy(spirvData.data(), spirv.data(), spirvData.size());
 

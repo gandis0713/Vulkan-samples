@@ -28,7 +28,7 @@ public:
     VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor);
     ~VulkanShaderModule() override;
 
-    VkShaderModule getVkShaderModule(const VulkanPipelineLayoutMetaData& layoutMetaData,
+    VkShaderModule getVkShaderModule(const VulkanPipelineLayoutInfo& layoutInfo,
                                      const std::string_view entryPoint) const;
     const VulkanShaderModuleInfo& getInfo() const;
 
