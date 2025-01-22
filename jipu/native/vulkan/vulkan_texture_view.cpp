@@ -65,6 +65,26 @@ uint32_t VulkanTextureView::getDepth() const
     return m_texture->getDepth();
 }
 
+uint32_t VulkanTextureView::getBaseMipLevel() const
+{
+    return m_descriptor.baseMipLevel;
+}
+
+uint32_t VulkanTextureView::getMipLevelCount() const
+{
+    return m_descriptor.mipLevelCount;
+}
+
+uint32_t VulkanTextureView::getBaseArrayLayer() const
+{
+    return m_descriptor.baseArrayLayer;
+}
+
+uint32_t VulkanTextureView::getArrayLayerCount() const
+{
+    return m_descriptor.arrayLayerCount;
+}
+
 Texture* VulkanTextureView::getTexture() const
 {
     return m_texture;

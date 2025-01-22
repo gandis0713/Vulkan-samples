@@ -53,6 +53,10 @@ public:
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
     virtual uint32_t getDepth() const = 0;
+    virtual uint32_t getBaseMipLevel() const = 0;
+    virtual uint32_t getMipLevelCount() const = 0;
+    virtual uint32_t getBaseArrayLayer() const = 0;
+    virtual uint32_t getArrayLayerCount() const = 0;
 
 protected:
     TextureView() = default;

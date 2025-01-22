@@ -24,6 +24,10 @@ public:
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
     uint32_t getDepth() const override;
+    uint32_t getBaseMipLevel() const override;
+    uint32_t getMipLevelCount() const override;
+    uint32_t getBaseArrayLayer() const override;
+    uint32_t getArrayLayerCount() const override;
 
 public:
     VkImageView getVkImageView() const;
