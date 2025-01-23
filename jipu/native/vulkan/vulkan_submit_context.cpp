@@ -488,7 +488,6 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
 
     VulkanSubmit currentSubmit = getDefaultSubmit(device);
     std::vector<VulkanCommandBuffer*> submittedCommandBuffers{};
-    spdlog::debug("{}: {}", __func__, commandBuffers.size());
     for (const auto commandBuffer : commandBuffers)
     {
         auto vulkanCommandBuffer = downcast(commandBuffer);
