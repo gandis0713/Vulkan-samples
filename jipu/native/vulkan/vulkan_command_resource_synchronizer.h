@@ -71,9 +71,9 @@ public:
 
 private:
     bool findSrcBuffer(Buffer* buffer) const;
-    bool findSrcTexture(Texture* texture) const;
+    bool findSrcTextureView(TextureView* textureView) const;
     BufferUsageInfo extractSrcBufferUsageInfo(Buffer* buffer);
-    TextureUsageInfo extractSrcTextureUsageInfo(Texture* texture);
+    TextureUsageInfo extractSrcTextureUsageInfo(TextureView* textureView);
 
     void increaseOperationIndex();
     int32_t currentOperationIndex() const;
@@ -103,11 +103,11 @@ private:
     struct
     {
         std::unordered_set<Buffer*> buffers{};
-        std::unordered_set<Texture*> textures{};
+        std::unordered_set<TextureView*> textureViews{};
         void clear()
         {
             buffers.clear();
-            textures.clear();
+            textureViews.clear();
         }
     } m_activatedDstResource;
 };

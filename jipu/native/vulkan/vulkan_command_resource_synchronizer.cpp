@@ -41,7 +41,7 @@ void VulkanCommandResourceSynchronizer::setComputeBindGroup(SetBindGroupCommand*
     auto textureBindings = command->bindGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
-        m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());
+        m_activatedDstResource.textureViews.insert(textureBinding.textureView);
     }
 }
 
@@ -71,9 +71,9 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
     }
 
     // all dst texture resources in a render pass are active
-    for (auto& [texture, _] : m_operationResourceInfos[currentOperationIndex()].dst.textures)
+    for (auto& [texture, _] : m_operationResourceInfos[currentOperationIndex()].dst.textureViews)
     {
-        m_activatedDstResource.textures.insert(texture);
+        m_activatedDstResource.textureViews.insert(texture);
     }
 
     // all resources in a render pass should be synchronized before the render pass
@@ -146,7 +146,7 @@ void VulkanCommandResourceSynchronizer::setRenderBindGroup(SetBindGroupCommand* 
     auto textureBindings = command->bindGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
-        m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());
+        m_activatedDstResource.textureViews.insert(textureBinding.textureView);
     }
 }
 
@@ -217,14 +217,14 @@ bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
     return it != end;
 }
 
-bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
+bool VulkanCommandResourceSynchronizer::findSrcTextureView(TextureView* textureView) const
 {
     auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
-    auto it = std::find_if(begin, end, [texture](const OperationResourceInfo& operationResourceInfo) {
-        return operationResourceInfo.src.textures.find(texture) != operationResourceInfo.src.textures.end();
+    auto it = std::find_if(begin, end, [textureView](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.textureViews.contains(textureView);
     });
 
     return it != end;
@@ -246,18 +246,18 @@ BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buf
     return bufferUsageInfo;
 }
 
-TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
+TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(TextureView* textureView)
 {
     auto& operationResourceInfos = m_operationResourceInfos;
 
     auto begin = operationResourceInfos.begin();
     auto end = operationResourceInfos.begin() + currentOperationIndex();
-    auto it = std::find_if(begin, end, [texture](const OperationResourceInfo& operationResourceInfo) {
-        return operationResourceInfo.src.textures.find(texture) != operationResourceInfo.src.textures.end();
+    auto it = std::find_if(begin, end, [textureView](const OperationResourceInfo& operationResourceInfo) {
+        return operationResourceInfo.src.textureViews.find(textureView) != operationResourceInfo.src.textureViews.end();
     });
 
-    auto textureUsageInfo = it->src.textures.at(texture);
-    it->src.textures.erase(texture); // remove it
+    auto textureUsageInfo = it->src.textureViews.at(textureView);
+    it->src.textureViews.erase(textureView); // remove it
 
     return textureUsageInfo;
 }
@@ -288,10 +288,10 @@ void VulkanCommandResourceSynchronizer::sync()
     auto& currentOperationResourceInfo = getCurrentOperationResourceInfo();
 
     // spdlog::trace("current operation buffers src: {}", currentOperationResourceInfo.src.buffers.size());
-    // spdlog::trace("current operation textures src: {}", currentOperationResourceInfo.src.textures.size());
+    // spdlog::trace("current operation textureViews src: {}", currentOperationResourceInfo.src.textureViews.size());
 
     // spdlog::trace("current operation buffers dst: {}", currentOperationResourceInfo.dst.buffers.size());
-    // spdlog::trace("current operation textures dst: {}", currentOperationResourceInfo.dst.textures.size());
+    // spdlog::trace("current operation textureViews dst: {}", currentOperationResourceInfo.dst.textureViews.size());
 
     // buffers
     auto& currentDstOperationBuffers = currentOperationResourceInfo.dst.buffers;
@@ -329,21 +329,22 @@ void VulkanCommandResourceSynchronizer::sync()
     }
 
     // textures
-    auto& currentDstOperationTextures = currentOperationResourceInfo.dst.textures;
-    for (auto it = currentDstOperationTextures.begin(); it != currentDstOperationTextures.end();)
+    auto& currentDstOperationTextureViews = currentOperationResourceInfo.dst.textureViews;
+    for (auto it = currentDstOperationTextureViews.begin(); it != currentDstOperationTextureViews.end();)
     {
-        auto texture = it->first;
+        auto textureView = it->first;
         auto dstTextureUsageInfo = it->second;
 
-        if (m_activatedDstResource.textures.contains(texture))
+        if (m_activatedDstResource.textureViews.contains(textureView))
         {
-            if (findSrcTexture(texture))
+            if (findSrcTextureView(textureView))
             {
-                auto srcTextureUsageInfo = extractSrcTextureUsageInfo(texture);
+                auto srcTextureUsageInfo = extractSrcTextureUsageInfo(textureView);
 
                 pipelineBarrier.srcStageMask |= srcTextureUsageInfo.stageFlags;
                 pipelineBarrier.dstStageMask |= dstTextureUsageInfo.stageFlags;
-                pipelineBarrier.imageMemoryBarriers.push_back({
+
+                VkImageMemoryBarrier imageMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
                     .srcAccessMask = srcTextureUsageInfo.accessFlags,
@@ -352,17 +353,18 @@ void VulkanCommandResourceSynchronizer::sync()
                     .newLayout = dstTextureUsageInfo.layout,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = downcast(texture)->getVkImage(),
+                    .image = downcast(textureView->getTexture())->getVkImage(),
                     .subresourceRange = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = VK_REMAINING_MIP_LEVELS,
-                        .baseArrayLayer = 0,
-                        .layerCount = VK_REMAINING_ARRAY_LAYERS,
+                        .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
+                        .levelCount = dstTextureUsageInfo.mipLevelCount,
+                        .baseArrayLayer = dstTextureUsageInfo.baseArrayLayer,
+                        .layerCount = dstTextureUsageInfo.arrayLayerCount,
                     },
-                });
+                };
+                pipelineBarrier.imageMemoryBarriers.push_back(imageMemoryBarrier);
 
-                it = currentDstOperationTextures.erase(it); // extract dst resource
+                it = currentDstOperationTextureViews.erase(it); // extract dst resource
                 continue;
             }
         }
