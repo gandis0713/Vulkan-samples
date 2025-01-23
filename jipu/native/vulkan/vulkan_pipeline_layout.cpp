@@ -72,7 +72,7 @@ size_t VulkanPipelineLayoutCache::Functor::operator()(const VulkanPipelineLayout
         {
             combineHash(hash, storageTexture.index);
             combineHash(hash, storageTexture.stages);
-            combineHash(hash, storageTexture.type);
+            combineHash(hash, storageTexture.access);
         }
     }
 
@@ -130,7 +130,7 @@ bool VulkanPipelineLayoutCache::Functor::operator()(const VulkanPipelineLayoutMe
         {
             if (lhs.info.bindGroupLayoutInfos[i].storageTextures[j].index != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].index ||
                 lhs.info.bindGroupLayoutInfos[i].storageTextures[j].stages != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].stages ||
-                lhs.info.bindGroupLayoutInfos[i].storageTextures[j].type != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].type)
+                lhs.info.bindGroupLayoutInfos[i].storageTextures[j].access != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].access)
             {
                 return false;
             }

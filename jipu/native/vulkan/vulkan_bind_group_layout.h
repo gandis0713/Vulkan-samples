@@ -94,7 +94,7 @@ private:
 VulkanBindGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor);
 
 // Convert Helper
-VkDescriptorType ToVkDescriptorType(StorageTextureBindingType type);
+VkDescriptorType ToVkDescriptorType(StorageTextureAccess access);
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);

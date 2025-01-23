@@ -15,7 +15,7 @@ enum class BufferBindingType
     kReadOnlyStorage,
 };
 
-enum class StorageTextureBindingType
+enum class StorageTextureAccess
 {
     kUndefined = 0,
     kWriteOnly,
@@ -60,7 +60,7 @@ struct StorageTextureBindingLayout
     /// @brief The index of binding.
     uint32_t index = 0;
     BindingStageFlags stages = 0u;
-    StorageTextureBindingType type = StorageTextureBindingType::kUndefined;
+    StorageTextureAccess access = StorageTextureAccess::kUndefined;
 };
 
 struct BindGroupLayoutDescriptor

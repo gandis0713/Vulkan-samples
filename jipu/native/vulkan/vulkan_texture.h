@@ -4,6 +4,7 @@
 #include "jipu/common/cast.h"
 #include "texture.h"
 #include "vulkan_api.h"
+#include "vulkan_bind_group_layout.h"
 #include "vulkan_export.h"
 #include "vulkan_resource.h"
 #include "vulkan_texture_view.h"
@@ -83,6 +84,7 @@ public:
 protected:
     VulkanDevice* m_device = nullptr;
     const VulkanTextureDescriptor m_descriptor{};
+    std::vector<VkImageLayout> m_layouts{};
 
 private:
     VulkanTextureResource m_resource;
@@ -101,6 +103,8 @@ VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat format);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
+VkAccessFlags ToVkAccessFlags(StorageTextureAccess access);
+StorageTextureAccess ToStorageTextureAccess(VkAccessFlags access);
 VkSampleCountFlagBits VULKAN_EXPORT ToVkSampleCountFlagBits(uint32_t count);
 uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 

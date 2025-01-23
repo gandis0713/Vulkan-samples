@@ -44,7 +44,7 @@ WebGPUBindGroupLayout* WebGPUBindGroupLayout::create(WebGPUDevice* wgpuDevice, W
             layoutDescriptor.storageTextures.push_back(StorageTextureBindingLayout{
                 .index = entry.binding,
                 .stages = WGPUToBindingStageFlags(entry.visibility),
-                .type = WGPUToStorageTextureBindingType(entry.storageTexture.access),
+                .access = WGPUToStorageTextureAccess(entry.storageTexture.access),
             });
         }
     }
@@ -101,15 +101,15 @@ WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type)
     }
 }
 
-WGPUStorageTextureAccess ToWGPUStorageTextureAccess(StorageTextureBindingType type)
+WGPUStorageTextureAccess ToWGPUStorageTextureAccess(StorageTextureAccess type)
 {
     switch (type)
     {
-    case StorageTextureBindingType::kWriteOnly:
+    case StorageTextureAccess::kWriteOnly:
         return WGPUStorageTextureAccess_WriteOnly;
-    case StorageTextureBindingType::kReadOnly:
+    case StorageTextureAccess::kReadOnly:
         return WGPUStorageTextureAccess_ReadOnly;
-    case StorageTextureBindingType::kReadWrite:
+    case StorageTextureAccess::kReadWrite:
         return WGPUStorageTextureAccess_ReadWrite;
     default:
         return WGPUStorageTextureAccess_Undefined;
@@ -150,18 +150,18 @@ BufferBindingType WGPUToBufferBindingType(WGPUBufferBindingType type)
     }
 }
 
-StorageTextureBindingType WGPUToStorageTextureBindingType(WGPUStorageTextureAccess access)
+StorageTextureAccess WGPUToStorageTextureAccess(WGPUStorageTextureAccess access)
 {
     switch (access)
     {
     case WGPUStorageTextureAccess_WriteOnly:
-        return StorageTextureBindingType::kWriteOnly;
+        return StorageTextureAccess::kWriteOnly;
     case WGPUStorageTextureAccess_ReadOnly:
-        return StorageTextureBindingType::kReadOnly;
+        return StorageTextureAccess::kReadOnly;
     case WGPUStorageTextureAccess_ReadWrite:
-        return StorageTextureBindingType::kReadWrite;
+        return StorageTextureAccess::kReadWrite;
     default:
-        return StorageTextureBindingType::kUndefined;
+        return StorageTextureAccess::kUndefined;
     }
 }
 

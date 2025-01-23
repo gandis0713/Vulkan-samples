@@ -55,7 +55,7 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
     {
         const auto& storageTexture = descriptor.storageTextures[i];
         vkdescriptor.textures[i] = { .binding = storageTexture.index,
-                                     .descriptorType = ToVkDescriptorType(storageTexture.type),
+                                     .descriptorType = ToVkDescriptorType(storageTexture.access),
                                      .descriptorCount = 1,
                                      .stageFlags = ToVkShaderStageFlags(storageTexture.stages),
                                      .pImmutableSamplers = nullptr };
@@ -226,7 +226,7 @@ size_t VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayo
     {
         combineHash(hash, storageTexture.index);
         combineHash(hash, storageTexture.stages);
-        combineHash(hash, storageTexture.type);
+        combineHash(hash, storageTexture.access);
     }
 
     return hash;
@@ -276,7 +276,7 @@ bool VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayout
     {
         if (lhs.info.storageTextures[i].index != rhs.info.storageTextures[i].index ||
             lhs.info.storageTextures[i].stages != rhs.info.storageTextures[i].stages ||
-            lhs.info.storageTextures[i].type != rhs.info.storageTextures[i].type)
+            lhs.info.storageTextures[i].access != rhs.info.storageTextures[i].access)
         {
             return false;
         }
@@ -328,19 +328,17 @@ void VulkanBindGroupLayoutCache::clear()
 
 // Convert Helper
 
-VkDescriptorType ToVkDescriptorType(StorageTextureBindingType type)
+VkDescriptorType ToVkDescriptorType(StorageTextureAccess access)
 {
-    switch (type)
+    switch (access)
     {
-    case StorageTextureBindingType::kReadOnly:
-        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    case StorageTextureBindingType::kWriteOnly:
-        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    case StorageTextureBindingType::kReadWrite:
+    case StorageTextureAccess::kReadOnly:
+    case StorageTextureAccess::kWriteOnly:
+    case StorageTextureAccess::kReadWrite:
         return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     default:
-    case StorageTextureBindingType::kUndefined:
-        throw std::runtime_error(fmt::format("Failed to support type [{}] for VkDescriptorType.", static_cast<int32_t>(type)));
+    case StorageTextureAccess::kUndefined:
+        throw std::runtime_error(fmt::format("Failed to support access [{}] for VkDescriptorType.", static_cast<int32_t>(access)));
         return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     }
 }

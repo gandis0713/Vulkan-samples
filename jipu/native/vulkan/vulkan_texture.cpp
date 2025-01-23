@@ -90,6 +90,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         m_resource.image = m_descriptor.image;
         m_owner = m_descriptor.owner;
     }
+
+    m_layouts.resize(m_descriptor.mipLevels, m_descriptor.initialLayout);
 }
 
 VulkanTexture::~VulkanTexture()
@@ -212,8 +214,20 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
 
 void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
 {
+    if (commandBuffer == VK_NULL_HANDLE)
+        throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
+
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    const auto& range = barrier.subresourceRange;
+    for (auto i = range.baseMipLevel; i < range.baseMipLevel + range.levelCount; ++i)
+    {
+        if (m_layouts[i] != barrier.oldLayout)
+            throw std::runtime_error("Invalid old layout.");
+
+        m_layouts[i] = barrier.newLayout;
+    }
 
     vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
@@ -774,6 +788,36 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat fo
     return flags;
 }
 
+VkAccessFlags ToVkAccessFlags(StorageTextureAccess access)
+{
+    switch (access)
+    {
+    case StorageTextureAccess::kReadOnly:
+        return VK_ACCESS_SHADER_READ_BIT;
+    case StorageTextureAccess::kWriteOnly:
+        return VK_ACCESS_SHADER_WRITE_BIT;
+    case StorageTextureAccess::kReadWrite:
+        return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    default:
+        throw std::runtime_error(fmt::format("{} access does not support.", static_cast<uint32_t>(access)));
+    }
+}
+
+StorageTextureAccess ToStorageTextureAccess(VkAccessFlags access)
+{
+    switch (access)
+    {
+    case VK_ACCESS_SHADER_READ_BIT:
+        return StorageTextureAccess::kReadOnly;
+    case VK_ACCESS_SHADER_WRITE_BIT:
+        return StorageTextureAccess::kWriteOnly;
+    case VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT:
+        return StorageTextureAccess::kReadWrite;
+    default:
+        throw std::runtime_error(fmt::format("{} access does not support.", static_cast<uint32_t>(access)));
+    }
+}
+
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
 {
     return count <= 1 ? VK_SAMPLE_COUNT_1_BIT : VK_SAMPLE_COUNT_4_BIT;
@@ -910,6 +954,10 @@ bool isSupportedVkFormat(VkFormat format)
 
 VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
 {
+    if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
+    {
+        return VK_IMAGE_LAYOUT_GENERAL;
+    }
     if (usage & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT || usage & VK_IMAGE_USAGE_SAMPLED_BIT)
     {
         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -917,10 +965,6 @@ VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
     if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
     {
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    }
-    if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
-    {
-        return VK_IMAGE_LAYOUT_GENERAL;
     }
     if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
