@@ -25,7 +25,6 @@ void VulkanCommandResourceTracker::setComputePipeline(SetComputePipelineCommand*
 void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* command)
 {
     // dst
-    // if (false) // TODO
     {
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
