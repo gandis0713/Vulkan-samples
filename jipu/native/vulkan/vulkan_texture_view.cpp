@@ -18,10 +18,8 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
     imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
     imageViewCreateInfo.format = ToVkFormat(texture->getFormat());
 
-    imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    imageViewCreateInfo.components = VkComponentMapping{ VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+                                                         VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 
     imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
     imageViewCreateInfo.subresourceRange.baseMipLevel = descriptor.baseMipLevel;
