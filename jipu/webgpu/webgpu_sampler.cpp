@@ -44,12 +44,12 @@ WGPUSamplerDescriptor GenerateWGPUSamplerDescriptor()
     descriptor.addressModeU = WGPUAddressMode::WGPUAddressMode_ClampToEdge;
     descriptor.addressModeV = WGPUAddressMode::WGPUAddressMode_ClampToEdge;
     descriptor.addressModeW = WGPUAddressMode::WGPUAddressMode_ClampToEdge;
-    descriptor.magFilter = WGPUFilterMode::WGPUFilterMode_Linear;
-    descriptor.minFilter = WGPUFilterMode::WGPUFilterMode_Linear;
-    descriptor.mipmapFilter = WGPUMipmapFilterMode::WGPUMipmapFilterMode_Linear;
+    descriptor.magFilter = WGPUFilterMode::WGPUFilterMode_Nearest;
+    descriptor.minFilter = WGPUFilterMode::WGPUFilterMode_Nearest;
+    descriptor.mipmapFilter = WGPUMipmapFilterMode::WGPUMipmapFilterMode_Nearest;
     descriptor.lodMinClamp = 0.0f;
     descriptor.lodMaxClamp = 32.0f;
-    descriptor.compare = WGPUCompareFunction::WGPUCompareFunction_Never;
+    descriptor.compare = WGPUCompareFunction::WGPUCompareFunction_Undefined;
     descriptor.maxAnisotropy = 1;
 
     return descriptor;
