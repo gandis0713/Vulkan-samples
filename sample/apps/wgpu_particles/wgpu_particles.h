@@ -14,6 +14,7 @@ public:
     ~WGPUParticlesSample() override;
 
     void init() override;
+    void onBeforeUpdate() override;
     void onUpdate() override;
     void onDraw() override;
 

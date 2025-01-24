@@ -28,6 +28,20 @@ void WGPUParticlesSample::init()
     changeAPI(APIType::kJipu);
 }
 
+void WGPUParticlesSample::onBeforeUpdate()
+{
+    WGPUSample::onBeforeUpdate();
+
+    recordImGui({ [&]() {
+        windowImGui(
+            "Particles", { [&]() {
+                ImGui::Checkbox("simulate", &m_simulationParams.simulate);
+                ImGui::SliderFloat("deltaTime", &m_simulationParams.deltaTime, 0.001f, 2.000f, "%.3f");
+                ImGui::SliderFloat("brightnessFactor", &m_simulationParams.brightnessFactor, 0.0f, 4.0f, "%.1f");
+            } });
+    } });
+}
+
 void WGPUParticlesSample::onUpdate()
 {
     WGPUSample::onUpdate();
