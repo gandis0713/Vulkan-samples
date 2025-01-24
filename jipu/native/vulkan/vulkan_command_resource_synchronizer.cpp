@@ -279,12 +279,7 @@ int32_t VulkanCommandResourceSynchronizer::currentOperationIndex() const
 
 void VulkanCommandResourceSynchronizer::sync()
 {
-    PipelineBarrier pipelineBarrier{
-        .srcStageMask = VK_PIPELINE_STAGE_NONE,
-        .dstStageMask = VK_PIPELINE_STAGE_NONE,
-        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
-    };
-
+    VkCommandBuffer commandBuffer = m_commandRecorder->getCommandBuffer()->getVkCommandBuffer();
     auto& currentOperationResourceInfo = getCurrentOperationResourceInfo();
 
     // spdlog::trace("current operation buffers src: {}", currentOperationResourceInfo.src.buffers.size());
@@ -304,23 +299,24 @@ void VulkanCommandResourceSynchronizer::sync()
         {
             if (findSrcBuffer(buffer))
             {
+                auto vulkanBuffer = downcast(buffer);
                 auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer); // extract src resource
 
-                pipelineBarrier.srcStageMask |= srcBufferUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= dstBufferUsageInfo.stageFlags;
-                pipelineBarrier.bufferMemoryBarriers.push_back({
+                VkBufferMemoryBarrier bufferMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
                     .pNext = nullptr,
                     .srcAccessMask = srcBufferUsageInfo.accessFlags,
                     .dstAccessMask = dstBufferUsageInfo.accessFlags,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .buffer = downcast(buffer)->getVkBuffer(),
+                    .buffer = vulkanBuffer->getVkBuffer(),
                     .offset = 0,
-                    .size = downcast(buffer)->getSize(),
-                });
+                    .size = VK_WHOLE_SIZE,
+                };
 
                 it = currentDstOperationBuffers.erase(it); // extract dst resource
+
+                vulkanBuffer->cmdPipelineBarrier(commandBuffer, srcBufferUsageInfo.stageFlags, dstBufferUsageInfo.stageFlags, bufferMemoryBarrier);
                 continue;
             }
         }
@@ -341,9 +337,7 @@ void VulkanCommandResourceSynchronizer::sync()
             {
                 auto srcTextureUsageInfo = extractSrcTextureUsageInfo(textureView);
 
-                pipelineBarrier.srcStageMask |= srcTextureUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= dstTextureUsageInfo.stageFlags;
-
+                auto vulkanTexture = downcast(textureView->getTexture());
                 VkImageMemoryBarrier imageMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
@@ -353,7 +347,7 @@ void VulkanCommandResourceSynchronizer::sync()
                     .newLayout = dstTextureUsageInfo.layout,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = downcast(textureView->getTexture())->getVkImage(),
+                    .image = vulkanTexture->getVkImage(),
                     .subresourceRange = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                         .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
@@ -362,20 +356,15 @@ void VulkanCommandResourceSynchronizer::sync()
                         .layerCount = dstTextureUsageInfo.arrayLayerCount,
                     },
                 };
-                pipelineBarrier.imageMemoryBarriers.push_back(imageMemoryBarrier);
 
                 it = currentDstOperationTextureViews.erase(it); // extract dst resource
+
+                vulkanTexture->cmdPipelineBarrier(commandBuffer, srcTextureUsageInfo.stageFlags, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
                 continue;
             }
         }
 
         ++it; // increase iterator
-    }
-
-    // cmd pipeline barrier
-    if (!pipelineBarrier.bufferMemoryBarriers.empty() || !pipelineBarrier.imageMemoryBarriers.empty())
-    {
-        cmdPipelineBarrier(pipelineBarrier);
     }
 
     // clear active resource
