@@ -54,6 +54,8 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
     }
 
     vkdescriptor.textures.resize(textureSize);
+
+    auto textureDescriptorSetLayouts = downcast(descriptor.layout)->getTextureDescriptorSetLayouts();
     // update texture
     for (auto i = 0; i < textureSize; ++i)
     {
@@ -64,7 +66,24 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageView = vulkanTextureView->getVkImageView();
-        imageInfo.imageLayout = vulkanTexture->getFinalLayout();
+
+        // set image layout by shader stage
+        // TODO: image layout
+        {
+            auto stageFlags = textureDescriptorSetLayouts[i].stageFlags;
+            if (stageFlags & VK_SHADER_STAGE_COMPUTE_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            else if (stageFlags & VK_SHADER_STAGE_VERTEX_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            else if (stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+        }
 
         vkdescriptor.textures[i] = imageInfo;
     }
