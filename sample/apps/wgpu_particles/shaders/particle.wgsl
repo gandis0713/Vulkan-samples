@@ -76,7 +76,8 @@ struct Particle {
 }
 
 struct Particles {
-  particles : array<Particle>,
+  // particles : array<Particle>, // TODO: This is original code, but not supported yet in moltenVK
+  particles : array<Particle, 50000>,
 }
 
 @binding(0) @group(0) var<uniform> sim_params : SimulationParams;
@@ -89,7 +90,12 @@ fn simulate(@builtin(global_invocation_id) global_invocation_id : vec3u) {
 
   init_rand(idx, sim_params.seed);
 
-  var particle = data.particles[idx];
+  // var particle = data.particles[idx]; // TODO: This is original code, but not supported yet in moltenVK
+  var particle : Particle;
+  particle.position = data.particles[idx].position;
+  particle.lifetime = data.particles[idx].lifetime;
+  particle.color = data.particles[idx].color;
+  particle.velocity = data.particles[idx].velocity;
 
   // Apply gravity
   particle.velocity.z = particle.velocity.z - sim_params.deltaTime * 0.5;
