@@ -50,6 +50,8 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
                 .arrayLayerCount = vulkanTextureView->getArrayLayerCount(),
             };
         }
+
+        // TODO: storage texture
     }
 
     // src
@@ -77,6 +79,8 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
                 .arrayLayerCount = vulkanTextureView->getArrayLayerCount(),
             };
         }
+
+        // TODO: storage texture
     }
 }
 
@@ -119,7 +123,7 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             auto vulkanTextureRenderView = downcast(framebufferColorAttachment.renderView);
             m_currentOperationResourceInfo.dst.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                .accessFlags = VK_ACCESS_NONE,
+                .accessFlags = VK_ACCESS_SHADER_READ_BIT,
                 .layout = renderPassColorAttachment.renderAttachment.initialLayout,
                 .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
                 .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
@@ -142,7 +146,7 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
                 auto vulkanTextureResolveView = downcast(framebufferColorAttachment.resolveView);
                 m_currentOperationResourceInfo.dst.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                    .accessFlags = VK_ACCESS_NONE,
+                    .accessFlags = VK_ACCESS_SHADER_READ_BIT,
                     .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
                     .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
                     .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
