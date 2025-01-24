@@ -149,5 +149,6 @@ VkFrontFace ToVkFrontFace(FrontFace frontFace);
 VkBlendOp ToVkBlendOp(BlendOperation op);
 VkBlendFactor ToVkBlendFactor(BlendFactor factor);
 VkVertexInputRate ToVkVertexInputRate(VertexMode mode);
+VkCompareOp ToVkCompareOp(CompareFunction compareFunction);
 
 } // namespace jipu

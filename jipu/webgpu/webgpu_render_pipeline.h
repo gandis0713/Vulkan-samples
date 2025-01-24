@@ -45,6 +45,7 @@ WGPUCullMode ToWGPUCullMode(CullMode mode);
 WGPUFrontFace ToWGPUFrontFace(FrontFace face);
 WGPUBlendFactor ToWGPUBlendFactor(BlendFactor factor);
 WGPUBlendOperation ToWGPUBlendOperation(BlendOperation operation);
+WGPUCompareFunction ToWGPUCompareFunction(CompareFunction function);
 
 // Convert from WebGPU to JIPU
 VertexFormat WGPUToVertexFormat(WGPUVertexFormat format);
@@ -54,5 +55,6 @@ CullMode WGPUToCullMode(WGPUCullMode mode);
 FrontFace WGPUToFrontFace(WGPUFrontFace face);
 BlendFactor WGPUToBlendFactor(WGPUBlendFactor factor);
 BlendOperation WGPUToBlendOperation(WGPUBlendOperation operation);
+CompareFunction WGPUToCompareFunction(WGPUCompareFunction function);
 
 } // namespace jipu

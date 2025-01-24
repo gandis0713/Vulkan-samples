@@ -199,7 +199,7 @@ VkPipelineMultisampleStateCreateInfo generateMultisampleStateCreateInfo(const Re
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     multisampleStateCreateInfo.rasterizationSamples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
-    multisampleStateCreateInfo.minSampleShading = 1.0f;          // Optional
+    multisampleStateCreateInfo.minSampleShading = 0.0f;          // Optional
     multisampleStateCreateInfo.pSampleMask = nullptr;            // Optional
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
@@ -212,7 +212,7 @@ VulkanPipelineColorBlendStateCreateInfo generateColorBlendStateCreateInfo(const 
     std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates = generateColorBlendAttachmentState(descriptor);
     VulkanPipelineColorBlendStateCreateInfo colorBlendingStateCreateInfo{};
     colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
-    colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
+    colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_CLEAR; // Optional
     colorBlendingStateCreateInfo.attachments = colorBlendAttachmentStates;
 
     // Used blend constants in dynamic state
@@ -226,19 +226,31 @@ VulkanPipelineColorBlendStateCreateInfo generateColorBlendStateCreateInfo(const 
 
 VkPipelineDepthStencilStateCreateInfo generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor)
 {
-    VkPipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = descriptor.depthStencil.has_value();
-    depthStencil.depthWriteEnable = descriptor.depthStencil.has_value();
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f; // Optional
-    depthStencil.maxDepthBounds = 1.0f; // Optional
-    depthStencil.stencilTestEnable = VK_FALSE;
-    depthStencil.front = {}; // Optional
-    depthStencil.back = {};  // Optional
+    VkPipelineDepthStencilStateCreateInfo depthStencilState{};
+    depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    if (descriptor.depthStencil.has_value())
+    {
+        auto depthStencil = descriptor.depthStencil.value();
 
-    return depthStencil;
+        depthStencilState.depthTestEnable = VK_TRUE;
+        depthStencilState.depthWriteEnable = depthStencil.depthWriteEnabled;
+        depthStencilState.depthCompareOp = ToVkCompareOp(depthStencil.depthCompareFunction);
+    }
+    else
+    {
+        depthStencilState.depthTestEnable = VK_FALSE;
+        depthStencilState.depthWriteEnable = VK_FALSE;
+        depthStencilState.depthCompareOp = VK_COMPARE_OP_NEVER;
+    }
+
+    depthStencilState.depthBoundsTestEnable = VK_FALSE;
+    depthStencilState.minDepthBounds = 0.0f; // Optional
+    depthStencilState.maxDepthBounds = 1.0f; // Optional
+    depthStencilState.stencilTestEnable = VK_FALSE;
+    depthStencilState.front = {}; // Optional
+    depthStencilState.back = {};  // Optional
+
+    return depthStencilState;
 }
 
 VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor)
@@ -248,7 +260,7 @@ VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const Render
         VK_DYNAMIC_STATE_SCISSOR,
         // VK_DYNAMIC_STATE_LINE_WIDTH,
         VK_DYNAMIC_STATE_BLEND_CONSTANTS,
-        // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
+        VK_DYNAMIC_STATE_DEPTH_BOUNDS,
         // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
     };
 
@@ -757,6 +769,42 @@ VkVertexInputRate ToVkVertexInputRate(VertexMode mode)
     }
 
     return inputRate;
+}
+
+VkCompareOp ToVkCompareOp(CompareFunction compareFunction)
+{
+    VkCompareOp compareOp = VK_COMPARE_OP_ALWAYS;
+
+    switch (compareFunction)
+    {
+    case CompareFunction::kNever:
+        compareOp = VK_COMPARE_OP_NEVER;
+        break;
+    case CompareFunction::kLess:
+        compareOp = VK_COMPARE_OP_LESS;
+        break;
+    case CompareFunction::kEqual:
+        compareOp = VK_COMPARE_OP_EQUAL;
+        break;
+    case CompareFunction::kLessEqual:
+        compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+        break;
+    case CompareFunction::kGreater:
+        compareOp = VK_COMPARE_OP_GREATER;
+        break;
+    case CompareFunction::kNotEqual:
+        compareOp = VK_COMPARE_OP_NOT_EQUAL;
+        break;
+    case CompareFunction::kGreaterEqual:
+        compareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+        break;
+    case CompareFunction::kAlways:
+    default:
+        compareOp = VK_COMPARE_OP_ALWAYS;
+        break;
+    }
+
+    return compareOp;
 }
 
 } // namespace jipu
