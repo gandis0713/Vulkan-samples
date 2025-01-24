@@ -179,40 +179,18 @@ VkImageLayout VulkanTexture::getFinalLayout() const
     }
 }
 
-void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range)
+VkImageLayout VulkanTexture::getCurrentLayout(uint32_t mipLevel) const
 {
-    if (commandBuffer == VK_NULL_HANDLE)
-        throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
-
-    if (oldLayout == newLayout)
+    if (mipLevel >= m_layouts.size())
     {
-        spdlog::debug("old layout and new layout are same.");
-        return;
+        spdlog::error("Invalid mip level: {}, mipLevels: {}", mipLevel, m_layouts.size());
+        return VK_IMAGE_LAYOUT_UNDEFINED;
     }
 
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    // set Image Memory Barrier
-    VkImageMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.pNext = VK_NULL_HANDLE;
-    barrier.srcAccessMask = GenerateAccessFlags(oldLayout);
-    barrier.dstAccessMask = GenerateAccessFlags(newLayout);
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.image = m_resource.image;
-    barrier.subresourceRange = range;
-
-    VkPipelineStageFlags srcStage = GenerateSrcPipelineStage(oldLayout);
-    VkPipelineStageFlags dstStage = GenerateDstPipelineStage(newLayout);
-
-    setPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
+    return m_layouts[mipLevel];
 }
 
-void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
+void VulkanTexture::cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
 {
     if (commandBuffer == VK_NULL_HANDLE)
         throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
@@ -223,13 +201,12 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipeline
     const auto& range = barrier.subresourceRange;
     for (auto i = range.baseMipLevel; i < range.baseMipLevel + range.levelCount; ++i)
     {
-        if (m_layouts[i] != barrier.oldLayout)
-            throw std::runtime_error("Invalid old layout.");
+        // TODO: check old layout is same.
 
         m_layouts[i] = barrier.newLayout;
     }
 
-    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 VulkanTextureOwner VulkanTexture::getOwner() const

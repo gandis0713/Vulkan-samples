@@ -71,13 +71,13 @@ public:
     VulkanMemory getVulkanMemory() const;
     VulkanTextureResource getVulkanTextureResource() const;
 
+    VkImageLayout getCurrentLayout(uint32_t mipLevel = 0) const;
     /// @brief generate final layout by usage.
     /// @return VKImageLayout
     VkImageLayout getFinalLayout() const;
 
     /// @brief record pipeline barrier command, but not submitted.
-    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range);
-    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
+    void cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
     VulkanTextureOwner getOwner() const;
 
