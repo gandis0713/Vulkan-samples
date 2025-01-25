@@ -144,8 +144,3 @@ add_subdirectory(deferred)
 add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
-
-# experimental for vulkan
-# add_subdirectory(vulkan_subpasses)
-# add_subdirectory(vulkan_n_buffering)
-# add_subdirectory(vulkan_pipeline_barrier)
