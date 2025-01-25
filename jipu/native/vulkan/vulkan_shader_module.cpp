@@ -179,7 +179,7 @@ size_t VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMeta
         {
             combineHash(hash, storageTexture.index);
             combineHash(hash, storageTexture.stages);
-            combineHash(hash, storageTexture.type);
+            combineHash(hash, storageTexture.access);
         }
     }
 
@@ -240,7 +240,7 @@ bool VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMetaDa
         {
             if (lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].index != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].index ||
                 lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].stages != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].stages ||
-                lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].type != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].type)
+                lhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].access != rhs.layoutInfo.bindGroupLayoutInfos[i].storageTextures[j].access)
             {
                 return false;
             }
