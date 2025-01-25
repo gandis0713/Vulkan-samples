@@ -141,33 +141,6 @@
             "environment": [],
         },
         {
-            "name": "[Vulkan] [windows x64] Subpasses",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [],
-        },
-        {
-            "name": "[Vulkan] [windows x64] N Buffering",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [],
-        },
-        {
-            "name": "[Vulkan] [windows x64] Pipeline Barrier",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [],
-        },
-        {
             "name": "[WGPU] [arm64 osx] Triangle",
             "type": "cppdbg",
             "request": "launch",
@@ -410,57 +383,6 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/offscreen/offscreen",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[Vulkan] [arm64 osx] Subpasses",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[Vulkan] [arm64 osx] N Buffering",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering",
-            "args": [],
-            "stopAtEntry": false,
-            "environment": [
-                {
-                    "name": "DYLD_LIBRARY_PATH",
-                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
-                }
-            ],
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "targetArchitecture": "arm64",
-        },
-        {
-            "name": "[Vulkan] [arm64 osx] Pipeline Barrier",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier",
             "args": [],
             "stopAtEntry": false,
             "environment": [
