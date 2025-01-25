@@ -349,7 +349,7 @@ void VulkanCommandResourceSynchronizer::sync()
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .image = vulkanTexture->getVkImage(),
                     .subresourceRange = {
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .aspectMask = ToVkImageAspectFlags(downcast(textureView)->getAspect()),
                         .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
                         .levelCount = dstTextureUsageInfo.mipLevelCount,
                         .baseArrayLayer = dstTextureUsageInfo.baseArrayLayer,
@@ -361,6 +361,34 @@ void VulkanCommandResourceSynchronizer::sync()
 
                 vulkanTexture->cmdPipelineBarrier(commandBuffer, srcTextureUsageInfo.stageFlags, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
                 continue;
+            }
+            else // TODO: image layout
+            {
+                auto vulkanTexture = downcast(textureView->getTexture());
+                if (vulkanTexture->getCurrentLayout(dstTextureUsageInfo.baseMipLevel) == VK_IMAGE_LAYOUT_UNDEFINED && vulkanTexture->getOwner() != VulkanTextureOwner::kSwapchain)
+                {
+
+                    VkImageMemoryBarrier imageMemoryBarrier{
+                        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                        .pNext = nullptr,
+                        .srcAccessMask = VK_ACCESS_NONE,
+                        .dstAccessMask = dstTextureUsageInfo.accessFlags,
+                        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                        .newLayout = dstTextureUsageInfo.layout,
+                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                        .image = vulkanTexture->getVkImage(),
+                        .subresourceRange = {
+                            .aspectMask = ToVkImageAspectFlags(downcast(textureView)->getAspect()),
+                            .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
+                            .levelCount = dstTextureUsageInfo.mipLevelCount,
+                            .baseArrayLayer = dstTextureUsageInfo.baseArrayLayer,
+                            .layerCount = dstTextureUsageInfo.arrayLayerCount,
+                        },
+                    };
+
+                    vulkanTexture->cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
+                }
             }
         }
 
