@@ -1,1 +1,0 @@
-configure_sample(vulkan_subpasses)
