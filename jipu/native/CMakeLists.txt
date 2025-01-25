@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(Dawn CONFIG REQUIRED)
 
 set(NATIVE_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vulkan_api.cpp
@@ -151,6 +152,7 @@ target_link_libraries(jipu_native
   jipu::common
   PRIVATE
   Vulkan::Headers
+  dawn::webgpu_dawn
   GPUOpen::VulkanMemoryAllocator
 )
 

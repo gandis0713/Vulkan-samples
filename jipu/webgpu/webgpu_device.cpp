@@ -5,6 +5,7 @@
 #include "webgpu_bind_group_layout.h"
 #include "webgpu_buffer.h"
 #include "webgpu_command_encoder.h"
+#include "webgpu_compute_pipeline.h"
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
 #include "webgpu_render_bundle_encoder.h"
@@ -69,6 +70,11 @@ WebGPUPipelineLayout* WebGPUDevice::createPipelineLayout(WGPUPipelineLayoutDescr
 WebGPURenderPipeline* WebGPUDevice::createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor)
 {
     return WebGPURenderPipeline::create(this, descriptor);
+}
+
+WebGPUComputePipeline* WebGPUDevice::createComputePipeline(WGPUComputePipelineDescriptor const* descriptor)
+{
+    return WebGPUComputePipeline::create(this, descriptor);
 }
 
 WebGPUShaderModule* WebGPUDevice::createShaderModule(WGPUShaderModuleDescriptor const* descriptor)

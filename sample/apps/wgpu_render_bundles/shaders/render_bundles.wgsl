@@ -18,10 +18,28 @@ struct VertexOutput {
 }
 
 @vertex
-fn main(input: VertexInput) -> VertexOutput {
+fn vertexMain(input: VertexInput) -> VertexOutput {
   var output : VertexOutput;
   output.position = uniforms.viewProjectionMatrix * modelMatrix * input.position;
   output.normal = normalize((modelMatrix * vec4(input.normal, 0)).xyz);
   output.uv = input.uv;
   return output;
+}
+
+@group(1) @binding(1) var meshSampler: sampler;
+@group(1) @binding(2) var meshTexture: texture_2d<f32>;
+
+// Static directional lighting
+const lightDir = vec3f(1, 1, 1);
+const dirColor = vec3(1);
+const ambientColor = vec3f(0.05);
+
+@fragment
+fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {
+  let textureColor = textureSample(meshTexture, meshSampler, input.uv);
+
+  // Very simplified lighting algorithm.
+  let lightColor = saturate(ambientColor + max(dot(input.normal, lightDir), 0.0) * dirColor);
+
+  return vec4f(textureColor.rgb * lightColor, textureColor.a);
 }

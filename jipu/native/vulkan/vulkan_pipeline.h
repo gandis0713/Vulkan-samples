@@ -39,7 +39,7 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const ComputePipelineDescriptor m_descriptor;
-    PipelineLayoutInfo m_layoutInfo{};
+    VulkanPipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
@@ -119,7 +119,7 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const VulkanRenderPipelineDescriptor m_descriptor;
-    PipelineLayoutInfo m_layoutInfo{};
+    VulkanPipelineLayoutInfo m_layoutInfo{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
@@ -149,5 +149,6 @@ VkFrontFace ToVkFrontFace(FrontFace frontFace);
 VkBlendOp ToVkBlendOp(BlendOperation op);
 VkBlendFactor ToVkBlendFactor(BlendFactor factor);
 VkVertexInputRate ToVkVertexInputRate(VertexMode mode);
+VkCompareOp ToVkCompareOp(CompareFunction compareFunction);
 
 } // namespace jipu

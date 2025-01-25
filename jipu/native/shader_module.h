@@ -1,14 +1,22 @@
 #pragma once
 
 #include <cstddef>
+#include <string_view>
 
 namespace jipu
 {
 
+enum class ShaderModuleType
+{
+    kUndefined = 0,
+    kWGSL,
+    kSPIRV,
+};
+
 struct ShaderModuleDescriptor
 {
-    const char* code = nullptr;
-    size_t codeSize = 0;
+    ShaderModuleType type = ShaderModuleType::kUndefined;
+    std::string_view code;
 };
 
 class ShaderModule

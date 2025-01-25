@@ -297,8 +297,8 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     {
         ShaderModuleDescriptor descriptor{};
         std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "quad.vert.spv", m_handle);
-        descriptor.code = vertexShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
 
         vertexShaderModule = m_device->createShaderModule(descriptor);
     }
@@ -338,8 +338,8 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     {
         ShaderModuleDescriptor descriptor{};
         std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "quad.frag.spv", m_handle);
-        descriptor.code = fragmentShaderSource.data();
-        descriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+        descriptor.type = ShaderModuleType::kSPIRV;
+        descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
 
         fragmentShaderModule = m_device->createShaderModule(descriptor);
     }

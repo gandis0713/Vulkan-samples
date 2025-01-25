@@ -90,6 +90,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         m_resource.image = m_descriptor.image;
         m_owner = m_descriptor.owner;
     }
+
+    m_layouts.resize(m_descriptor.mipLevels, m_descriptor.initialLayout);
 }
 
 VulkanTexture::~VulkanTexture()
@@ -177,45 +179,34 @@ VkImageLayout VulkanTexture::getFinalLayout() const
     }
 }
 
-void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range)
+VkImageLayout VulkanTexture::getCurrentLayout(uint32_t mipLevel) const
+{
+    if (mipLevel >= m_layouts.size())
+    {
+        spdlog::error("Invalid mip level: {}, mipLevels: {}", mipLevel, m_layouts.size());
+        return VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+
+    return m_layouts[mipLevel];
+}
+
+void VulkanTexture::cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
 {
     if (commandBuffer == VK_NULL_HANDLE)
         throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
 
-    if (oldLayout == newLayout)
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    const auto& range = barrier.subresourceRange;
+    for (auto i = range.baseMipLevel; i < range.baseMipLevel + range.levelCount; ++i)
     {
-        spdlog::debug("old layout and new layout are same.");
-        return;
+        // TODO: check old layout is same.
+
+        m_layouts[i] = barrier.newLayout;
     }
 
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    // set Image Memory Barrier
-    VkImageMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.pNext = VK_NULL_HANDLE;
-    barrier.srcAccessMask = GenerateAccessFlags(oldLayout);
-    barrier.dstAccessMask = GenerateAccessFlags(newLayout);
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.image = m_resource.image;
-    barrier.subresourceRange = range;
-
-    VkPipelineStageFlags srcStage = GenerateSrcPipelineStage(oldLayout);
-    VkPipelineStageFlags dstStage = GenerateDstPipelineStage(newLayout);
-
-    setPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
-}
-
-void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
-{
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 VulkanTextureOwner VulkanTexture::getOwner() const
@@ -774,6 +765,36 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, TextureFormat fo
     return flags;
 }
 
+VkAccessFlags ToVkAccessFlags(StorageTextureAccess access)
+{
+    switch (access)
+    {
+    case StorageTextureAccess::kReadOnly:
+        return VK_ACCESS_SHADER_READ_BIT;
+    case StorageTextureAccess::kWriteOnly:
+        return VK_ACCESS_SHADER_WRITE_BIT;
+    case StorageTextureAccess::kReadWrite:
+        return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    default:
+        throw std::runtime_error(fmt::format("{} access does not support.", static_cast<uint32_t>(access)));
+    }
+}
+
+StorageTextureAccess ToStorageTextureAccess(VkAccessFlags access)
+{
+    switch (access)
+    {
+    case VK_ACCESS_SHADER_READ_BIT:
+        return StorageTextureAccess::kReadOnly;
+    case VK_ACCESS_SHADER_WRITE_BIT:
+        return StorageTextureAccess::kWriteOnly;
+    case VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT:
+        return StorageTextureAccess::kReadWrite;
+    default:
+        throw std::runtime_error(fmt::format("{} access does not support.", static_cast<uint32_t>(access)));
+    }
+}
+
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
 {
     return count <= 1 ? VK_SAMPLE_COUNT_1_BIT : VK_SAMPLE_COUNT_4_BIT;
@@ -910,6 +931,10 @@ bool isSupportedVkFormat(VkFormat format)
 
 VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
 {
+    if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
+    {
+        return VK_IMAGE_LAYOUT_GENERAL;
+    }
     if (usage & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT || usage & VK_IMAGE_USAGE_SAMPLED_BIT)
     {
         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -917,10 +942,6 @@ VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage)
     if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
     {
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    }
-    if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
-    {
-        return VK_IMAGE_LAYOUT_GENERAL;
     }
     if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {

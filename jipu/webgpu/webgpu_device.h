@@ -15,6 +15,7 @@ class WebGPUBindGroup;
 class WebGPUBindGroupLayout;
 class WebGPUPipelineLayout;
 class WebGPURenderPipeline;
+class WebGPUComputePipeline;
 class WebGPUShaderModule;
 class WebGPUTexture;
 class WebGPUBuffer;
@@ -42,6 +43,7 @@ public: // WebGPU API
     WebGPUBindGroupLayout* createBindGroupLayout(WGPUBindGroupLayoutDescriptor const* descriptor);
     WebGPUPipelineLayout* createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor);
     WebGPURenderPipeline* createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor);
+    WebGPUComputePipeline* createComputePipeline(WGPUComputePipelineDescriptor const* descriptor);
     WebGPUShaderModule* createShaderModule(WGPUShaderModuleDescriptor const* descriptor);
     WebGPUTexture* createTexture(Texture* texture);
     WebGPUTexture* createTexture(WGPUTextureDescriptor const* descriptor);

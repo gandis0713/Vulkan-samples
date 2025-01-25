@@ -21,6 +21,10 @@ set(WEBGPU_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_compute_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_compute_pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_compute_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_instance.cpp

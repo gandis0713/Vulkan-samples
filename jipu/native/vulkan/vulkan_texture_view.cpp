@@ -18,16 +18,14 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
     imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
     imageViewCreateInfo.format = ToVkFormat(texture->getFormat());
 
-    imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    imageViewCreateInfo.components = VkComponentMapping{ VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+                                                         VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 
     imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
-    imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-    imageViewCreateInfo.subresourceRange.levelCount = texture->getMipLevels();
-    imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    imageViewCreateInfo.subresourceRange.layerCount = 1;
+    imageViewCreateInfo.subresourceRange.baseMipLevel = descriptor.baseMipLevel;
+    imageViewCreateInfo.subresourceRange.levelCount = descriptor.mipLevelCount;
+    imageViewCreateInfo.subresourceRange.baseArrayLayer = descriptor.baseArrayLayer;
+    imageViewCreateInfo.subresourceRange.layerCount = descriptor.arrayLayerCount;
 
     if (m_device->vkAPI.CreateImageView(m_device->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
@@ -63,6 +61,26 @@ uint32_t VulkanTextureView::getHeight() const
 uint32_t VulkanTextureView::getDepth() const
 {
     return m_texture->getDepth();
+}
+
+uint32_t VulkanTextureView::getBaseMipLevel() const
+{
+    return m_descriptor.baseMipLevel;
+}
+
+uint32_t VulkanTextureView::getMipLevelCount() const
+{
+    return m_descriptor.mipLevelCount;
+}
+
+uint32_t VulkanTextureView::getBaseArrayLayer() const
+{
+    return m_descriptor.baseArrayLayer;
+}
+
+uint32_t VulkanTextureView::getArrayLayerCount() const
+{
+    return m_descriptor.arrayLayerCount;
 }
 
 Texture* VulkanTextureView::getTexture() const

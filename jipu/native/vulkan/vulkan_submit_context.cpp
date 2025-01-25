@@ -67,11 +67,6 @@ void VulkanSubmit::add(VkPipelineLayout pipelineLayout)
     object.pipelineLayouts.insert(pipelineLayout);
 }
 
-void VulkanSubmit::add(const std::vector<VkShaderModule>& shaderModules)
-{
-    object.shaderModules.insert(shaderModules.begin(), shaderModules.end());
-}
-
 void VulkanSubmit::add(VkDescriptorSet descriptorSet)
 {
     object.descriptorSet.insert(descriptorSet);
@@ -135,7 +130,6 @@ void VulkanSubmit::add(SetComputePipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
     add(downcast(command->pipeline)->getVkPipelineLayout());
-    add({ downcast(command->pipeline)->getShaderModule() });
 }
 
 void VulkanSubmit::addComputeBindGroup(SetBindGroupCommand* command)
@@ -216,7 +210,6 @@ void VulkanSubmit::add(SetRenderPipelineCommand* command)
 {
     add(downcast(command->pipeline)->getVkPipeline());
     add(downcast(command->pipeline)->getVkPipelineLayout());
-    add(downcast(command->pipeline)->getShaderModules());
 }
 
 void VulkanSubmit::add(SetVertexBufferCommand* command)
@@ -277,12 +270,12 @@ bool findSrcBuffer(const std::vector<VulkanCommandBuffer*>& submittedCommandBuff
     return it != submittedCommandBuffers.end();
 };
 
-bool findSrcTexture(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, Texture* texture)
+bool findSrcTextureView(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, TextureView* textureView)
 {
-    auto it = std::find_if(submittedCommandBuffers.begin(), submittedCommandBuffers.end(), [texture](VulkanCommandBuffer* commandBuffer) {
+    auto it = std::find_if(submittedCommandBuffers.begin(), submittedCommandBuffers.end(), [textureView](VulkanCommandBuffer* commandBuffer) {
         const auto& commandResourceInfos = commandBuffer->getCommandResourceInfos();
-        return std::find_if(commandResourceInfos.begin(), commandResourceInfos.end(), [texture](const OperationResourceInfo& info) {
-                   return info.src.textures.contains(texture);
+        return std::find_if(commandResourceInfos.begin(), commandResourceInfos.end(), [textureView](const OperationResourceInfo& info) {
+                   return info.src.textureViews.contains(textureView);
                }) != commandResourceInfos.end();
     });
 
@@ -301,9 +294,9 @@ bool findSrcResource(const std::vector<VulkanCommandBuffer*>& submittedCommandBu
             }
         }
 
-        for (const auto& [texture, _] : info.src.textures)
+        for (const auto& [textureView, _] : info.src.textureViews)
         {
-            if (findSrcTexture(submittedCommandBuffers, texture))
+            if (findSrcTextureView(submittedCommandBuffers, textureView))
             {
                 return true;
             }
@@ -332,7 +325,7 @@ BufferUsageInfo getSrcBufferUsageInfo(const std::vector<VulkanCommandBuffer*>& s
     return {};
 };
 
-TextureUsageInfo getSrcTextureUsageInfo(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, Texture* texture)
+TextureUsageInfo getSrcTextureUsageInfo(const std::vector<VulkanCommandBuffer*>& submittedCommandBuffers, TextureView* textureView)
 {
     for (auto resultIter = submittedCommandBuffers.rbegin(); resultIter != submittedCommandBuffers.rend(); ++resultIter)
     {
@@ -340,9 +333,9 @@ TextureUsageInfo getSrcTextureUsageInfo(const std::vector<VulkanCommandBuffer*>&
         for (auto infoIter = commandResourceInfos.rbegin(); infoIter != commandResourceInfos.rend(); ++infoIter)
         {
             const auto& info = *infoIter;
-            if (info.src.textures.contains(texture))
+            if (info.src.textureViews.contains(textureView))
             {
-                return info.src.textures.at(texture);
+                return info.src.textureViews.at(textureView);
             }
         }
     }
@@ -365,11 +358,11 @@ ResourceInfo getSrcResourceUsageInfo(const std::vector<VulkanCommandBuffer*>& su
             }
         }
 
-        for (const auto& [texture, _] : info.src.textures)
+        for (const auto& [textureView, _] : info.src.textureViews)
         {
-            if (findSrcTexture(submittedCommandBuffers, texture))
+            if (findSrcTextureView(submittedCommandBuffers, textureView))
             {
-                srcResourceInfo.textures[texture] = getSrcTextureUsageInfo(submittedCommandBuffers, texture);
+                srcResourceInfo.textureViews[textureView] = getSrcTextureUsageInfo(submittedCommandBuffers, textureView);
             }
         }
     }
@@ -400,16 +393,16 @@ std::vector<VkSemaphore> getSrcBufferSemaphores(std::vector<VulkanSubmit>& submi
     return semaphores;
 };
 
-std::vector<VkSemaphore> getSrcTextureSemaphores(std::vector<VulkanSubmit>& submits, Texture* texture)
+std::vector<VkSemaphore> getSrcTextureViewSemaphores(std::vector<VulkanSubmit>& submits, TextureView* textureView)
 {
     std::vector<VkSemaphore> semaphores{};
     for (auto& submit : submits)
     {
-        if (submit.object.srcResource.images.contains(downcast(texture)->getVkImage()))
+        if (submit.object.imageViews.contains(downcast(textureView)->getVkImageView()))
         {
             if (submit.info.signalSemaphores.empty())
             {
-                auto device = downcast(texture)->getDevice();
+                auto device = downcast(textureView->getTexture())->getDevice();
                 auto semaphore = device->getSemaphorePool()->create();
                 submit.addSignalSemaphore({ semaphore });
 
@@ -435,17 +428,17 @@ SubmitType getSubmitType(VulkanCommandBuffer* commandBuffer)
 
     const auto& src = info.src;
 
-    if (src.buffers.empty() && src.textures.empty())
+    if (src.buffers.empty() && src.textureViews.empty())
     {
         spdlog::error("There is no output resource. return kNone submit type.");
         return SubmitType::kNone;
     }
 
-    for (const auto& [texture, textureUsageInfo] : src.textures)
+    for (const auto& [textureView, textureUsageInfo] : src.textureViews)
     {
         if (textureUsageInfo.stageFlags & VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
         {
-            auto owner = downcast(texture)->getOwner();
+            auto owner = downcast(textureView->getTexture())->getOwner();
 
             switch (owner)
             {
@@ -537,11 +530,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                             }
                         }
 
-                        for (const auto& [dstTexture, dstTextureUsageInfo] : commandResourceInfo.dst.textures)
+                        for (const auto& [dstTextureView, dstTextureUsageInfo] : commandResourceInfo.dst.textureViews)
                         {
-                            if (findSrcTexture(submittedCommandBuffers, dstTexture))
+                            if (findSrcTextureView(submittedCommandBuffers, dstTextureView))
                             {
-                                auto bufferWaitSemaphores = getSrcTextureSemaphores(context.m_submits, dstTexture);
+                                auto bufferWaitSemaphores = getSrcTextureViewSemaphores(context.m_submits, dstTextureView);
                                 waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
 
                                 waitStages.push_back(dstTextureUsageInfo.stageFlags);
@@ -559,9 +552,9 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
                         auto& commandResourceInfos = vulkanCommandBuffer->getCommandResourceInfos();
                         for (const auto& commandResourceInfo : commandResourceInfos)
                         {
-                            for (const auto& [srcTexture, _] : commandResourceInfo.src.textures)
+                            for (const auto& [srcTextureView, _] : commandResourceInfo.src.textureViews)
                             {
-                                VulkanTexture* vulkanTexture = downcast(srcTexture);
+                                VulkanTexture* vulkanTexture = downcast(srcTextureView->getTexture());
                                 if (vulkanTexture->getOwner() == VulkanTextureOwner::kSwapchain)
                                 {
                                     VulkanSwapchainTexture* vulkanSwapchainTexture = downcast(vulkanTexture);

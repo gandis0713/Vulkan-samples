@@ -35,6 +35,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDes
     m_frameBufferCache = std::make_shared<VulkanFramebufferCache>(this);
     m_bindGroupLayoutCache = std::make_shared<VulkanBindGroupLayoutCache>(this);
     m_pipelineLayoutCache = std::make_shared<VulkanPipelineLayoutCache>(this);
+    m_shaderModuleCache = std::make_shared<VulkanShaderModuleCache>(this);
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, allocatorDescriptor);
@@ -50,6 +51,7 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
+    m_shaderModuleCache->clear();
     m_bindGroupLayoutCache->clear();
     m_pipelineLayoutCache->clear();
     m_frameBufferCache->clear();
@@ -197,6 +199,11 @@ std::shared_ptr<VulkanBindGroupLayoutCache> VulkanDevice::getBindGroupLayoutCach
 std::shared_ptr<VulkanPipelineLayoutCache> VulkanDevice::getPipelineLayoutCache()
 {
     return m_pipelineLayoutCache;
+}
+
+std::shared_ptr<VulkanShaderModuleCache> VulkanDevice::getShaderModuleCache()
+{
+    return m_shaderModuleCache;
 }
 
 std::shared_ptr<VulkanCommandPool> VulkanDevice::getCommandPool()

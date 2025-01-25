@@ -481,8 +481,8 @@ void OBJModelSample::createRenderPipeline()
     {
         // create vertex shader
         const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "obj_model.vert.spv", m_handle);
-        ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
-                                                             .codeSize = vertShaderCode.size() };
+        ShaderModuleDescriptor vertexShaderModuleDescriptor{ .type = ShaderModuleType::kSPIRV,
+                                                             .code = std::string_view(vertShaderCode.data(), vertShaderCode.size()) };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
     }
 
@@ -528,8 +528,9 @@ void OBJModelSample::createRenderPipeline()
     {
         // create fragment shader
         const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "obj_model.frag.spv", m_handle);
-        ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
-                                                               .codeSize = fragShaderCode.size() };
+        ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
+        fragmentShaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+        fragmentShaderModuleDescriptor.code = std::string_view(fragShaderCode.data(), fragShaderCode.size());
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
     }
 

@@ -51,6 +51,7 @@ public:
 protected:
     enum class APIType
     {
+        kUndefined = -1,
         kJipu = 0,
         kDawn,
         kCount
@@ -66,8 +67,8 @@ protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
 
-    APIType m_apiType{ APIType::kJipu };
-    APIType m_currentAPIType{ APIType::kJipu };
+    APIType m_apiType{ APIType::kUndefined };
+    APIType m_changeAPIType{ APIType::kUndefined };
 
     std::unordered_map<APIType, DyLib> m_wgpuLibs{};
     std::unordered_map<APIType, WebGPUAPI> m_wgpuAPIs{};

@@ -19,6 +19,7 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
 #include "vulkan_semaphore_pool.h"
+#include "vulkan_shader_module.h"
 #include "vulkan_swapchain.h"
 #include "vulkan_texture.h"
 
@@ -75,6 +76,7 @@ public:
     std::shared_ptr<VulkanFramebufferCache> getFramebufferCache();
     std::shared_ptr<VulkanBindGroupLayoutCache> getBindGroupLayoutCache();
     std::shared_ptr<VulkanPipelineLayoutCache> getPipelineLayoutCache();
+    std::shared_ptr<VulkanShaderModuleCache> getShaderModuleCache();
     std::shared_ptr<VulkanCommandPool> getCommandPool();
     std::shared_ptr<VulkanInflightObjects> getInflightObjects();
     std::shared_ptr<VulkanDeleter> getDeleter();
@@ -107,6 +109,8 @@ private:
     std::shared_ptr<VulkanFramebufferCache> m_frameBufferCache = nullptr;
     std::shared_ptr<VulkanBindGroupLayoutCache> m_bindGroupLayoutCache = nullptr;
     std::shared_ptr<VulkanPipelineLayoutCache> m_pipelineLayoutCache = nullptr;
+    std::shared_ptr<VulkanShaderModuleCache> m_shaderModuleCache = nullptr;
+
     std::shared_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
     std::shared_ptr<VulkanInflightObjects> m_inflightObjects = nullptr;
 

@@ -74,8 +74,7 @@ private:
     WGPUBindGroupLayout m_sphereBindGroupLayout = nullptr;
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
-    WGPUShaderModule m_vertWGSLShaderModule = nullptr;
-    WGPUShaderModule m_fragWGSLShaderModule = nullptr;
+    WGPUShaderModule m_wgslShaderModule = nullptr;
     WGPURenderBundle m_renderBundle = nullptr;
 
     Renderable m_planet{};

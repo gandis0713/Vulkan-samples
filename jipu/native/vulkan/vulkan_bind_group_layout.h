@@ -10,11 +10,12 @@
 namespace jipu
 {
 
-struct BindGroupLayoutInfo
+struct VulkanBindGroupLayoutInfo
 {
-    std::vector<BufferBindingLayout> buffers = {};
-    std::vector<SamplerBindingLayout> samplers = {};
-    std::vector<TextureBindingLayout> textures = {};
+    std::vector<BufferBindingLayout> buffers{};
+    std::vector<SamplerBindingLayout> samplers{};
+    std::vector<TextureBindingLayout> textures{};
+    std::vector<StorageTextureBindingLayout> storageTextures{};
 };
 
 struct VulkanBindGroupLayoutDescriptor
@@ -37,6 +38,7 @@ public:
     std::vector<BufferBindingLayout> getBufferBindingLayouts() const override;
     std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const override;
     std::vector<TextureBindingLayout> getTextureBindingLayouts() const override;
+    std::vector<StorageTextureBindingLayout> getStorageTextureBindingLayouts() const override;
 
     std::vector<VkDescriptorSetLayoutBinding> getDescriptorSetLayouts() const;
 
@@ -50,17 +52,20 @@ public:
     VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-    BindGroupLayoutInfo getLayoutInfo() const;
-
-private:
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+    const VulkanBindGroupLayoutInfo& getInfo() const;
 
 private:
     VulkanDevice* m_device = nullptr;
-    const VulkanBindGroupLayoutDescriptor m_descriptor{};
+    const BindGroupLayoutDescriptor m_descriptor{};
+    const VulkanBindGroupLayoutDescriptor m_vkdescriptor{};
+    VulkanBindGroupLayoutInfo m_info{};
 };
 DOWN_CAST(VulkanBindGroupLayout, BindGroupLayout);
 
+struct VulkanBindGroupLayoutMetaData
+{
+    VulkanBindGroupLayoutInfo info{};
+};
 class VulkanBindGroupLayoutCache
 {
 public:
@@ -69,8 +74,7 @@ public:
     ~VulkanBindGroupLayoutCache();
 
 public:
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutDescriptor& descriptor);
-    VkDescriptorSetLayout getVkDescriptorSetLayout(const BindGroupLayoutInfo& layoutInfo);
+    VkDescriptorSetLayout getVkDescriptorSetLayout(const VulkanBindGroupLayoutMetaData& metaData);
     void clear();
 
 private:
@@ -79,10 +83,10 @@ private:
 private:
     struct Functor
     {
-        size_t operator()(const BindGroupLayoutInfo& descriptor) const;
-        bool operator()(const BindGroupLayoutInfo& lhs, const BindGroupLayoutInfo& rhs) const;
+        size_t operator()(const VulkanBindGroupLayoutMetaData& metaData) const;
+        bool operator()(const VulkanBindGroupLayoutMetaData& lhs, const VulkanBindGroupLayoutMetaData& rhs) const;
     };
-    using Cache = std::unordered_map<BindGroupLayoutInfo, VkDescriptorSetLayout, Functor, Functor>;
+    using Cache = std::unordered_map<VulkanBindGroupLayoutMetaData, VkDescriptorSetLayout, Functor, Functor>;
     Cache m_bindGroupLayouts{};
 };
 
@@ -90,6 +94,7 @@ private:
 VulkanBindGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindGroupLayoutDescriptor(const BindGroupLayoutDescriptor& descriptor);
 
 // Convert Helper
+VkDescriptorType ToVkDescriptorType(StorageTextureAccess access);
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);

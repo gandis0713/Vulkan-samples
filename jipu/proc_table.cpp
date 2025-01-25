@@ -6,6 +6,8 @@
 #include "webgpu/webgpu_buffer.h"
 #include "webgpu/webgpu_command_buffer.h"
 #include "webgpu/webgpu_command_encoder.h"
+#include "webgpu/webgpu_compute_pass_encoder.h"
+#include "webgpu/webgpu_compute_pipeline.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
 #include "webgpu/webgpu_pipeline_layout.h"
@@ -470,10 +472,58 @@ void procCommandEncoderCopyTextureToTexture(WGPUCommandEncoder commandEncoder, W
     return webgpuCommandEncoder->copyTextureToTexture(source, destination, copySize);
 }
 
-extern void procRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color)
+void procRenderPassEncoderSetBlendConstant(WGPURenderPassEncoder renderPassEncoder, WGPUColor const* color)
 {
     WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
     return webgpuRenderPassEncoder->setBlendConstant(color);
+}
+
+WGPUComputePassEncoder procCommandEncoderBeginComputePass(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUComputePassDescriptor const* descriptor)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return reinterpret_cast<WGPUComputePassEncoder>(webgpuCommandEncoder->beginComputePass(descriptor));
+}
+
+void procComputePassEncoderDispatchWorkgroups(WGPUComputePassEncoder computePassEncoder, uint32_t workgroupCountX, uint32_t workgroupCountY, uint32_t workgroupCountZ)
+{
+    WebGPUComputePassEncoder* webgpuComputePassEncoder = reinterpret_cast<WebGPUComputePassEncoder*>(computePassEncoder);
+    return webgpuComputePassEncoder->dispatchWorkgroups(workgroupCountX, workgroupCountY, workgroupCountZ);
+}
+
+void procComputePassEncoderEnd(WGPUComputePassEncoder computePassEncoder)
+{
+    WebGPUComputePassEncoder* webgpuComputePassEncoder = reinterpret_cast<WebGPUComputePassEncoder*>(computePassEncoder);
+    return webgpuComputePassEncoder->end();
+}
+
+void procComputePassEncoderSetBindGroup(WGPUComputePassEncoder computePassEncoder, uint32_t groupIndex, WGPU_NULLABLE WGPUBindGroup group, size_t dynamicOffsetCount, uint32_t const* dynamicOffsets)
+{
+    WebGPUComputePassEncoder* webgpuComputePassEncoder = reinterpret_cast<WebGPUComputePassEncoder*>(computePassEncoder);
+    return webgpuComputePassEncoder->setBindGroup(groupIndex, group, dynamicOffsetCount, dynamicOffsets);
+}
+
+void procComputePassEncoderSetPipeline(WGPUComputePassEncoder computePassEncoder, WGPUComputePipeline pipeline)
+{
+    WebGPUComputePassEncoder* webgpuComputePassEncoder = reinterpret_cast<WebGPUComputePassEncoder*>(computePassEncoder);
+    return webgpuComputePassEncoder->setPipeline(pipeline);
+}
+
+void procComputePassEncoderRelease(WGPUComputePassEncoder computePassEncoder)
+{
+    WebGPUComputePassEncoder* webgpuComputePassEncoder = reinterpret_cast<WebGPUComputePassEncoder*>(computePassEncoder);
+    return webgpuComputePassEncoder->release();
+}
+
+WGPUComputePipeline procDeviceCreateComputePipeline(WGPUDevice device, WGPUComputePipelineDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUComputePipeline>(webgpuDevice->createComputePipeline(descriptor));
+}
+
+void procComputePipelineRelease(WGPUComputePipeline computePipeline)
+{
+    WebGPUComputePipeline* webgpuComputePipeline = reinterpret_cast<WebGPUComputePipeline*>(computePipeline);
+    return webgpuComputePipeline->release();
 }
 
 namespace
@@ -553,6 +603,14 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuCommandEncoderCopyTextureToBuffer", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToBuffer) },
     { "wgpuCommandEncoderCopyTextureToTexture", reinterpret_cast<WGPUProc>(procCommandEncoderCopyTextureToTexture) },
     { "wgpuRenderPassEncoderSetBlendConstant", reinterpret_cast<WGPUProc>(procRenderPassEncoderSetBlendConstant) },
+    { "wgpuCommandEncoderBeginComputePass", reinterpret_cast<WGPUProc>(procCommandEncoderBeginComputePass) },
+    { "wgpuComputePassEncoderDispatchWorkgroups", reinterpret_cast<WGPUProc>(procComputePassEncoderDispatchWorkgroups) },
+    { "wgpuComputePassEncoderEnd", reinterpret_cast<WGPUProc>(procComputePassEncoderEnd) },
+    { "wgpuComputePassEncoderSetBindGroup", reinterpret_cast<WGPUProc>(procComputePassEncoderSetBindGroup) },
+    { "wgpuComputePassEncoderSetPipeline", reinterpret_cast<WGPUProc>(procComputePassEncoderSetPipeline) },
+    { "wgpuComputePassEncoderRelease", reinterpret_cast<WGPUProc>(procComputePassEncoderRelease) },
+    { "wgpuDeviceCreateComputePipeline", reinterpret_cast<WGPUProc>(procDeviceCreateComputePipeline) },
+    { "wgpuComputePipelineRelease", reinterpret_cast<WGPUProc>(procComputePipelineRelease) },
 };
 
 } // namespace

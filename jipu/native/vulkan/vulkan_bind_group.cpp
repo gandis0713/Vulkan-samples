@@ -54,6 +54,8 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
     }
 
     vkdescriptor.textures.resize(textureSize);
+
+    auto textureDescriptorSetLayouts = downcast(descriptor.layout)->getTextureDescriptorSetLayouts();
     // update texture
     for (auto i = 0; i < textureSize; ++i)
     {
@@ -64,7 +66,24 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageView = vulkanTextureView->getVkImageView();
-        imageInfo.imageLayout = vulkanTexture->getFinalLayout();
+
+        // set image layout by shader stage
+        // TODO: image layout
+        {
+            auto stageFlags = textureDescriptorSetLayouts[i].stageFlags;
+            if (stageFlags & VK_SHADER_STAGE_COMPUTE_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            else if (stageFlags & VK_SHADER_STAGE_VERTEX_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            else if (stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT)
+            {
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+        }
 
         vkdescriptor.textures[i] = imageInfo;
     }
@@ -76,6 +95,7 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
     : BindGroup()
     , m_device(device)
     , m_descriptor(descriptor)
+    , m_layoutInfo(downcast(m_descriptor.layout)->getInfo())
 {
     auto vkdescriptor = generateVulkanBindGroupDescriptor(descriptor);
 
@@ -152,14 +172,6 @@ VulkanBindGroup::VulkanBindGroup(VulkanDevice* device, const BindGroupDescriptor
     }
 
     vkAPI.UpdateDescriptorSets(vulkanDevice->getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-
-    // store bind group layout descriptor
-    {
-        VulkanBindGroupLayout* layout = downcast(m_descriptor.layout);
-        m_layoutInfo.buffers = layout->getBufferBindingLayouts();
-        m_layoutInfo.samplers = layout->getSamplerBindingLayouts();
-        m_layoutInfo.textures = layout->getTextureBindingLayouts();
-    }
 }
 
 VulkanBindGroup::~VulkanBindGroup()
@@ -187,7 +199,7 @@ const std::vector<TextureBinding>& VulkanBindGroup::getTextureBindings() const
     return m_descriptor.textures;
 }
 
-const BindGroupLayoutInfo& VulkanBindGroup::getLayoutInfo() const
+const VulkanBindGroupLayoutInfo& VulkanBindGroup::getLayoutInfo() const
 {
     return m_layoutInfo;
 }

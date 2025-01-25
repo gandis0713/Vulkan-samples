@@ -61,7 +61,6 @@ private:
     void insert(VkSampler sampler);
     void insert(VkPipeline pipeline);
     void insert(VkPipelineLayout pipelineLayout);
-    void insert(VkShaderModule shaderModule);
     void insert(VkDescriptorSet descriptorSet);
     void insert(VkDescriptorSetLayout descriptorSetLayout);
     void insert(VkFramebuffer framebuffer);
@@ -76,7 +75,6 @@ private:
     void erase(VkSampler sampler);
     void erase(VkPipeline pipeline);
     void erase(VkPipelineLayout pipelineLayout);
-    void erase(VkShaderModule shaderModule);
     void erase(VkDescriptorSet descriptorSet);
     void erase(VkDescriptorSetLayout descriptorSetLayout);
     void erase(VkFramebuffer framebuffer);
@@ -91,7 +89,6 @@ private:
     bool contains(VkSampler sampler) const;
     bool contains(VkPipeline pipeline) const;
     bool contains(VkPipelineLayout pipelineLayout) const;
-    bool contains(VkShaderModule shaderModule) const;
     bool contains(VkDescriptorSet descriptorSet) const;
     bool contains(VkDescriptorSetLayout descriptorSetLayout) const;
     bool contains(VkFramebuffer framebuffer) const;
@@ -113,7 +110,6 @@ private:
     std::unordered_set<VkSampler> m_samplers{};
     std::unordered_set<VkPipeline> m_pipelines{};
     std::unordered_set<VkPipelineLayout> m_pipelineLayouts{};
-    std::unordered_set<VkShaderModule> m_shaderModules{};
     std::unordered_set<VkDescriptorSet> m_descriptorSets{};
     std::unordered_set<VkDescriptorSetLayout> m_descriptorSetLayouts{};
     std::unordered_set<VkFramebuffer> m_framebuffers{};

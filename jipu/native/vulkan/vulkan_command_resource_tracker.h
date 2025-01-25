@@ -10,7 +10,7 @@ namespace jipu
 {
 
 class Buffer;
-class Texture;
+class TextureView;
 class BindGroup;
 
 struct BufferUsageInfo
@@ -24,12 +24,16 @@ struct TextureUsageInfo
     VkPipelineStageFlags stageFlags = 0;
     VkAccessFlags accessFlags = 0;
     VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    uint32_t baseMipLevel{ 0 };
+    uint32_t mipLevelCount{ 1 };
+    uint32_t baseArrayLayer{ 0 };
+    uint32_t arrayLayerCount{ 1 };
 };
 
 struct ResourceInfo
 {
     std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-    std::unordered_map<Texture*, TextureUsageInfo> textures;
+    std::unordered_map<TextureView*, TextureUsageInfo> textureViews;
 };
 
 struct OperationResourceInfo

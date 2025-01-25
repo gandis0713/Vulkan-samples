@@ -13,7 +13,13 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineL
     : m_device(device)
     , m_descriptor(descriptor)
 {
-    m_pipelineLayout = m_device->getPipelineLayoutCache()->getVkPipelineLayout(descriptor);
+    m_info.bindGroupLayoutInfos.resize(m_descriptor.layouts.size());
+
+    for (uint32_t i = 0; i < m_info.bindGroupLayoutInfos.size(); ++i)
+    {
+        auto bindGroupLayout = downcast(m_descriptor.layouts[i]);
+        m_info.bindGroupLayoutInfos[i] = bindGroupLayout->getInfo();
+    }
 }
 
 VulkanPipelineLayout::~VulkanPipelineLayout()
@@ -23,27 +29,116 @@ VulkanPipelineLayout::~VulkanPipelineLayout()
 
 VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const
 {
-    return m_pipelineLayout;
+    VulkanPipelineLayoutMetaData metaData{
+        .info = m_info,
+    };
+    return m_device->getPipelineLayoutCache()->getVkPipelineLayout(metaData);
 }
 
-PipelineLayoutInfo VulkanPipelineLayout::getLayoutInfo() const
+const VulkanPipelineLayoutInfo& VulkanPipelineLayout::getInfo() const
 {
-    PipelineLayoutInfo layoutInfo{};
-    layoutInfo.bindGroupLayoutInfos.resize(m_descriptor.layouts.size());
-
-    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutInfos.size(); ++i)
-    {
-        layoutInfo.bindGroupLayoutInfos[i] = BindGroupLayoutInfo{
-            .buffers = downcast(m_descriptor.layouts[i])->getBufferBindingLayouts(),
-            .samplers = downcast(m_descriptor.layouts[i])->getSamplerBindingLayouts(),
-            .textures = downcast(m_descriptor.layouts[i])->getTextureBindingLayouts(),
-        };
-    }
-
-    return layoutInfo;
+    return m_info;
 }
 
 // VulkanPipelineLayoutCache
+
+size_t VulkanPipelineLayoutCache::Functor::operator()(const VulkanPipelineLayoutMetaData& metaData) const
+{
+    size_t hash = 0;
+
+    for (const auto& bindGroupLayoutInfos : metaData.info.bindGroupLayoutInfos)
+    {
+        for (const auto& buffer : bindGroupLayoutInfos.buffers)
+        {
+            combineHash(hash, buffer.dynamicOffset);
+            combineHash(hash, buffer.index);
+            combineHash(hash, buffer.stages);
+            combineHash(hash, buffer.type);
+        }
+
+        for (const auto& sampler : bindGroupLayoutInfos.samplers)
+        {
+            combineHash(hash, sampler.index);
+            combineHash(hash, sampler.stages);
+        }
+
+        for (const auto& texture : bindGroupLayoutInfos.textures)
+        {
+            combineHash(hash, texture.index);
+            combineHash(hash, texture.stages);
+        }
+
+        for (const auto& storageTexture : bindGroupLayoutInfos.storageTextures)
+        {
+            combineHash(hash, storageTexture.index);
+            combineHash(hash, storageTexture.stages);
+            combineHash(hash, storageTexture.access);
+        }
+    }
+
+    return hash;
+}
+
+bool VulkanPipelineLayoutCache::Functor::operator()(const VulkanPipelineLayoutMetaData& lhs,
+                                                    const VulkanPipelineLayoutMetaData& rhs) const
+{
+    if (lhs.info.bindGroupLayoutInfos.size() != rhs.info.bindGroupLayoutInfos.size())
+    {
+        return false;
+    }
+
+    for (auto i = 0; i < lhs.info.bindGroupLayoutInfos.size(); ++i)
+    {
+        if (lhs.info.bindGroupLayoutInfos[i].buffers.size() != rhs.info.bindGroupLayoutInfos[i].buffers.size() ||
+            lhs.info.bindGroupLayoutInfos[i].samplers.size() != rhs.info.bindGroupLayoutInfos[i].samplers.size() ||
+            lhs.info.bindGroupLayoutInfos[i].textures.size() != rhs.info.bindGroupLayoutInfos[i].textures.size() ||
+            lhs.info.bindGroupLayoutInfos[i].storageTextures.size() != rhs.info.bindGroupLayoutInfos[i].storageTextures.size())
+        {
+            return false;
+        }
+
+        for (auto j = 0; j < lhs.info.bindGroupLayoutInfos[i].buffers.size(); ++j)
+        {
+            if (lhs.info.bindGroupLayoutInfos[i].buffers[j].dynamicOffset != rhs.info.bindGroupLayoutInfos[i].buffers[j].dynamicOffset ||
+                lhs.info.bindGroupLayoutInfos[i].buffers[j].index != rhs.info.bindGroupLayoutInfos[i].buffers[j].index ||
+                lhs.info.bindGroupLayoutInfos[i].buffers[j].stages != rhs.info.bindGroupLayoutInfos[i].buffers[j].stages ||
+                lhs.info.bindGroupLayoutInfos[i].buffers[j].type != rhs.info.bindGroupLayoutInfos[i].buffers[j].type)
+            {
+                return false;
+            }
+        }
+
+        for (auto j = 0; j < lhs.info.bindGroupLayoutInfos[i].samplers.size(); ++j)
+        {
+            if (lhs.info.bindGroupLayoutInfos[i].samplers[j].index != rhs.info.bindGroupLayoutInfos[i].samplers[j].index ||
+                lhs.info.bindGroupLayoutInfos[i].samplers[j].stages != rhs.info.bindGroupLayoutInfos[i].samplers[j].stages)
+            {
+                return false;
+            }
+        }
+
+        for (auto j = 0; j < lhs.info.bindGroupLayoutInfos[i].textures.size(); ++j)
+        {
+            if (lhs.info.bindGroupLayoutInfos[i].textures[j].index != rhs.info.bindGroupLayoutInfos[i].textures[j].index ||
+                lhs.info.bindGroupLayoutInfos[i].textures[j].stages != rhs.info.bindGroupLayoutInfos[i].textures[j].stages)
+            {
+                return false;
+            }
+        }
+
+        for (auto j = 0; j < lhs.info.bindGroupLayoutInfos[i].storageTextures.size(); ++j)
+        {
+            if (lhs.info.bindGroupLayoutInfos[i].storageTextures[j].index != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].index ||
+                lhs.info.bindGroupLayoutInfos[i].storageTextures[j].stages != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].stages ||
+                lhs.info.bindGroupLayoutInfos[i].storageTextures[j].access != rhs.info.bindGroupLayoutInfos[i].storageTextures[j].access)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
 
 VulkanPipelineLayoutCache::VulkanPipelineLayoutCache(VulkanDevice* device)
     : m_device(device)
@@ -55,36 +150,22 @@ VulkanPipelineLayoutCache::~VulkanPipelineLayoutCache()
     clear();
 }
 
-VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutDescriptor& descriptor)
+VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const VulkanPipelineLayoutMetaData& metaData)
 {
-    PipelineLayoutInfo layoutInfo{};
-    layoutInfo.bindGroupLayoutInfos.resize(descriptor.layouts.size());
-
-    for (uint32_t i = 0; i < layoutInfo.bindGroupLayoutInfos.size(); ++i)
-    {
-        layoutInfo.bindGroupLayoutInfos[i] = BindGroupLayoutInfo{
-            .buffers = downcast(descriptor.layouts[i])->getBufferBindingLayouts(),
-            .samplers = downcast(descriptor.layouts[i])->getSamplerBindingLayouts(),
-            .textures = downcast(descriptor.layouts[i])->getTextureBindingLayouts(),
-        };
-    }
-
-    return getVkPipelineLayout(layoutInfo);
-}
-
-VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLayoutInfo& layoutInfo)
-{
-    auto it = m_pipelineLayouts.find(layoutInfo);
+    auto it = m_pipelineLayouts.find(metaData);
     if (it != m_pipelineLayouts.end())
     {
         return it->second;
     }
 
     std::vector<VkDescriptorSetLayout> layouts{};
-    layouts.resize(layoutInfo.bindGroupLayoutInfos.size());
+    layouts.resize(metaData.info.bindGroupLayoutInfos.size());
     for (uint32_t i = 0; i < layouts.size(); ++i)
     {
-        layouts[i] = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(layoutInfo.bindGroupLayoutInfos[i]);
+        VulkanBindGroupLayoutMetaData bindGroupLayoutMetaData{
+            .info = metaData.info.bindGroupLayoutInfos[i],
+        };
+        layouts[i] = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(bindGroupLayoutMetaData);
     }
 
     VkPipelineLayoutCreateInfo createInfo{ .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -98,7 +179,7 @@ VkPipelineLayout VulkanPipelineLayoutCache::getVkPipelineLayout(const PipelineLa
         throw std::runtime_error("Failed to create VkPipelineLayout");
     }
 
-    m_pipelineLayouts.insert({ layoutInfo, pipelineLayout });
+    m_pipelineLayouts.insert({ metaData, pipelineLayout });
 
     return pipelineLayout;
 }
@@ -111,86 +192,6 @@ void VulkanPipelineLayoutCache::clear()
     }
 
     m_pipelineLayouts.clear();
-}
-
-size_t VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& layoutInfo) const
-{
-    size_t hash = 0;
-
-    for (const auto& bindGroupLayoutInfo : layoutInfo.bindGroupLayoutInfos)
-    {
-        for (const auto& buffer : bindGroupLayoutInfo.buffers)
-        {
-            combineHash(hash, buffer.dynamicOffset);
-            combineHash(hash, buffer.index);
-            combineHash(hash, buffer.stages);
-            combineHash(hash, buffer.type);
-        }
-
-        for (const auto& sampler : bindGroupLayoutInfo.samplers)
-        {
-            combineHash(hash, sampler.index);
-            combineHash(hash, sampler.stages);
-        }
-
-        for (const auto& texture : bindGroupLayoutInfo.textures)
-        {
-            combineHash(hash, texture.index);
-            combineHash(hash, texture.stages);
-        }
-    }
-
-    return hash;
-}
-
-bool VulkanPipelineLayoutCache::Functor::operator()(const PipelineLayoutInfo& lhs,
-                                                    const PipelineLayoutInfo& rhs) const
-{
-    if (lhs.bindGroupLayoutInfos.size() != rhs.bindGroupLayoutInfos.size())
-    {
-        return false;
-    }
-
-    for (auto i = 0; i < lhs.bindGroupLayoutInfos.size(); ++i)
-    {
-        if (lhs.bindGroupLayoutInfos[i].buffers.size() != rhs.bindGroupLayoutInfos[i].buffers.size() ||
-            lhs.bindGroupLayoutInfos[i].samplers.size() != rhs.bindGroupLayoutInfos[i].samplers.size() ||
-            lhs.bindGroupLayoutInfos[i].textures.size() != rhs.bindGroupLayoutInfos[i].textures.size())
-        {
-            return false;
-        }
-
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].buffers.size(); ++j)
-        {
-            if (lhs.bindGroupLayoutInfos[i].buffers[j].dynamicOffset != rhs.bindGroupLayoutInfos[i].buffers[j].dynamicOffset ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].index != rhs.bindGroupLayoutInfos[i].buffers[j].index ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].stages != rhs.bindGroupLayoutInfos[i].buffers[j].stages ||
-                lhs.bindGroupLayoutInfos[i].buffers[j].type != rhs.bindGroupLayoutInfos[i].buffers[j].type)
-            {
-                return false;
-            }
-        }
-
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].samplers.size(); ++j)
-        {
-            if (lhs.bindGroupLayoutInfos[i].samplers[j].index != rhs.bindGroupLayoutInfos[i].samplers[j].index ||
-                lhs.bindGroupLayoutInfos[i].samplers[j].stages != rhs.bindGroupLayoutInfos[i].samplers[j].stages)
-            {
-                return false;
-            }
-        }
-
-        for (auto j = 0; j < lhs.bindGroupLayoutInfos[i].textures.size(); ++j)
-        {
-            if (lhs.bindGroupLayoutInfos[i].textures[j].index != rhs.bindGroupLayoutInfos[i].textures[j].index ||
-                lhs.bindGroupLayoutInfos[i].textures[j].stages != rhs.bindGroupLayoutInfos[i].textures[j].stages)
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 
 } // namespace jipu

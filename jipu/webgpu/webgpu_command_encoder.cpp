@@ -2,6 +2,7 @@
 
 #include "webgpu_buffer.h"
 #include "webgpu_command_buffer.h"
+#include "webgpu_compute_pass_encoder.h"
 #include "webgpu_device.h"
 #include "webgpu_render_pass_encoder.h"
 #include "webgpu_texture.h"
@@ -32,6 +33,11 @@ WebGPURenderPassEncoder* WebGPUCommandEncoder::beginRenderPass(WGPURenderPassDes
     return WebGPURenderPassEncoder::create(this, descriptor);
 }
 
+WebGPUComputePassEncoder* WebGPUCommandEncoder::beginComputePass(WGPUComputePassDescriptor const* descriptor)
+{
+    return WebGPUComputePassEncoder::create(this, descriptor);
+}
+
 void WebGPUCommandEncoder::copyBufferToBuffer(WGPUBuffer source, uint64_t sourceOffset, WGPUBuffer destination, uint64_t destinationOffset, uint64_t size)
 {
     CopyBuffer srcBuffer{
@@ -60,6 +66,8 @@ void WebGPUCommandEncoder::copyBufferToTexture(WGPUImageCopyBuffer const* source
     CopyTexture texture{
         .texture = wgpuTexture->getTexture(),
         .aspect = WGPUToTextureAspectFlags(wgpuTexture, destination->aspect),
+        .mipLevel = destination->mipLevel,
+        // TODO: origin
     };
 
     Extent3D extent{

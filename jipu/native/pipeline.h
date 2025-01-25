@@ -182,6 +182,19 @@ struct BlendState
     BlendComponent alpha;
 };
 
+enum class CompareFunction
+{
+    kUndefined = 0x00000000,
+    kNever = 0x00000001,
+    kLess = 0x00000002,
+    kLessEqual = 0x00000003,
+    kGreater = 0x00000004,
+    kGreaterEqual = 0x00000005,
+    kEqual = 0x00000006,
+    kNotEqual = 0x00000007,
+    kAlways = 0x00000008
+};
+
 // Fragment Shader Stage
 struct FragmentStage : ProgrammableStage
 {
@@ -199,7 +212,9 @@ struct FragmentStage : ProgrammableStage
 struct DepthStencilStage
 {
     /// @brief depth/stencil attachment format.
-    TextureFormat format;
+    TextureFormat format{ TextureFormat::kUndefined };
+    bool depthWriteEnabled{ false };
+    CompareFunction depthCompareFunction{ CompareFunction::kLess };
 };
 
 struct RenderPipelineDescriptor

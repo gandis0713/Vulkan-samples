@@ -71,7 +71,7 @@ void VulkanDescriptorPool::free(VkDescriptorSet descriptorSet)
 VkDescriptorPool VulkanDescriptorPool::createDescriptorPool(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
 {
     const uint32_t maxSets = 32; // TODO: set correct max value.
-    const uint64_t descriptorPoolCount = 8;
+    const uint64_t descriptorPoolCount = 9;
     const uint64_t maxDescriptorSetSize = descriptorPoolCount;
     std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
     VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -114,6 +114,10 @@ VkDescriptorPool VulkanDescriptorPool::createDescriptorPool(const std::vector<Vk
     if (devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic < kDescriptorSetStorageBuffersDynamic)
         kDescriptorSetStorageBuffersDynamic = devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic;
 
+    uint32_t kDescriptorSetStorageImages = 32;
+    if (devicePropertyLimists.maxDescriptorSetStorageImages < kDescriptorSetStorageImages)
+        kDescriptorSetStorageImages = devicePropertyLimists.maxDescriptorSetStorageImages;
+
     poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, kDescriptorSetUniformBufferCount };
     poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, kDescriptorSetUniformBufferDynamicCount };
     poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, kDescriptorSetSamplers };
@@ -122,6 +126,7 @@ VkDescriptorPool VulkanDescriptorPool::createDescriptorPool(const std::vector<Vk
     poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, kDescriptorSetInputAttachments };
     poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, kDescriptorSetStorageBuffers };
     poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, kDescriptorSetStorageBuffersDynamic };
+    poolSizes[8] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, kDescriptorSetStorageImages };
 
     VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
     VkResult result = m_device->vkAPI.CreateDescriptorPool(m_device->getVkDevice(), &poolCreateInfo, nullptr, &descriptorPool);

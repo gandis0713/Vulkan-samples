@@ -15,10 +15,11 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();
     const uint64_t textureSize = descriptor.textures.size();
+    const uint64_t storageTextureSize = descriptor.storageTextures.size();
 
     vkdescriptor.buffers.resize(bufferSize);
     vkdescriptor.samplers.resize(samplerSize);
-    vkdescriptor.textures.resize(textureSize);
+    vkdescriptor.textures.resize(textureSize + storageTextureSize);
 
     for (uint64_t i = 0; i < bufferSize; ++i)
     {
@@ -50,6 +51,16 @@ VulkanBindGroupLayoutDescriptor generateVulkanBindGroupLayoutDescriptor(const Bi
                                      .pImmutableSamplers = nullptr };
     }
 
+    for (uint64_t i = textureSize; i < storageTextureSize + textureSize; ++i)
+    {
+        const auto& storageTexture = descriptor.storageTextures[i];
+        vkdescriptor.textures[i] = { .binding = storageTexture.index,
+                                     .descriptorType = ToVkDescriptorType(storageTexture.access),
+                                     .descriptorCount = 1,
+                                     .stageFlags = ToVkShaderStageFlags(storageTexture.stages),
+                                     .pImmutableSamplers = nullptr };
+    }
+
     return vkdescriptor;
 }
 
@@ -77,9 +88,15 @@ VkDescriptorSetLayout createDescriptorSetLayout(VulkanDevice* device, const Vulk
 
 VulkanBindGroupLayout::VulkanBindGroupLayout(VulkanDevice* device, const BindGroupLayoutDescriptor& descriptor)
     : m_device(device)
-    , m_descriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
+    , m_descriptor(descriptor)
+    , m_vkdescriptor(generateVulkanBindGroupLayoutDescriptor(descriptor))
 {
-    m_descriptorSetLayout = m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(descriptor);
+    m_info = {
+        .buffers = getBufferBindingLayouts(),
+        .samplers = getSamplerBindingLayouts(),
+        .textures = getTextureBindingLayouts(),
+        .storageTextures = getStorageTextureBindingLayouts(),
+    };
 }
 
 VulkanBindGroupLayout::~VulkanBindGroupLayout()
@@ -89,118 +106,184 @@ VulkanBindGroupLayout::~VulkanBindGroupLayout()
 
 std::vector<BufferBindingLayout> VulkanBindGroupLayout::getBufferBindingLayouts() const
 {
-    std::vector<BufferBindingLayout> layouts{};
-    for (const auto& buffer : m_descriptor.buffers)
-    {
-        layouts.push_back({ .index = buffer.binding,
-                            .stages = ToBindingStageFlags(buffer.stageFlags),
-                            .type = ToBufferBindingType(buffer.descriptorType),
-                            .dynamicOffset = buffer.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
-                                             buffer.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC });
-    }
-
-    return layouts;
+    return m_descriptor.buffers;
 }
 
 std::vector<SamplerBindingLayout> VulkanBindGroupLayout::getSamplerBindingLayouts() const
 {
-    std::vector<SamplerBindingLayout> layouts{};
-    for (const auto& sampler : m_descriptor.samplers)
-    {
-        layouts.push_back({ .index = sampler.binding,
-                            .stages = ToBindingStageFlags(sampler.stageFlags) });
-    }
-
-    return layouts;
+    return m_descriptor.samplers;
 }
 
 std::vector<TextureBindingLayout> VulkanBindGroupLayout::getTextureBindingLayouts() const
 {
-    std::vector<TextureBindingLayout> layouts{};
-    for (const auto& texture : m_descriptor.textures)
-    {
-        layouts.push_back({ .index = texture.binding,
-                            .stages = ToBindingStageFlags(texture.stageFlags) });
-    }
+    return m_descriptor.textures;
+}
 
-    return layouts;
+std::vector<StorageTextureBindingLayout> VulkanBindGroupLayout::getStorageTextureBindingLayouts() const
+{
+    return m_descriptor.storageTextures;
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getDescriptorSetLayouts() const
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
 
-    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
-    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
-    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.buffers.begin(), m_vkdescriptor.buffers.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.samplers.begin(), m_vkdescriptor.samplers.end());
+    bindings.insert(bindings.end(), m_vkdescriptor.textures.begin(), m_vkdescriptor.textures.end());
 
     return bindings;
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getBufferDescriptorSetLayouts() const
 {
-    return m_descriptor.buffers;
+    return m_vkdescriptor.buffers;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getBufferDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.buffers.empty())
+    if (m_vkdescriptor.buffers.empty())
         throw std::runtime_error("Failed to find buffer binding layout due to empty.");
 
-    if (m_descriptor.buffers.size() <= index)
+    if (m_vkdescriptor.buffers.size() <= index)
         throw std::runtime_error("Failed to find buffer binding layout due to over index.");
 
-    return m_descriptor.buffers[index];
+    return m_vkdescriptor.buffers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getSamplerDescriptorSetLayouts() const
 {
-    return m_descriptor.samplers;
+    return m_vkdescriptor.samplers;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getSamplerDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.samplers.empty())
+    if (m_vkdescriptor.samplers.empty())
         throw std::runtime_error("Failed to find sampler binding layout due to empty.");
 
-    if (m_descriptor.samplers.size() <= index)
+    if (m_vkdescriptor.samplers.size() <= index)
         throw std::runtime_error("Failed to find sampler binding layout due to over index.");
 
-    return m_descriptor.samplers[index];
+    return m_vkdescriptor.samplers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindGroupLayout::getTextureDescriptorSetLayouts() const
 {
-    return m_descriptor.textures;
+    return m_vkdescriptor.textures;
 }
 
 VkDescriptorSetLayoutBinding VulkanBindGroupLayout::getTextureDescriptorSetLayout(uint32_t index) const
 {
-    if (m_descriptor.textures.empty())
+    if (m_vkdescriptor.textures.empty())
         throw std::runtime_error("Failed to find texture binding layout due to empty.");
 
-    if (m_descriptor.textures.size() <= index)
+    if (m_vkdescriptor.textures.size() <= index)
         throw std::runtime_error("Failed to find texture binding layout due to over index.");
 
-    return m_descriptor.textures[index];
+    return m_vkdescriptor.textures[index];
 }
 
 VkDescriptorSetLayout VulkanBindGroupLayout::getVkDescriptorSetLayout() const
 {
-    return m_descriptorSetLayout;
+    VulkanBindGroupLayoutMetaData metaData{
+        .info = m_info,
+    };
+    return m_device->getBindGroupLayoutCache()->getVkDescriptorSetLayout(metaData);
 }
 
-BindGroupLayoutInfo VulkanBindGroupLayout::getLayoutInfo() const
+const VulkanBindGroupLayoutInfo& VulkanBindGroupLayout::getInfo() const
 {
-    BindGroupLayoutInfo layoutInfo{};
-    layoutInfo.buffers = getBufferBindingLayouts();
-    layoutInfo.samplers = getSamplerBindingLayouts();
-    layoutInfo.textures = getTextureBindingLayouts();
-
-    return layoutInfo;
+    return m_info;
 }
 
 // VulkanBindGroupLayoutCache
+
+size_t VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayoutMetaData& metaData) const
+{
+    size_t hash = 0;
+
+    for (const auto& buffer : metaData.info.buffers)
+    {
+        combineHash(hash, buffer.dynamicOffset);
+        combineHash(hash, buffer.index);
+        combineHash(hash, buffer.stages);
+        combineHash(hash, buffer.type);
+    }
+
+    for (const auto& sampler : metaData.info.samplers)
+    {
+        combineHash(hash, sampler.index);
+        combineHash(hash, sampler.stages);
+    }
+
+    for (const auto& texture : metaData.info.textures)
+    {
+        combineHash(hash, texture.index);
+        combineHash(hash, texture.stages);
+    }
+
+    for (const auto& storageTexture : metaData.info.storageTextures)
+    {
+        combineHash(hash, storageTexture.index);
+        combineHash(hash, storageTexture.stages);
+        combineHash(hash, storageTexture.access);
+    }
+
+    return hash;
+}
+
+bool VulkanBindGroupLayoutCache::Functor::operator()(const VulkanBindGroupLayoutMetaData& lhs,
+                                                     const VulkanBindGroupLayoutMetaData& rhs) const
+{
+    if (lhs.info.buffers.size() != rhs.info.buffers.size() ||
+        lhs.info.samplers.size() != rhs.info.samplers.size() ||
+        lhs.info.textures.size() != rhs.info.textures.size() ||
+        lhs.info.storageTextures.size() != rhs.info.storageTextures.size())
+    {
+        return false;
+    }
+
+    for (auto i = 0; i < lhs.info.buffers.size(); ++i)
+    {
+        if (lhs.info.buffers[i].dynamicOffset != rhs.info.buffers[i].dynamicOffset ||
+            lhs.info.buffers[i].index != rhs.info.buffers[i].index ||
+            lhs.info.buffers[i].stages != rhs.info.buffers[i].stages ||
+            lhs.info.buffers[i].type != rhs.info.buffers[i].type)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.samplers.size(); ++i)
+    {
+        if (lhs.info.samplers[i].index != rhs.info.samplers[i].index ||
+            lhs.info.samplers[i].stages != rhs.info.samplers[i].stages)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.textures.size(); ++i)
+    {
+        if (lhs.info.textures[i].index != rhs.info.textures[i].index ||
+            lhs.info.textures[i].stages != rhs.info.textures[i].stages)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.info.storageTextures.size(); ++i)
+    {
+        if (lhs.info.storageTextures[i].index != rhs.info.storageTextures[i].index ||
+            lhs.info.storageTextures[i].stages != rhs.info.storageTextures[i].stages ||
+            lhs.info.storageTextures[i].access != rhs.info.storageTextures[i].access)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 VulkanBindGroupLayoutCache::VulkanBindGroupLayoutCache(VulkanDevice* device)
     : m_device(device)
@@ -212,38 +295,30 @@ VulkanBindGroupLayoutCache::~VulkanBindGroupLayoutCache()
     clear();
 }
 
-VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const BindGroupLayoutDescriptor& descriptor)
+VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const VulkanBindGroupLayoutMetaData& metaData)
 {
-    return getVkDescriptorSetLayout(BindGroupLayoutInfo{
-        .buffers = descriptor.buffers,
-        .samplers = descriptor.samplers,
-        .textures = descriptor.textures,
-    });
-}
-
-VkDescriptorSetLayout VulkanBindGroupLayoutCache::getVkDescriptorSetLayout(const BindGroupLayoutInfo& layoutInfo)
-{
-    auto it = m_bindGroupLayouts.find(layoutInfo);
+    auto it = m_bindGroupLayouts.find(metaData);
     if (it != m_bindGroupLayouts.end())
     {
         return it->second;
     }
 
     BindGroupLayoutDescriptor descriptor{};
-    descriptor.buffers = layoutInfo.buffers;
-    descriptor.samplers = layoutInfo.samplers;
-    descriptor.textures = layoutInfo.textures;
+    descriptor.buffers = metaData.info.buffers;
+    descriptor.samplers = metaData.info.samplers;
+    descriptor.textures = metaData.info.textures;
+    descriptor.storageTextures = metaData.info.storageTextures;
 
     VkDescriptorSetLayout layout = createDescriptorSetLayout(m_device, generateVulkanBindGroupLayoutDescriptor(descriptor));
 
-    m_bindGroupLayouts.insert({ layoutInfo, layout });
+    m_bindGroupLayouts.insert({ metaData, layout });
 
     return layout;
 }
 
 void VulkanBindGroupLayoutCache::clear()
 {
-    for (auto& [descriptor, layout] : m_bindGroupLayouts)
+    for (auto& [_, layout] : m_bindGroupLayouts)
     {
         m_device->getDeleter()->safeDestroy(layout);
     }
@@ -251,76 +326,22 @@ void VulkanBindGroupLayoutCache::clear()
     m_bindGroupLayouts.clear();
 }
 
-size_t VulkanBindGroupLayoutCache::Functor::operator()(const BindGroupLayoutInfo& layoutInfo) const
-{
-    size_t hash = 0;
-
-    for (const auto& buffer : layoutInfo.buffers)
-    {
-        combineHash(hash, buffer.dynamicOffset);
-        combineHash(hash, buffer.index);
-        combineHash(hash, buffer.stages);
-        combineHash(hash, buffer.type);
-    }
-
-    for (const auto& sampler : layoutInfo.samplers)
-    {
-        combineHash(hash, sampler.index);
-        combineHash(hash, sampler.stages);
-    }
-
-    for (const auto& texture : layoutInfo.textures)
-    {
-        combineHash(hash, texture.index);
-        combineHash(hash, texture.stages);
-    }
-
-    return hash;
-}
-
-bool VulkanBindGroupLayoutCache::Functor::operator()(const BindGroupLayoutInfo& lhs,
-                                                     const BindGroupLayoutInfo& rhs) const
-{
-    if (lhs.buffers.size() != rhs.buffers.size() ||
-        lhs.samplers.size() != rhs.samplers.size() ||
-        lhs.textures.size() != rhs.textures.size())
-    {
-        return false;
-    }
-
-    for (auto j = 0; j < lhs.buffers.size(); ++j)
-    {
-        if (lhs.buffers[j].dynamicOffset != rhs.buffers[j].dynamicOffset ||
-            lhs.buffers[j].index != rhs.buffers[j].index ||
-            lhs.buffers[j].stages != rhs.buffers[j].stages ||
-            lhs.buffers[j].type != rhs.buffers[j].type)
-        {
-            return false;
-        }
-    }
-
-    for (auto j = 0; j < lhs.samplers.size(); ++j)
-    {
-        if (lhs.samplers[j].index != rhs.samplers[j].index ||
-            lhs.samplers[j].stages != rhs.samplers[j].stages)
-        {
-            return false;
-        }
-    }
-
-    for (auto j = 0; j < lhs.textures.size(); ++j)
-    {
-        if (lhs.textures[j].index != rhs.textures[j].index ||
-            lhs.textures[j].stages != rhs.textures[j].stages)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 // Convert Helper
+
+VkDescriptorType ToVkDescriptorType(StorageTextureAccess access)
+{
+    switch (access)
+    {
+    case StorageTextureAccess::kReadOnly:
+    case StorageTextureAccess::kWriteOnly:
+    case StorageTextureAccess::kReadWrite:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    default:
+    case StorageTextureAccess::kUndefined:
+        throw std::runtime_error(fmt::format("Failed to support access [{}] for VkDescriptorType.", static_cast<int32_t>(access)));
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    }
+}
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
 {
     switch (type)
@@ -332,6 +353,11 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
     case BufferBindingType::kStorage:
+        if (dynamicOffset)
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        else
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    case BufferBindingType::kReadOnlyStorage:
         if (dynamicOffset)
             return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
         else

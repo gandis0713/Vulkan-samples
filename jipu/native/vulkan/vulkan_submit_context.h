@@ -44,7 +44,6 @@ struct VulkanSubmit
         std::unordered_set<VkSampler> samplers{};
         std::unordered_set<VkPipeline> pipelines{};
         std::unordered_set<VkPipelineLayout> pipelineLayouts{};
-        std::unordered_set<VkShaderModule> shaderModules{};
         std::unordered_set<VkDescriptorSet> descriptorSet{};
         std::unordered_set<VkFramebuffer> framebuffers{};
         std::unordered_set<VkRenderPass> renderPasses{};
@@ -60,7 +59,6 @@ struct VulkanSubmit
     void add(VkSampler sampler);
     void add(VkPipeline pipeline);
     void add(VkPipelineLayout pipelineLayout);
-    void add(const std::vector<VkShaderModule>& shaderModules);
     void add(VkDescriptorSet descriptorSet);
     void add(VkFramebuffer framebuffer);
     void add(VkRenderPass renderPass);

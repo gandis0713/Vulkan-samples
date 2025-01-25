@@ -9,9 +9,9 @@
 namespace jipu
 {
 
-struct PipelineLayoutInfo
+struct VulkanPipelineLayoutInfo
 {
-    std::vector<BindGroupLayoutInfo> bindGroupLayoutInfos{};
+    std::vector<VulkanBindGroupLayoutInfo> bindGroupLayoutInfos{};
 };
 
 class VulkanDevice;
@@ -24,17 +24,21 @@ public:
 
 public:
     VkPipelineLayout getVkPipelineLayout() const;
-    PipelineLayoutInfo getLayoutInfo() const;
+    const VulkanPipelineLayoutInfo& getInfo() const;
 
 private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
     const PipelineLayoutDescriptor m_descriptor{};
+    VulkanPipelineLayoutInfo m_info{};
 };
 DOWN_CAST(VulkanPipelineLayout, PipelineLayout);
 
+struct VulkanPipelineLayoutMetaData
+{
+    VulkanPipelineLayoutInfo info{};
+};
 class VulkanPipelineLayoutCache
 {
 public:
@@ -43,8 +47,7 @@ public:
     ~VulkanPipelineLayoutCache();
 
 public:
-    VkPipelineLayout getVkPipelineLayout(const PipelineLayoutDescriptor& descriptor);
-    VkPipelineLayout getVkPipelineLayout(const PipelineLayoutInfo& layoutInfo);
+    VkPipelineLayout getVkPipelineLayout(const VulkanPipelineLayoutMetaData& metaData);
     void clear();
 
 private:
@@ -53,10 +56,10 @@ private:
 private:
     struct Functor
     {
-        size_t operator()(const PipelineLayoutInfo& descriptor) const;
-        bool operator()(const PipelineLayoutInfo& lhs, const PipelineLayoutInfo& rhs) const;
+        size_t operator()(const VulkanPipelineLayoutMetaData& metaData) const;
+        bool operator()(const VulkanPipelineLayoutMetaData& lhs, const VulkanPipelineLayoutMetaData& rhs) const;
     };
-    using Cache = std::unordered_map<PipelineLayoutInfo, VkPipelineLayout, Functor, Functor>;
+    using Cache = std::unordered_map<VulkanPipelineLayoutMetaData, VkPipelineLayout, Functor, Functor>;
     Cache m_pipelineLayouts{};
 };
 

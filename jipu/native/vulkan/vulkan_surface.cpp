@@ -102,19 +102,19 @@ VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode)
 std::vector<CompositeAlphaFlag> ToCompositeAlphaFlags(VkCompositeAlphaFlagsKHR alphaFlags)
 {
     std::vector<CompositeAlphaFlag> flags{};
-    if (alphaFlags == VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
+    if (alphaFlags & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
     {
         flags.push_back(CompositeAlphaFlag::kOpaque);
     }
-    else if (alphaFlags == VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+    if (alphaFlags & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
     {
         flags.push_back(CompositeAlphaFlag::kPreMultiplied);
     }
-    else if (alphaFlags == VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+    if (alphaFlags & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
     {
         flags.push_back(CompositeAlphaFlag::kPostMultiplied);
     }
-    else if (alphaFlags == VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
+    if (alphaFlags & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
     {
         flags.push_back(CompositeAlphaFlag::kInherit);
     }

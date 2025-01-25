@@ -29,7 +29,10 @@ public:
     uint64_t getSize() const override;
 
 public:
-    void setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags);
+    void cmdPipelineBarrier(VkCommandBuffer commandBuffer,
+                            VkPipelineStageFlags srcStage,
+                            VkPipelineStageFlags dstStage,
+                            VkBufferMemoryBarrier bufferBarrier);
 
     VulkanDevice* getDevice() const;
     VkBuffer getVkBuffer() const;
@@ -38,8 +41,6 @@ public:
 
 private:
     VulkanBufferResource m_resource;
-    VkPipelineStageFlags m_stageFlags = 0u;
-
     void* m_mappedPtr = nullptr;
 
 private:

@@ -105,6 +105,8 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
         {
             DepthStencilStage depthStencilStage{};
             depthStencilStage.format = WGPUToTextureFormat(descriptor->depthStencil->format);
+            depthStencilStage.depthWriteEnabled = static_cast<bool>(descriptor->depthStencil->depthWriteEnabled);
+            depthStencilStage.depthCompareFunction = WGPUToCompareFunction(descriptor->depthStencil->depthCompare);
 
             pipelineDescriptor.depthStencil = depthStencilStage;
         }
@@ -324,6 +326,31 @@ WGPUBlendOperation ToWGPUBlendOperation(BlendOperation operation)
     }
 }
 
+WGPUCompareFunction ToWGPUCompareFunction(CompareFunction function)
+{
+    switch (function)
+    {
+    case CompareFunction::kNever:
+        return WGPUCompareFunction_Never;
+    case CompareFunction::kLess:
+        return WGPUCompareFunction_Less;
+    case CompareFunction::kEqual:
+        return WGPUCompareFunction_Equal;
+    case CompareFunction::kLessEqual:
+        return WGPUCompareFunction_LessEqual;
+    case CompareFunction::kGreater:
+        return WGPUCompareFunction_Greater;
+    case CompareFunction::kNotEqual:
+        return WGPUCompareFunction_NotEqual;
+    case CompareFunction::kGreaterEqual:
+        return WGPUCompareFunction_GreaterEqual;
+    case CompareFunction::kAlways:
+        return WGPUCompareFunction_Always;
+    default:
+        throw std::runtime_error("compare function is not supported.");
+    }
+}
+
 // Convert from WebGPU to JIPU
 VertexFormat WGPUToVertexFormat(WGPUVertexFormat format)
 {
@@ -517,6 +544,31 @@ BlendOperation WGPUToBlendOperation(WGPUBlendOperation operation)
         return BlendOperation::kMax;
     default:
         throw std::runtime_error("blend operation is not supported.");
+    }
+}
+
+CompareFunction WGPUToCompareFunction(WGPUCompareFunction function)
+{
+    switch (function)
+    {
+    case WGPUCompareFunction_Never:
+        return CompareFunction::kNever;
+    case WGPUCompareFunction_Less:
+        return CompareFunction::kLess;
+    case WGPUCompareFunction_Equal:
+        return CompareFunction::kEqual;
+    case WGPUCompareFunction_LessEqual:
+        return CompareFunction::kLessEqual;
+    case WGPUCompareFunction_Greater:
+        return CompareFunction::kGreater;
+    case WGPUCompareFunction_NotEqual:
+        return CompareFunction::kNotEqual;
+    case WGPUCompareFunction_GreaterEqual:
+        return CompareFunction::kGreaterEqual;
+    case WGPUCompareFunction_Always:
+        return CompareFunction::kAlways;
+    default:
+        throw std::runtime_error("compare function is not supported.");
     }
 }
 

@@ -34,6 +34,8 @@ struct CopyTexture
 {
     Texture* texture = nullptr;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
+    uint32_t mipLevel = 0;
+    // TODO: origin
 };
 
 struct CommandEncoderDescriptor

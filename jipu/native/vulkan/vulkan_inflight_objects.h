@@ -23,7 +23,6 @@ struct VulkanInflightObject
     std::unordered_set<VkSampler> samplers{};
     std::unordered_set<VkPipeline> pipelines{};
     std::unordered_set<VkPipelineLayout> pipelineLayouts{};
-    std::unordered_set<VkShaderModule> shaderModules{};
     std::unordered_set<VkDescriptorSet> descriptorSet{};
     std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
     std::unordered_set<VkFramebuffer> framebuffers{};
@@ -60,7 +59,6 @@ public:
     bool isInflight(VkSampler sampler) const;
     bool isInflight(VkPipeline pipeline) const;
     bool isInflight(VkPipelineLayout pipelineLayout) const;
-    bool isInflight(VkShaderModule shaderModule) const;
     bool isInflight(VkDescriptorSet descriptorSet) const;
     bool isInflight(VkDescriptorSetLayout descriptorSetLayout) const;
     bool isInflight(VkFramebuffer framebuffer) const;

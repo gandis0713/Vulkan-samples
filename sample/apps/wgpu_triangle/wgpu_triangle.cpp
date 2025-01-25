@@ -95,18 +95,6 @@ void WGPUTriangleSample::finalizeContext()
         m_pipelineLayout = nullptr;
     }
 
-    if (m_vertSPIRVShaderModule)
-    {
-        wgpu.ShaderModuleRelease(m_vertSPIRVShaderModule);
-        m_vertSPIRVShaderModule = nullptr;
-    }
-
-    if (m_fragSPIRVShaderModule)
-    {
-        wgpu.ShaderModuleRelease(m_fragSPIRVShaderModule);
-        m_fragSPIRVShaderModule = nullptr;
-    }
-
     if (m_vertWGSLShaderModule)
     {
         wgpu.ShaderModuleRelease(m_vertWGSLShaderModule);

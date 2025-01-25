@@ -400,8 +400,8 @@ void ParticleSample::createComputePipeline()
 
     // compute shader
     const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
-    ShaderModuleDescriptor shaderModuleDescriptor{ .code = computeShaderSource.data(),
-                                                   .codeSize = computeShaderSource.size() };
+    ShaderModuleDescriptor shaderModuleDescriptor{ .type = ShaderModuleType::kSPIRV,
+                                                   .code = std::string_view(computeShaderSource.data(), computeShaderSource.size()) };
     auto computeShader = m_device->createShaderModule(shaderModuleDescriptor);
     ComputeStage computeStage{
         { computeShader.get(), "main" }
@@ -431,8 +431,9 @@ void ParticleSample::createRenderPipeline()
     // create vertex shader module.
     {
         const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
-        ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
-                                                       .codeSize = vertexShaderSource.size() };
+        ShaderModuleDescriptor shaderModuleDescriptor{};
+        shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+        shaderModuleDescriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
         m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
 
@@ -473,8 +474,10 @@ void ParticleSample::createRenderPipeline()
     // fragment shader
 
     const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
-    ShaderModuleDescriptor fragShaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
-    m_fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
+    ShaderModuleDescriptor shaderModuleDescriptor{};
+    shaderModuleDescriptor.type = ShaderModuleType::kSPIRV;
+    shaderModuleDescriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
+    m_fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
     FragmentStage::Target target{};
     target.format = m_swapchain->getTextureFormat();

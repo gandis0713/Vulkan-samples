@@ -5,6 +5,7 @@ if(APPLE)
     set(CMAKE_XCODE_SCHEME_ENVIRONMENT
         VK_ICD_FILENAMES=$ENV{VULKAN_SDK}/share/vulkan/icd.d/MoltenVK_icd.json
         VK_LAYER_PATH=$ENV{VULKAN_SDK}/share/vulkan/explicit_layer.d
+        DYLD_LIBRARY_PATH=$ENV{VULKAN_SDK}/lib
     )
 endif()
 
@@ -131,6 +132,7 @@ add_subdirectory(wgpu_triangle_msaa)
 add_subdirectory(wgpu_rotating_cube)
 add_subdirectory(wgpu_textured_cube)
 add_subdirectory(wgpu_render_bundles)
+add_subdirectory(wgpu_particles)
 
 # experimental for native
 add_subdirectory(triangle)
