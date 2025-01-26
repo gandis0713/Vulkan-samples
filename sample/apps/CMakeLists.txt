@@ -133,6 +133,7 @@ add_subdirectory(wgpu_rotating_cube)
 add_subdirectory(wgpu_textured_cube)
 add_subdirectory(wgpu_render_bundles)
 add_subdirectory(wgpu_particles)
+add_subdirectory(wgpu_deferred_rendering)
 
 # experimental for native
 add_subdirectory(triangle)
