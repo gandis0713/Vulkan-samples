@@ -56,6 +56,9 @@ public:
     void createDeferredRenderingPipelineLayout();
     void createDeferredRenderingRenderPipeline();
 
+    void createGBuffersDebugViewPipelineLayout();
+    void createGBuffersDebugViewRenderPipeline();
+
 private:
     struct ModelUniform
     {
@@ -107,6 +110,9 @@ private:
     WGPUBindGroup m_gBufferTextureBindGroup = nullptr;
     WGPUPipelineLayout m_deferredRenderingPipelineLayout = nullptr;
     WGPURenderPipeline m_deferredRenderingRenderPipeline = nullptr;
+
+    WGPUPipelineLayout m_gBuffersDebugViewPipelineLayout = nullptr;
+    WGPURenderPipeline m_gBuffersDebugViewRenderPipeline = nullptr;
 
 private:
     int m_mode = 0;

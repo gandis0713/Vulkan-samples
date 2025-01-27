@@ -178,19 +178,18 @@ void WGPUDeferredRenderingSample::onDraw()
         }
         else
         {
-            // GBuffers debug view
-            // Left: depth
-            // Middle: normal
-            // Right: albedo (use uv to mimic a checkerboard texture)
-            // textureQuadPassDescriptor.colorAttachments[0].view = context
-            //                                                          .getCurrentTexture()
-            //                                                          .createView();
-            // const debugViewPass = commandEncoder.beginRenderPass(
-            //     textureQuadPassDescriptor);
-            // debugViewPass.setPipeline(gBuffersDebugViewPipeline);
-            // debugViewPass.setBindGroup(0, gBufferTexturesBindGroup);
-            // debugViewPass.draw(6);
-            // debugViewPass.end();
+            textureQuadColorAttachments[0].view = surfaceTextureView;
+
+            WGPURenderPassDescriptor textureQuadPassDescriptor{};
+            textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
+            textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
+
+            WGPURenderPassEncoder textureQuadPass = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &textureQuadPassDescriptor);
+            wgpu.RenderPassEncoderSetPipeline(textureQuadPass, m_gBuffersDebugViewRenderPipeline);
+            wgpu.RenderPassEncoderSetBindGroup(textureQuadPass, 0, m_gBufferTextureBindGroup, 0, nullptr);
+            wgpu.RenderPassEncoderDraw(textureQuadPass, 6, 1, 0, 0);
+            wgpu.RenderPassEncoderEnd(textureQuadPass);
+            wgpu.RenderPassEncoderRelease(textureQuadPass);
         }
     }
 
@@ -244,6 +243,9 @@ void WGPUDeferredRenderingSample::initializeContext()
     createGBufferTextureBindGroup();
     createDeferredRenderingPipelineLayout();
     createDeferredRenderingRenderPipeline();
+
+    createGBuffersDebugViewPipelineLayout();
+    createGBuffersDebugViewRenderPipeline();
 }
 
 void WGPUDeferredRenderingSample::finalizeContext()
@@ -444,6 +446,18 @@ void WGPUDeferredRenderingSample::finalizeContext()
     {
         wgpu.RenderPipelineRelease(m_deferredRenderingRenderPipeline);
         m_deferredRenderingRenderPipeline = nullptr;
+    }
+
+    if (m_gBuffersDebugViewPipelineLayout)
+    {
+        wgpu.PipelineLayoutRelease(m_gBuffersDebugViewPipelineLayout);
+        m_gBuffersDebugViewPipelineLayout = nullptr;
+    }
+
+    if (m_gBuffersDebugViewRenderPipeline)
+    {
+        wgpu.RenderPipelineRelease(m_gBuffersDebugViewRenderPipeline);
+        m_gBuffersDebugViewRenderPipeline = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -1244,6 +1258,73 @@ void WGPUDeferredRenderingSample::createDeferredRenderingRenderPipeline()
 
     m_deferredRenderingRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
     assert(m_deferredRenderingRenderPipeline);
+}
+
+void WGPUDeferredRenderingSample::createGBuffersDebugViewPipelineLayout()
+{
+    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_gBufferTextureBindGroupLayout;
+
+    m_gBuffersDebugViewPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+    assert(m_gBuffersDebugViewPipelineLayout);
+}
+
+void WGPUDeferredRenderingSample::createGBuffersDebugViewRenderPipeline()
+{
+    WGPUPrimitiveState primitiveState{};
+    primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
+    primitiveState.cullMode = WGPUCullMode_Back;
+
+    std::string vertexEntryPoint = "main";
+    WGPUVertexState vertexState{};
+    vertexState.bufferCount = 0;
+    vertexState.buffers = nullptr;
+    vertexState.module = m_vertexTextureQuadShaderModule;
+    vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
+
+    std::array<WGPUColorTargetState, 1> colorTargetStates{
+        WGPUColorTargetState{
+            .format = m_surfaceConfigure.format,
+            .writeMask = WGPUColorWriteMask_All,
+        },
+    };
+
+    std::string key1 = "canvasSizeWidth";
+    std::string key2 = "canvasSizeHeight";
+    std::array<WGPUConstantEntry, 2> constantEntries{
+        WGPUConstantEntry{
+            .key = WGPUStringView{ .data = key1.data(), .length = key1.size() },
+            .value = static_cast<double>(m_width),
+        },
+        WGPUConstantEntry{
+            .key = WGPUStringView{ .data = key2.data(), .length = key2.size() },
+            .value = static_cast<double>(m_height),
+        }
+    };
+
+    std::string fragmentEntryPoint = "main";
+    WGPUFragmentState fragmentState{};
+    fragmentState.targetCount = colorTargetStates.size();
+    fragmentState.targets = colorTargetStates.data();
+    fragmentState.constantCount = constantEntries.size();
+    fragmentState.constants = constantEntries.data();
+    fragmentState.module = m_fragmentGBufferDebugViewShaderModule;
+    fragmentState.entryPoint = WGPUStringView{ .data = fragmentEntryPoint.data(), .length = fragmentEntryPoint.size() };
+
+    WGPUMultisampleState multisampleState{};
+    multisampleState.count = 1;
+    multisampleState.mask = 0xFFFFFFFF;
+
+    WGPURenderPipelineDescriptor renderPipelineDescriptor{};
+    renderPipelineDescriptor.layout = m_gBuffersDebugViewPipelineLayout;
+    renderPipelineDescriptor.primitive = primitiveState;
+    renderPipelineDescriptor.vertex = vertexState;
+    renderPipelineDescriptor.fragment = &fragmentState;
+    renderPipelineDescriptor.multisample = multisampleState;
+
+    m_gBuffersDebugViewRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
+    assert(m_gBuffersDebugViewRenderPipeline);
 }
 
 } // namespace jipu
