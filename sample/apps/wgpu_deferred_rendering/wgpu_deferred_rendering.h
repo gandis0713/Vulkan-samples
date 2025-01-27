@@ -53,6 +53,8 @@ public:
 
     void createGBufferTextureBindGroupLayout();
     void createGBufferTextureBindGroup();
+    void createDeferredRenderingPipelineLayout();
+    void createDeferredRenderingRenderPipeline();
 
 private:
     struct ModelUniform
@@ -103,6 +105,8 @@ private:
 
     WGPUBindGroupLayout m_gBufferTextureBindGroupLayout = nullptr;
     WGPUBindGroup m_gBufferTextureBindGroup = nullptr;
+    WGPUPipelineLayout m_deferredRenderingPipelineLayout = nullptr;
+    WGPURenderPipeline m_deferredRenderingRenderPipeline = nullptr;
 
 private:
     int m_mode = 0;
