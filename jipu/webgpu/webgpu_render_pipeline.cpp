@@ -476,12 +476,11 @@ FrontFace WGPUToFrontFace(WGPUFrontFace face)
 {
     switch (face)
     {
-    case WGPUFrontFace_CCW:
-        return FrontFace::kCounterClockwise;
     case WGPUFrontFace_CW:
         return FrontFace::kClockwise;
+    case WGPUFrontFace_CCW:
     default:
-        throw std::runtime_error("front face is not supported.");
+        return FrontFace::kCounterClockwise;
     }
 }
 
