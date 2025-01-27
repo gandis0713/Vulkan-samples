@@ -110,7 +110,7 @@ private:
 
 private:
     int m_mode = 0;
-    int m_numLights = 24;
+    int m_numLights = 128;
 
     glm::vec3 m_lightExtentMin{ -50.f, -30.f, -50.f };
     glm::vec3 m_lightExtentMax{ 50.f, 50.f, 50.f };

@@ -54,7 +54,7 @@ void WGPUDeferredRenderingSample::onBeforeUpdate()
         windowImGui(
             "Deferred Rendering", { [&]() {
                 ImGui::Combo("mode", &m_mode, modes, IM_ARRAYSIZE(modes));
-                ImGui::SliderInt("numLights", &m_numLights, 1, 1024);
+                ImGui::SliderInt("numLights", &m_numLights, 1, kMaxNumLights);
             } });
     } });
 }
@@ -68,21 +68,14 @@ void WGPUDeferredRenderingSample::onUpdate()
     static const glm::vec3 origin{ 0.f, 0.f, 0.f };
 
     auto getCameraViewProjMatrix = [&]() -> glm::mat4 {
-        // const rad = Math.PI * (Date.now() / 5000);
-        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000.0f;
-        const float rad = static_cast<float>(M_PI) * (now / 5000.0f);
+        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        const double rad = static_cast<double>(M_PI) * (now / 5000.0);
 
-        // const rotation = mat4.rotateY(mat4.translation(origin), rad);
-        const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rad, glm::vec3(0, 1, 0));
+        const glm::dmat4 rotation = glm::rotate(glm::dmat4(1.0), rad, glm::dvec3(0, 1, 0));
+        const glm::dvec3 rotatedEyePosition = glm::dvec3(rotation * glm::dvec4(eyePosition, 1.0));
+        const glm::dmat4 viewMatrix = glm::lookAt(rotatedEyePosition, glm::dvec3(origin), glm::dvec3(upVector));
 
-        // const rotatedEyePosition = vec3.transformMat4(eyePosition, rotation);
-        const glm::vec3 rotatedEyePosition = glm::vec3(rotation * glm::vec4(eyePosition, 1.0f));
-
-        // const viewMatrix = mat4.lookAt(rotatedEyePosition, origin, upVector);
-        const glm::mat4 viewMatrix = glm::lookAt(rotatedEyePosition, origin, upVector);
-
-        // return mat4.multiply(projectionMatrix, viewMatrix);
-        return m_projectionMatrix * viewMatrix;
+        return m_projectionMatrix * glm::mat4(viewMatrix);
     };
 
     {
@@ -91,6 +84,10 @@ void WGPUDeferredRenderingSample::onUpdate()
 
         const auto cameraInvViewProj = glm::inverse(cameraViewProj);
         wgpu.QueueWriteBuffer(m_queue, m_cameraUniformBuffer, 64, &cameraInvViewProj, sizeof(cameraInvViewProj));
+    }
+
+    {
+        wgpu.QueueWriteBuffer(m_queue, m_configUniformBuffer, 0, &m_numLights, sizeof(uint32_t));
     }
 }
 
