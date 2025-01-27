@@ -95,17 +95,29 @@ void WGPUDeferredRenderingSample::initializeContext()
 
     createVertexBuffer();
     createIndexBuffer();
+    createModelUniformBuffer();
+    createCameraUniformBuffer();
     createFloat16Texture();
     createAlbedoTexture();
     createDepthTexture();
     createFloat16TextureView();
     createAlbedoTextureView();
     createDepthTextureView();
+
     createShaderModules();
-    createGBufferBindGroupLayout();
-    createGBufferBindGroup();
-    createGBufferPipelineLayout();
-    createGBufferRenderPipeline();
+
+    createGBufferWriteBindGroupLayout();
+    createGBufferWriteBindGroup();
+    createGBufferWritePipelineLayout();
+    createGBufferWriteRenderPipeline();
+
+    createLightBindGroupLayout();
+    createLightBindGroup();
+    createLightPipelineLayout();
+    createLightRenderPipeline();
+
+    createGBufferTextureBindGroupLayout();
+    createGBufferTextureBindGroup();
 }
 
 void WGPUDeferredRenderingSample::finalizeContext()
@@ -120,6 +132,18 @@ void WGPUDeferredRenderingSample::finalizeContext()
     {
         wgpu.BufferRelease(m_indexBuffer);
         m_indexBuffer = nullptr;
+    }
+
+    if (m_modelUniformBuffer)
+    {
+        wgpu.BufferRelease(m_modelUniformBuffer);
+        m_modelUniformBuffer = nullptr;
+    }
+
+    if (m_cameraUniformBuffer)
+    {
+        wgpu.BufferRelease(m_cameraUniformBuffer);
+        m_cameraUniformBuffer = nullptr;
     }
 
     if (m_float16Texture)
@@ -194,28 +218,52 @@ void WGPUDeferredRenderingSample::finalizeContext()
         m_lightUpdateShaderModule = nullptr;
     }
 
-    if (m_gBufferBindGroupLayout)
+    if (m_gBufferWriteBindGroupLayout)
     {
-        wgpu.BindGroupLayoutRelease(m_gBufferBindGroupLayout);
-        m_gBufferBindGroupLayout = nullptr;
+        wgpu.BindGroupLayoutRelease(m_gBufferWriteBindGroupLayout);
+        m_gBufferWriteBindGroupLayout = nullptr;
     }
 
-    if (m_gBufferBindGroup)
+    if (m_gBufferWriteBindGroup)
     {
-        wgpu.BindGroupRelease(m_gBufferBindGroup);
-        m_gBufferBindGroup = nullptr;
+        wgpu.BindGroupRelease(m_gBufferWriteBindGroup);
+        m_gBufferWriteBindGroup = nullptr;
     }
 
-    if (m_gBufferPipelineLayout)
+    if (m_gBufferWritePipelineLayout)
     {
-        wgpu.PipelineLayoutRelease(m_gBufferPipelineLayout);
-        m_gBufferPipelineLayout = nullptr;
+        wgpu.PipelineLayoutRelease(m_gBufferWritePipelineLayout);
+        m_gBufferWritePipelineLayout = nullptr;
     }
 
-    if (m_gBufferRenderPipeline)
+    if (m_gBufferWriteRenderPipeline)
     {
-        wgpu.RenderPipelineRelease(m_gBufferRenderPipeline);
-        m_gBufferRenderPipeline = nullptr;
+        wgpu.RenderPipelineRelease(m_gBufferWriteRenderPipeline);
+        m_gBufferWriteRenderPipeline = nullptr;
+    }
+
+    if (m_lightBindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_lightBindGroupLayout);
+        m_lightBindGroupLayout = nullptr;
+    }
+
+    if (m_lightBindGroup)
+    {
+        wgpu.BindGroupRelease(m_lightBindGroup);
+        m_lightBindGroup = nullptr;
+    }
+
+    if (m_lightPipelineLayout)
+    {
+        wgpu.PipelineLayoutRelease(m_lightPipelineLayout);
+        m_lightPipelineLayout = nullptr;
+    }
+
+    if (m_lightRenderPipeline)
+    {
+        wgpu.RenderPipelineRelease(m_lightRenderPipeline);
+        m_lightRenderPipeline = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -267,6 +315,28 @@ void WGPUDeferredRenderingSample::createIndexBuffer()
 
         wgpu.BufferUnmap(m_indexBuffer);
     }
+}
+
+void WGPUDeferredRenderingSample::createModelUniformBuffer()
+{
+    // Create the model uniform buffer.
+    WGPUBufferDescriptor modelUniformBufferDescriptor{};
+    modelUniformBufferDescriptor.size = sizeof(ModelUniform);
+    modelUniformBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+
+    m_modelUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &modelUniformBufferDescriptor);
+    assert(m_modelUniformBuffer);
+}
+
+void WGPUDeferredRenderingSample::createCameraUniformBuffer()
+{
+    // Create the camera uniform buffer.
+    WGPUBufferDescriptor cameraUniformBufferDescriptor{};
+    cameraUniformBufferDescriptor.size = sizeof(CameraUniform);
+    cameraUniformBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+
+    m_cameraUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &cameraUniformBufferDescriptor);
+    assert(m_cameraUniformBuffer);
 }
 
 void WGPUDeferredRenderingSample::createFloat16Texture()
@@ -362,34 +432,21 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     assert(m_depthTextureView);
 }
 
-void WGPUDeferredRenderingSample::createGBufferBindGroupLayout()
+void WGPUDeferredRenderingSample::createGBufferWriteBindGroupLayout()
 {
-    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
+    std::array<WGPUBindGroupLayoutEntry, 2> bindGroupLayoutEntries{
         WGPUBindGroupLayoutEntry{
             .binding = 0,
-            .visibility = WGPUShaderStage_Fragment,
-            .texture = {
-                .sampleType = WGPUTextureSampleType_UnfilterableFloat,
-                .viewDimension = WGPUTextureViewDimension_2D,
-                .multisampled = false,
+            .visibility = WGPUShaderStage_Vertex,
+            .buffer = WGPUBufferBindingLayout{
+                .type = WGPUBufferBindingType_Uniform,
             },
         },
         WGPUBindGroupLayoutEntry{
             .binding = 1,
-            .visibility = WGPUShaderStage_Fragment,
-            .texture = {
-                .sampleType = WGPUTextureSampleType_UnfilterableFloat,
-                .viewDimension = WGPUTextureViewDimension_2D,
-                .multisampled = false,
-            },
-        },
-        WGPUBindGroupLayoutEntry{
-            .binding = 2,
-            .visibility = WGPUShaderStage_Fragment,
-            .texture = {
-                .sampleType = WGPUTextureSampleType_Depth,
-                .viewDimension = WGPUTextureViewDimension_2D,
-                .multisampled = false,
+            .visibility = WGPUShaderStage_Vertex,
+            .buffer = WGPUBufferBindingLayout{
+                .type = WGPUBufferBindingType_Uniform,
             },
         }
     };
@@ -398,47 +455,47 @@ void WGPUDeferredRenderingSample::createGBufferBindGroupLayout()
     bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
     bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
 
-    m_gBufferBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
-    assert(m_gBufferBindGroupLayout);
+    m_gBufferWriteBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_gBufferWriteBindGroupLayout);
 }
 
-void WGPUDeferredRenderingSample::createGBufferBindGroup()
+void WGPUDeferredRenderingSample::createGBufferWriteBindGroup()
 {
-    std::array<WGPUBindGroupEntry, 3> bindGroupEntries{
+    std::array<WGPUBindGroupEntry, 2> bindGroupEntries{
         WGPUBindGroupEntry{
             .binding = 0,
-            .textureView = m_float16TextureView,
+            .buffer = m_modelUniformBuffer,
+            .offset = 0,
+            .size = sizeof(ModelUniform),
         },
         WGPUBindGroupEntry{
             .binding = 1,
-            .textureView = m_albedoTextureView,
-        },
-        WGPUBindGroupEntry{
-            .binding = 2,
-            .textureView = m_depthTextureView,
+            .buffer = m_cameraUniformBuffer,
+            .offset = 0,
+            .size = sizeof(CameraUniform),
         }
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
-    bindGroupDescriptor.layout = m_gBufferBindGroupLayout;
+    bindGroupDescriptor.layout = m_gBufferWriteBindGroupLayout;
     bindGroupDescriptor.entryCount = bindGroupEntries.size();
     bindGroupDescriptor.entries = bindGroupEntries.data();
 
-    m_gBufferBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
-    assert(m_gBufferBindGroup);
+    m_gBufferWriteBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
+    assert(m_gBufferWriteBindGroup);
 }
 
-void WGPUDeferredRenderingSample::createGBufferPipelineLayout()
+void WGPUDeferredRenderingSample::createGBufferWritePipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
-    pipelineLayoutDescriptor.bindGroupLayouts = &m_gBufferBindGroupLayout;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_gBufferWriteBindGroupLayout;
 
-    m_gBufferPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
-    assert(m_gBufferPipelineLayout);
+    m_gBufferWritePipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+    assert(m_gBufferWritePipelineLayout);
 }
 
-void WGPUDeferredRenderingSample::createGBufferRenderPipeline()
+void WGPUDeferredRenderingSample::createGBufferWriteRenderPipeline()
 {
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
@@ -505,15 +562,15 @@ void WGPUDeferredRenderingSample::createGBufferRenderPipeline()
     multisampleState.mask = 0xFFFFFFFF;
 
     WGPURenderPipelineDescriptor renderPipelineDescriptor{};
-    renderPipelineDescriptor.layout = m_gBufferPipelineLayout;
+    renderPipelineDescriptor.layout = m_gBufferWritePipelineLayout;
     renderPipelineDescriptor.primitive = primitiveState;
     renderPipelineDescriptor.vertex = vertexState;
     renderPipelineDescriptor.fragment = &fragmentState;
     renderPipelineDescriptor.depthStencil = &depthStencilState;
     renderPipelineDescriptor.multisample = multisampleState;
 
-    m_gBufferRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
-    assert(m_gBufferRenderPipeline);
+    m_gBufferWriteRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
+    assert(m_gBufferWriteRenderPipeline);
 }
 
 void WGPUDeferredRenderingSample::createShaderModules()
@@ -630,6 +687,95 @@ void WGPUDeferredRenderingSample::createShaderModules()
         m_lightUpdateShaderModule = wgpu.DeviceCreateShaderModule(m_device, &lightUpdateShaderModuleDescriptor);
         assert(m_lightUpdateShaderModule);
     }
+}
+
+void WGPUDeferredRenderingSample::createLightBindGroupLayout()
+{
+}
+
+void WGPUDeferredRenderingSample::createLightBindGroup()
+{
+}
+
+void WGPUDeferredRenderingSample::createLightPipelineLayout()
+{
+    // WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    // pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
+    // pipelineLayoutDescriptor.bindGroupLayouts = &m_lightBindGroupLayout;
+
+    // m_lightPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+    // assert(m_lightPipelineLayout);
+}
+
+void WGPUDeferredRenderingSample::createLightRenderPipeline()
+{
+}
+
+void WGPUDeferredRenderingSample::createGBufferTextureBindGroupLayout()
+{
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
+        WGPUBindGroupLayoutEntry{
+            .binding = 0,
+            .visibility = WGPUShaderStage_Fragment,
+            .texture = {
+                .sampleType = WGPUTextureSampleType_UnfilterableFloat,
+                .viewDimension = WGPUTextureViewDimension_2D,
+                .multisampled = false,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 1,
+            .visibility = WGPUShaderStage_Fragment,
+            .texture = {
+                .sampleType = WGPUTextureSampleType_UnfilterableFloat,
+                .viewDimension = WGPUTextureViewDimension_2D,
+                .multisampled = false,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 2,
+            .visibility = WGPUShaderStage_Fragment,
+            .texture = {
+                .sampleType = WGPUTextureSampleType_Depth,
+                .viewDimension = WGPUTextureViewDimension_2D,
+                .multisampled = false,
+            },
+        }
+    };
+
+    WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
+    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
+
+    m_gBufferTextureBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_gBufferTextureBindGroupLayout);
+}
+
+void WGPUDeferredRenderingSample::createGBufferTextureBindGroup()
+{
+
+    std::array<WGPUBindGroupEntry, 3> bindGroupEntries{
+        WGPUBindGroupEntry{
+            .binding = 0,
+            .textureView = m_float16TextureView,
+        },
+        WGPUBindGroupEntry{
+            .binding = 1,
+            .textureView = m_albedoTextureView,
+        },
+        WGPUBindGroupEntry{
+            .binding = 2,
+            .textureView = m_depthTextureView,
+        }
+    };
+
+    WGPUBindGroupDescriptor bindGroupDescriptor{};
+    bindGroupDescriptor.layout = m_gBufferWriteBindGroupLayout;
+    bindGroupDescriptor.entryCount = bindGroupEntries.size();
+    bindGroupDescriptor.entries = bindGroupEntries.data();
+
+    m_gBufferTextureBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
+    assert(m_gBufferTextureBindGroup);
 }
 
 } // namespace jipu

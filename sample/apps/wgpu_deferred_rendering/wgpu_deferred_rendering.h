@@ -24,37 +24,74 @@ public:
 
     void createVertexBuffer();
     void createIndexBuffer();
+    void createModelUniformBuffer();
+    void createCameraUniformBuffer();
     void createFloat16Texture();
     void createAlbedoTexture();
     void createDepthTexture();
     void createFloat16TextureView();
     void createAlbedoTextureView();
     void createDepthTextureView();
+
     void createShaderModules();
-    void createGBufferBindGroupLayout();
-    void createGBufferBindGroup();
-    void createGBufferPipelineLayout();
-    void createGBufferRenderPipeline();
+
+    void createGBufferWriteBindGroupLayout();
+    void createGBufferWriteBindGroup();
+    void createGBufferWritePipelineLayout();
+    void createGBufferWriteRenderPipeline();
+
+    void createLightBindGroupLayout();
+    void createLightBindGroup();
+    void createLightPipelineLayout();
+    void createLightRenderPipeline();
+
+    void createGBufferTextureBindGroupLayout();
+    void createGBufferTextureBindGroup();
+
+private:
+    struct ModelUniform
+    {
+        glm::mat4 model;
+        glm::mat4 modelNormal;
+    };
+
+    struct CameraUniform
+    {
+        glm::mat4 viewMatrix;
+        glm::mat4 invViewMatrix;
+    };
 
 private:
     WGPUBuffer m_vertexBuffer = nullptr;
     WGPUBuffer m_indexBuffer = nullptr;
+    WGPUBuffer m_modelUniformBuffer = nullptr;
+    WGPUBuffer m_cameraUniformBuffer = nullptr;
     WGPUTexture m_float16Texture = nullptr;
     WGPUTexture m_albedoTexture = nullptr;
     WGPUTexture m_depthTexture = nullptr;
     WGPUTextureView m_float16TextureView = nullptr;
     WGPUTextureView m_albedoTextureView = nullptr;
     WGPUTextureView m_depthTextureView = nullptr;
+
     WGPUShaderModule m_fragmentDeferredRenderingShaderModule = nullptr;
     WGPUShaderModule m_fragmentGBufferDebugViewShaderModule = nullptr;
     WGPUShaderModule m_fragmentWriteGBuffersShaderModule = nullptr;
     WGPUShaderModule m_vertexTextureQuadShaderModule = nullptr;
     WGPUShaderModule m_vertexWriteGBuffersShaderModule = nullptr;
     WGPUShaderModule m_lightUpdateShaderModule = nullptr;
-    WGPUBindGroupLayout m_gBufferBindGroupLayout = nullptr;
-    WGPUBindGroup m_gBufferBindGroup = nullptr;
-    WGPUPipelineLayout m_gBufferPipelineLayout = nullptr;
-    WGPURenderPipeline m_gBufferRenderPipeline = nullptr;
+
+    WGPUBindGroupLayout m_gBufferWriteBindGroupLayout = nullptr;
+    WGPUBindGroup m_gBufferWriteBindGroup = nullptr;
+    WGPUPipelineLayout m_gBufferWritePipelineLayout = nullptr;
+    WGPURenderPipeline m_gBufferWriteRenderPipeline = nullptr;
+
+    WGPUBindGroupLayout m_lightBindGroupLayout = nullptr;
+    WGPUBindGroup m_lightBindGroup = nullptr;
+    WGPUPipelineLayout m_lightPipelineLayout = nullptr;
+    WGPURenderPipeline m_lightRenderPipeline = nullptr;
+
+    WGPUBindGroupLayout m_gBufferTextureBindGroupLayout = nullptr;
+    WGPUBindGroup m_gBufferTextureBindGroup = nullptr;
 
 private:
     int m_mode = 0;
