@@ -26,6 +26,8 @@ public:
     void createIndexBuffer();
     void createModelUniformBuffer();
     void createCameraUniformBuffer();
+    void createLightBuffer();
+    void createLightExtentBuffer();
     void createFloat16Texture();
     void createAlbedoTexture();
     void createDepthTexture();
@@ -66,6 +68,8 @@ private:
     WGPUBuffer m_indexBuffer = nullptr;
     WGPUBuffer m_modelUniformBuffer = nullptr;
     WGPUBuffer m_cameraUniformBuffer = nullptr;
+    WGPUBuffer m_lightBuffer = nullptr;
+    WGPUBuffer m_lightExtentBuffer = nullptr;
     WGPUTexture m_float16Texture = nullptr;
     WGPUTexture m_albedoTexture = nullptr;
     WGPUTexture m_depthTexture = nullptr;

@@ -10,6 +10,11 @@
 namespace jipu
 {
 
+static const int kMaxNumLights = 1024;
+static const uint32_t lightDataStride = 8;
+static glm::vec3 lightExtentMin{ -50.f, -30.f, -50.f };
+static glm::vec3 lightExtentMax{ 50.f, 50.f, 50.f };
+
 WGPUDeferredRenderingSample::WGPUDeferredRenderingSample(const WGPUSampleDescriptor& descriptor)
     : WGPUSample(descriptor)
 {
@@ -97,6 +102,8 @@ void WGPUDeferredRenderingSample::initializeContext()
     createIndexBuffer();
     createModelUniformBuffer();
     createCameraUniformBuffer();
+    createLightBuffer();
+    createLightExtentBuffer();
     createFloat16Texture();
     createAlbedoTexture();
     createDepthTexture();
@@ -144,6 +151,18 @@ void WGPUDeferredRenderingSample::finalizeContext()
     {
         wgpu.BufferRelease(m_cameraUniformBuffer);
         m_cameraUniformBuffer = nullptr;
+    }
+
+    if (m_lightBuffer)
+    {
+        wgpu.BufferRelease(m_lightBuffer);
+        m_lightBuffer = nullptr;
+    }
+
+    if (m_lightExtentBuffer)
+    {
+        wgpu.BufferRelease(m_lightExtentBuffer);
+        m_lightExtentBuffer = nullptr;
     }
 
     if (m_float16Texture)
@@ -337,6 +356,80 @@ void WGPUDeferredRenderingSample::createCameraUniformBuffer()
 
     m_cameraUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &cameraUniformBufferDescriptor);
     assert(m_cameraUniformBuffer);
+}
+
+void WGPUDeferredRenderingSample::createLightBuffer()
+{
+    glm::vec3 extent = lightExtentMax - lightExtentMin;
+    const size_t bufferSizeInByte = sizeof(float) * lightDataStride * kMaxNumLights;
+
+    WGPUBufferDescriptor lightBufferDescriptor{};
+    lightBufferDescriptor.size = bufferSizeInByte;
+    lightBufferDescriptor.usage = WGPUBufferUsage_Storage;
+    lightBufferDescriptor.mappedAtCreation = true;
+
+    m_lightBuffer = wgpu.DeviceCreateBuffer(m_device, &lightBufferDescriptor);
+    assert(m_lightBuffer);
+
+    float* lightData = reinterpret_cast<float*>(wgpu.BufferGetMappedRange(m_lightBuffer, 0, bufferSizeInByte));
+
+    // 3. 난수 생성기 및 분포 설정
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist01(0.0f, 1.0f); // 0~1 범위
+
+    // 4. 광원 데이터 채우기
+    for (int i = 0; i < kMaxNumLights; ++i)
+    {
+        int offset = i * lightDataStride;
+
+        // (1) 위치
+        float px = dist01(gen) * extent.x + lightExtentMin.x;
+        float py = dist01(gen) * extent.y + lightExtentMin.y;
+        float pz = dist01(gen) * extent.z + lightExtentMin.z;
+        float pw = 1.0f;
+
+        lightData[offset + 0] = px;
+        lightData[offset + 1] = py;
+        lightData[offset + 2] = pz;
+        lightData[offset + 3] = pw;
+
+        // (2) 색상 + 반지름
+        // 색상은 (0~2) 범위
+        float cx = dist01(gen) * 2.0f;
+        float cy = dist01(gen) * 2.0f;
+        float cz = dist01(gen) * 2.0f;
+        float cw = 20.0f; // 반지름
+
+        lightData[offset + 4] = cx;
+        lightData[offset + 5] = cy;
+        lightData[offset + 6] = cz;
+        lightData[offset + 7] = cw;
+    }
+
+    wgpu.BufferUnmap(m_lightBuffer);
+}
+
+void WGPUDeferredRenderingSample::createLightExtentBuffer()
+{
+    // Create the light extent buffer.
+    WGPUBufferDescriptor lightExtentBufferDescriptor{};
+    lightExtentBufferDescriptor.size = 4 * 8;
+    lightExtentBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+
+    m_lightExtentBuffer = wgpu.DeviceCreateBuffer(m_device, &lightExtentBufferDescriptor);
+    assert(m_lightExtentBuffer);
+
+    // float lightExtentData[8];
+    // memcpy(lightExtentData, &m_lightExtentMin, 3 * sizeof(float));
+    // memcpy(lightExtentData + 4, &m_lightExtentMax, 3 * sizeof(float));
+
+    std::array<float, 8> lightExtentData{
+        m_lightExtentMin.x, m_lightExtentMin.y, m_lightExtentMin.z, 0.0f,
+        m_lightExtentMax.x, m_lightExtentMax.y, m_lightExtentMax.z, 0.0f
+    };
+
+    wgpu.QueueWriteBuffer(m_queue, m_lightExtentBuffer, 0, lightExtentData.data(), lightExtentData.size() * sizeof(float));
 }
 
 void WGPUDeferredRenderingSample::createFloat16Texture()
