@@ -30,6 +30,11 @@ public:
     void createFloat16TextureView();
     void createAlbedoTextureView();
     void createDepthTextureView();
+    void createShaderModules();
+    void createGBufferBindGroupLayout();
+    void createGBufferBindGroup();
+    void createGBufferPipelineLayout();
+    void createGBufferRenderPipeline();
 
 private:
     WGPUBuffer m_vertexBuffer = nullptr;
@@ -40,6 +45,16 @@ private:
     WGPUTextureView m_float16TextureView = nullptr;
     WGPUTextureView m_albedoTextureView = nullptr;
     WGPUTextureView m_depthTextureView = nullptr;
+    WGPUShaderModule m_fragmentDeferredRenderingShaderModule = nullptr;
+    WGPUShaderModule m_fragmentGBufferDebugViewShaderModule = nullptr;
+    WGPUShaderModule m_fragmentWriteGBuffersShaderModule = nullptr;
+    WGPUShaderModule m_vertexTextureQuadShaderModule = nullptr;
+    WGPUShaderModule m_vertexWriteGBuffersShaderModule = nullptr;
+    WGPUShaderModule m_lightUpdateShaderModule = nullptr;
+    WGPUBindGroupLayout m_gBufferBindGroupLayout = nullptr;
+    WGPUBindGroup m_gBufferBindGroup = nullptr;
+    WGPUPipelineLayout m_gBufferPipelineLayout = nullptr;
+    WGPURenderPipeline m_gBufferRenderPipeline = nullptr;
 
 private:
     int m_mode = 0;
