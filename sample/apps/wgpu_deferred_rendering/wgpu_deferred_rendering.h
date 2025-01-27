@@ -26,6 +26,7 @@ public:
     void createIndexBuffer();
     void createModelUniformBuffer();
     void createCameraUniformBuffer();
+    void createConfigUniformBuffer();
     void createLightBuffer();
     void createLightExtentBuffer();
     void createFloat16Texture();
@@ -42,10 +43,12 @@ public:
     void createGBufferWritePipelineLayout();
     void createGBufferWriteRenderPipeline();
 
-    void createLightBindGroupLayout();
-    void createLightBindGroup();
+    void createLightBufferBindGroupLayout();
+    void createLightBufferBindGroup();
+    void createLightBufferComputeBindGroupLayout();
+    void createLightBufferComputeBindGroup();
     void createLightPipelineLayout();
-    void createLightRenderPipeline();
+    void createLightComputePipeline();
 
     void createGBufferTextureBindGroupLayout();
     void createGBufferTextureBindGroup();
@@ -68,6 +71,7 @@ private:
     WGPUBuffer m_indexBuffer = nullptr;
     WGPUBuffer m_modelUniformBuffer = nullptr;
     WGPUBuffer m_cameraUniformBuffer = nullptr;
+    WGPUBuffer m_configUniformBuffer = nullptr;
     WGPUBuffer m_lightBuffer = nullptr;
     WGPUBuffer m_lightExtentBuffer = nullptr;
     WGPUTexture m_float16Texture = nullptr;
@@ -89,10 +93,12 @@ private:
     WGPUPipelineLayout m_gBufferWritePipelineLayout = nullptr;
     WGPURenderPipeline m_gBufferWriteRenderPipeline = nullptr;
 
-    WGPUBindGroupLayout m_lightBindGroupLayout = nullptr;
-    WGPUBindGroup m_lightBindGroup = nullptr;
+    WGPUBindGroupLayout m_lightBufferBindGroupLayout = nullptr;
+    WGPUBindGroup m_lightBufferBindGroup = nullptr;
+    WGPUBindGroupLayout m_lightBufferComputeBindGroupLayout = nullptr;
+    WGPUBindGroup m_lightBufferComputeBindGroup = nullptr;
     WGPUPipelineLayout m_lightPipelineLayout = nullptr;
-    WGPURenderPipeline m_lightRenderPipeline = nullptr;
+    WGPUComputePipeline m_lightComputePipeline = nullptr;
 
     WGPUBindGroupLayout m_gBufferTextureBindGroupLayout = nullptr;
     WGPUBindGroup m_gBufferTextureBindGroup = nullptr;

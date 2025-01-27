@@ -102,6 +102,7 @@ void WGPUDeferredRenderingSample::initializeContext()
     createIndexBuffer();
     createModelUniformBuffer();
     createCameraUniformBuffer();
+    createConfigUniformBuffer();
     createLightBuffer();
     createLightExtentBuffer();
     createFloat16Texture();
@@ -118,10 +119,12 @@ void WGPUDeferredRenderingSample::initializeContext()
     createGBufferWritePipelineLayout();
     createGBufferWriteRenderPipeline();
 
-    createLightBindGroupLayout();
-    createLightBindGroup();
+    createLightBufferBindGroupLayout();
+    createLightBufferBindGroup();
+    createLightBufferComputeBindGroupLayout();
+    createLightBufferComputeBindGroup();
     createLightPipelineLayout();
-    createLightRenderPipeline();
+    createLightComputePipeline();
 
     createGBufferTextureBindGroupLayout();
     createGBufferTextureBindGroup();
@@ -151,6 +154,12 @@ void WGPUDeferredRenderingSample::finalizeContext()
     {
         wgpu.BufferRelease(m_cameraUniformBuffer);
         m_cameraUniformBuffer = nullptr;
+    }
+
+    if (m_configUniformBuffer)
+    {
+        wgpu.BufferRelease(m_configUniformBuffer);
+        m_configUniformBuffer = nullptr;
     }
 
     if (m_lightBuffer)
@@ -261,16 +270,28 @@ void WGPUDeferredRenderingSample::finalizeContext()
         m_gBufferWriteRenderPipeline = nullptr;
     }
 
-    if (m_lightBindGroupLayout)
+    if (m_lightBufferBindGroupLayout)
     {
-        wgpu.BindGroupLayoutRelease(m_lightBindGroupLayout);
-        m_lightBindGroupLayout = nullptr;
+        wgpu.BindGroupLayoutRelease(m_lightBufferBindGroupLayout);
+        m_lightBufferBindGroupLayout = nullptr;
     }
 
-    if (m_lightBindGroup)
+    if (m_lightBufferBindGroup)
     {
-        wgpu.BindGroupRelease(m_lightBindGroup);
-        m_lightBindGroup = nullptr;
+        wgpu.BindGroupRelease(m_lightBufferBindGroup);
+        m_lightBufferBindGroup = nullptr;
+    }
+
+    if (m_lightBufferComputeBindGroupLayout)
+    {
+        wgpu.BindGroupLayoutRelease(m_lightBufferComputeBindGroupLayout);
+        m_lightBufferComputeBindGroupLayout = nullptr;
+    }
+
+    if (m_lightBufferComputeBindGroup)
+    {
+        wgpu.BindGroupRelease(m_lightBufferComputeBindGroup);
+        m_lightBufferComputeBindGroup = nullptr;
     }
 
     if (m_lightPipelineLayout)
@@ -279,10 +300,10 @@ void WGPUDeferredRenderingSample::finalizeContext()
         m_lightPipelineLayout = nullptr;
     }
 
-    if (m_lightRenderPipeline)
+    if (m_lightComputePipeline)
     {
-        wgpu.RenderPipelineRelease(m_lightRenderPipeline);
-        m_lightRenderPipeline = nullptr;
+        wgpu.ComputePipelineRelease(m_lightComputePipeline);
+        m_lightComputePipeline = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -356,6 +377,23 @@ void WGPUDeferredRenderingSample::createCameraUniformBuffer()
 
     m_cameraUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &cameraUniformBufferDescriptor);
     assert(m_cameraUniformBuffer);
+}
+
+void WGPUDeferredRenderingSample::createConfigUniformBuffer()
+{
+    // Create the config uniform buffer.
+    WGPUBufferDescriptor configUniformBufferDescriptor{};
+    configUniformBufferDescriptor.size = sizeof(uint32_t);
+    configUniformBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
+    configUniformBufferDescriptor.mappedAtCreation = true;
+
+    m_configUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &configUniformBufferDescriptor);
+    assert(m_configUniformBuffer);
+
+    uint32_t* configData = reinterpret_cast<uint32_t*>(wgpu.BufferGetMappedRange(m_configUniformBuffer, 0, sizeof(uint32_t)));
+    configData[0] = m_numLights;
+
+    wgpu.BufferUnmap(m_configUniformBuffer);
 }
 
 void WGPUDeferredRenderingSample::createLightBuffer()
@@ -782,25 +820,162 @@ void WGPUDeferredRenderingSample::createShaderModules()
     }
 }
 
-void WGPUDeferredRenderingSample::createLightBindGroupLayout()
+void WGPUDeferredRenderingSample::createLightBufferBindGroupLayout()
 {
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
+        WGPUBindGroupLayoutEntry{
+            .binding = 0,
+            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Compute,
+            .buffer = WGPUBufferBindingLayout{
+                .type = WGPUBufferBindingType_ReadOnlyStorage,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 1,
+            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Compute,
+            .buffer = WGPUBufferBindingLayout{
+                .type = WGPUBufferBindingType_Uniform,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 2,
+            .visibility = WGPUShaderStage_Fragment,
+            .buffer = WGPUBufferBindingLayout{
+                .type = WGPUBufferBindingType_Uniform,
+            },
+        }
+    };
+
+    WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
+    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
+
+    m_lightBufferBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_lightBufferBindGroupLayout);
 }
 
-void WGPUDeferredRenderingSample::createLightBindGroup()
+void WGPUDeferredRenderingSample::createLightBufferBindGroup()
 {
+    std::array<WGPUBindGroupEntry, 3> bindGroupEntries{
+        WGPUBindGroupEntry{
+            .binding = 0,
+            .buffer = m_lightBuffer,
+            .offset = 0,
+            .size = sizeof(float) * lightDataStride * kMaxNumLights,
+        },
+        WGPUBindGroupEntry{
+            .binding = 1,
+            .buffer = m_modelUniformBuffer,
+            .offset = 0,
+            .size = sizeof(ModelUniform),
+        },
+        WGPUBindGroupEntry{
+            .binding = 2,
+            .buffer = m_cameraUniformBuffer,
+            .offset = 0,
+            .size = sizeof(CameraUniform),
+        }
+    };
+
+    WGPUBindGroupDescriptor bindGroupDescriptor{};
+    bindGroupDescriptor.layout = m_lightBufferBindGroupLayout;
+    bindGroupDescriptor.entryCount = bindGroupEntries.size();
+    bindGroupDescriptor.entries = bindGroupEntries.data();
+
+    m_lightBufferBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
+    assert(m_lightBufferBindGroup);
+}
+
+void WGPUDeferredRenderingSample::createLightBufferComputeBindGroupLayout()
+{
+    //     const lightsBufferComputeBindGroup = device.createBindGroup({
+    //         layout : lightUpdateComputePipeline.getBindGroupLayout(0),
+    //         entries : [
+    //             {
+    //                 binding : 0,
+    //                 resource : {
+    //                     buffer : lightsBuffer,
+    //                 },
+    //             },
+    //             {
+    //                 binding : 1,
+    //                 resource : {
+    //                     buffer : configUniformBuffer,
+    //                 },
+    //             },
+    //             {
+    //                 binding : 2,
+    //                 resource : {
+    //                     buffer : lightExtentBuffer,
+    //                 },
+    //             },
+    //         ],
+    //     });
+
+    std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
+        WGPUBindGroupLayoutEntry{
+            .binding = 0,
+            .visibility = WGPUShaderStage_Compute,
+            .buffer = {
+                .type = WGPUBufferBindingType_ReadOnlyStorage,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 1,
+            .visibility = WGPUShaderStage_Compute,
+            .buffer = {
+                .type = WGPUBufferBindingType_Uniform,
+            },
+        },
+        WGPUBindGroupLayoutEntry{
+            .binding = 2,
+            .visibility = WGPUShaderStage_Compute,
+            .buffer = {
+                .type = WGPUBufferBindingType_Uniform,
+            },
+        }
+    };
+}
+
+void WGPUDeferredRenderingSample::createLightBufferComputeBindGroup()
+{
+
+    //     const lightsBufferComputeBindGroup = device.createBindGroup({
+    //         layout : lightUpdateComputePipeline.getBindGroupLayout(0),
+    //         entries : [
+    //             {
+    //                 binding : 0,
+    //                 resource : {
+    //                     buffer : lightsBuffer,
+    //                 },
+    //             },
+    //             {
+    //                 binding : 1,
+    //                 resource : {
+    //                     buffer : configUniformBuffer,
+    //                 },
+    //             },
+    //             {
+    //                 binding : 2,
+    //                 resource : {
+    //                     buffer : lightExtentBuffer,
+    //                 },
+    //             },
+    //         ],
+    //     });
 }
 
 void WGPUDeferredRenderingSample::createLightPipelineLayout()
 {
-    // WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    // pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
-    // pipelineLayoutDescriptor.bindGroupLayouts = &m_lightBindGroupLayout;
+    WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_lightBufferBindGroupLayout;
 
-    // m_lightPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
-    // assert(m_lightPipelineLayout);
+    m_lightPipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
+    assert(m_lightPipelineLayout);
 }
 
-void WGPUDeferredRenderingSample::createLightRenderPipeline()
+void WGPUDeferredRenderingSample::createLightComputePipeline()
 {
 }
 
