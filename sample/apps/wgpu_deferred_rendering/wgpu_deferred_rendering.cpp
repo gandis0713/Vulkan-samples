@@ -440,6 +440,80 @@ void WGPUDeferredRenderingSample::createGBufferPipelineLayout()
 
 void WGPUDeferredRenderingSample::createGBufferRenderPipeline()
 {
+    WGPUPrimitiveState primitiveState{};
+    primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
+    primitiveState.cullMode = WGPUCullMode_Back;
+
+    std::array<WGPUVertexAttribute, 3> vertexAttributes{
+        WGPUVertexAttribute{
+            .shaderLocation = 0,
+            .offset = 0,
+            .format = WGPUVertexFormat_Float32x3,
+        },
+        WGPUVertexAttribute{
+            .shaderLocation = 1,
+            .offset = sizeof(float) * 3,
+            .format = WGPUVertexFormat_Float32x3,
+        },
+        WGPUVertexAttribute{
+            .shaderLocation = 2,
+            .offset = sizeof(float) * 6,
+            .format = WGPUVertexFormat_Float32x2,
+        },
+    };
+    std::array<WGPUVertexBufferLayout, 1> vertexBufferLayout{
+        WGPUVertexBufferLayout{
+            .arrayStride = sizeof(float) * 8,
+            .attributeCount = vertexAttributes.size(),
+            .attributes = vertexAttributes.data(),
+            .stepMode = WGPUVertexStepMode_Vertex,
+        },
+    };
+
+    std::string vertexEntryPoint = "main";
+    WGPUVertexState vertexState{};
+    vertexState.bufferCount = vertexBufferLayout.size();
+    vertexState.buffers = vertexBufferLayout.data();
+    vertexState.module = m_vertexWriteGBuffersShaderModule;
+    vertexState.entryPoint = WGPUStringView{ .data = vertexEntryPoint.data(), .length = vertexEntryPoint.size() };
+
+    std::array<WGPUColorTargetState, 2> colorTargetStates{
+        WGPUColorTargetState{
+            .format = WGPUTextureFormat_RGBA16Float,
+            .writeMask = WGPUColorWriteMask_All,
+        },
+        WGPUColorTargetState{
+            .format = WGPUTextureFormat_BGRA8Unorm,
+            .writeMask = WGPUColorWriteMask_All,
+        },
+    };
+
+    std::string fragmentEntryPoint = "main";
+    WGPUFragmentState fragmentState{};
+    fragmentState.targetCount = colorTargetStates.size();
+    fragmentState.targets = colorTargetStates.data();
+    fragmentState.module = m_fragmentWriteGBuffersShaderModule;
+    fragmentState.entryPoint = WGPUStringView{ .data = fragmentEntryPoint.data(), .length = fragmentEntryPoint.size() };
+
+    WGPUDepthStencilState depthStencilState{};
+    depthStencilState.format = WGPUTextureFormat_Depth24Plus;
+    depthStencilState.depthWriteEnabled = WGPUOptionalBool_True;
+    depthStencilState.depthCompare = WGPUCompareFunction_Less;
+
+    WGPUMultisampleState multisampleState{};
+    multisampleState.count = 1;
+    multisampleState.mask = 0xFFFFFFFF;
+
+    WGPURenderPipelineDescriptor renderPipelineDescriptor{};
+    renderPipelineDescriptor.layout = m_gBufferPipelineLayout;
+    renderPipelineDescriptor.primitive = primitiveState;
+    renderPipelineDescriptor.vertex = vertexState;
+    renderPipelineDescriptor.fragment = &fragmentState;
+    renderPipelineDescriptor.depthStencil = &depthStencilState;
+    renderPipelineDescriptor.multisample = multisampleState;
+
+    m_gBufferRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
+    assert(m_gBufferRenderPipeline);
 }
 
 void WGPUDeferredRenderingSample::createShaderModules()
@@ -556,11 +630,6 @@ void WGPUDeferredRenderingSample::createShaderModules()
         m_lightUpdateShaderModule = wgpu.DeviceCreateShaderModule(m_device, &lightUpdateShaderModuleDescriptor);
         assert(m_lightUpdateShaderModule);
     }
-    // m_fragmentDeferredRenderingShaderModule = createShaderModule("shaders/deferred_rendering.frag.spv");
-    // m_fragmentGBufferDebugViewShaderModule = createShaderModule("shaders/gbuffer_debug_view.frag.spv");
-    // m_fragmentWriteGBuffersShaderModule = createShaderModule("shaders/write_gbuffers.frag.spv");
-    // m_vertexTextureQuadShaderModule = createShaderModule("shaders/texture_quad.vert.spv");
-    // m_vertexWriteGBuffersShaderModule = createShaderModule("shaders/write_gbuffers.vert.spv");
 }
 
 } // namespace jipu
