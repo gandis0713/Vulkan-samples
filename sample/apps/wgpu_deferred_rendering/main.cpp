@@ -19,7 +19,7 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::WGPUSampleDescriptor descriptor{
-        { 1000, 2000, "WGPU Particles", app },
+        { 1000, 2000, "WGPU Deferred Rendering", app },
         ""
     };
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::WGPUSampleDescriptor descriptor{
-        { 800, 600, "WGPU Particles", nullptr },
+        { 800, 600, "WGPU Deferred Rendering", nullptr },
         argv[0]
     };
 
