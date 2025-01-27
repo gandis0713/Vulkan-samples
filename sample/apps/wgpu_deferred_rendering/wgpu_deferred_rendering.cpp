@@ -101,50 +101,32 @@ void WGPUDeferredRenderingSample::onDraw()
 
     WGPUTextureView surfaceTextureView = wgpu.TextureCreateView(surfaceTexture.texture, NULL);
 
-    WGPURenderPassColorAttachment colorAttachment{};
-    colorAttachment.view = surfaceTextureView;
-    colorAttachment.loadOp = WGPULoadOp_Clear;
-    colorAttachment.storeOp = WGPUStoreOp_Store;
-    colorAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
-    colorAttachment.clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
-
-    WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
-    depthStencilAttachment.view = nullptr;
-    depthStencilAttachment.depthLoadOp = WGPULoadOp_Clear;
-    depthStencilAttachment.depthStoreOp = WGPUStoreOp_Store;
-    depthStencilAttachment.depthClearValue = 1.0f;
-
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
     WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
-    // TODO: draw
     {
         std::array<WGPURenderPassColorAttachment, 1> textureQuadColorAttachments{
             WGPURenderPassColorAttachment{
                 .view = nullptr,
+                .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
                 .loadOp = WGPULoadOp_Clear,
                 .storeOp = WGPUStoreOp_Store,
                 .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
             },
         };
 
-        WGPURenderPassDescriptor textureQuadPassDescriptor{};
-        textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
-        textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
-
-        WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
-        WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
-
         {
             std::array<WGPURenderPassColorAttachment, 2> colorAttachments{
                 WGPURenderPassColorAttachment{
                     .view = m_float16TextureView,
+                    .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
                     .loadOp = WGPULoadOp_Clear,
                     .storeOp = WGPUStoreOp_Store,
                     .clearValue = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 1.0f },
                 },
                 WGPURenderPassColorAttachment{
                     .view = m_albedoTextureView,
+                    .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
                     .loadOp = WGPULoadOp_Clear,
                     .storeOp = WGPUStoreOp_Store,
                     .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
@@ -167,7 +149,7 @@ void WGPUDeferredRenderingSample::onDraw()
             wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_sceneUniformBindGroup, 0, nullptr);
             wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_vertexBuffer, 0, m_dragonMesh.positions.size() * 8 * sizeof(float));
             wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_indexBuffer, WGPUIndexFormat_Uint16, 0, m_dragonMesh.triangles.size() * 3 * sizeof(uint16_t));
-            wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, m_dragonMesh.triangles.size() * 3, 1, 0, 0, 0);
+            wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, static_cast<uint32_t>(m_dragonMesh.triangles.size() * 3), 1, 0, 0, 0);
             wgpu.RenderPassEncoderEnd(renderPassEncoder);
             wgpu.RenderPassEncoderRelease(renderPassEncoder);
         }
@@ -183,20 +165,19 @@ void WGPUDeferredRenderingSample::onDraw()
 
         if (m_mode == 0)
         {
-            // textureQuadPassDescriptor.colorAttachments[0].view = context
-            //                                                          .getCurrentTexture()
-            //                                                          .createView();
-            // const deferredRenderingPass = commandEncoder.beginRenderPass(
-            //     textureQuadPassDescriptor);
-            // deferredRenderingPass.setPipeline(deferredRenderPipeline);
-            // deferredRenderingPass.setBindGroup(0, gBufferTexturesBindGroup);
-            // deferredRenderingPass.setBindGroup(1, lightsBufferBindGroup);
-            // deferredRenderingPass.draw(6);
-            // deferredRenderingPass.end();
-
             textureQuadColorAttachments[0].view = surfaceTextureView;
 
-            // WGPURenderPassDescriptor textureQuadPassDescriptor{};
+            WGPURenderPassDescriptor textureQuadPassDescriptor{};
+            textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
+            textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
+
+            WGPURenderPassEncoder textureQuadPass = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &textureQuadPassDescriptor);
+            wgpu.RenderPassEncoderSetPipeline(textureQuadPass, m_deferredRenderingRenderPipeline);
+            wgpu.RenderPassEncoderSetBindGroup(textureQuadPass, 0, m_gBufferTextureBindGroup, 0, nullptr);
+            wgpu.RenderPassEncoderSetBindGroup(textureQuadPass, 1, m_lightBufferBindGroup, 0, nullptr);
+            wgpu.RenderPassEncoderDraw(textureQuadPass, 6, 1, 0, 0);
+            wgpu.RenderPassEncoderEnd(textureQuadPass);
+            wgpu.RenderPassEncoderRelease(textureQuadPass);
         }
         else
         {
@@ -498,7 +479,7 @@ void WGPUDeferredRenderingSample::createVertexBuffer()
 void WGPUDeferredRenderingSample::createIndexBuffer()
 {
     // Create the model index buffer.
-    const uint32_t indexCount = m_dragonMesh.triangles.size() * 3;
+    const uint32_t indexCount = static_cast<uint32_t>(m_dragonMesh.triangles.size() * 3);
     WGPUBufferDescriptor indexBufferDescriptor{};
     indexBufferDescriptor.size = indexCount * sizeof(uint16_t);
     indexBufferDescriptor.usage = WGPUBufferUsage_Index;
@@ -509,7 +490,7 @@ void WGPUDeferredRenderingSample::createIndexBuffer()
 
     {
         void* mappedIndexPtr = wgpu.BufferGetMappedRange(m_indexBuffer, 0, indexBufferDescriptor.size);
-        auto indexBuffer = reinterpret_cast<uint32_t*>(mappedIndexPtr);
+        auto indexBuffer = reinterpret_cast<uint16_t*>(mappedIndexPtr);
         for (auto i = 0; i < m_dragonMesh.triangles.size(); ++i)
         {
             memcpy(indexBuffer + 3 * i, &m_dragonMesh.triangles[i], 3 * sizeof(uint16_t));
@@ -1228,31 +1209,6 @@ void WGPUDeferredRenderingSample::createDeferredRenderingPipelineLayout()
 
 void WGPUDeferredRenderingSample::createDeferredRenderingRenderPipeline()
 {
-
-    // const deferredRenderPipeline = device.createRenderPipeline({
-    //     layout : device.createPipelineLayout({
-    //         bindGroupLayouts : [
-    //             gBufferTexturesBindGroupLayout,
-    //             lightsBufferBindGroupLayout,
-    //         ],
-    //     }),
-    //     vertex : {
-    //         module : device.createShaderModule({
-    //             code : vertexTextureQuad,
-    //         }),
-    //     },
-    //     fragment : {
-    //         module : device.createShaderModule({
-    //             code : fragmentDeferredRendering,
-    //         }),
-    //         targets : [
-    //             {
-    //                 format : presentationFormat,
-    //             },
-    //         ],
-    //     },
-    //     primitive,
-    // });
     WGPUPrimitiveState primitiveState{};
     primitiveState.topology = WGPUPrimitiveTopology_TriangleList;
     primitiveState.cullMode = WGPUCullMode_Back;

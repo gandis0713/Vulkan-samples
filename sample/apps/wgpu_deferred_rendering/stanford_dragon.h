@@ -9,5 +9,5 @@ struct StanfordDragonMesh
     std::vector<glm::vec3> positions{};
     std::vector<glm::vec3> normals{};
     std::vector<glm::vec2> uvs{};
-    std::vector<glm::ivec3> triangles{};
+    std::vector<glm::i16vec3> triangles{};
 };

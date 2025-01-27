@@ -144,7 +144,7 @@ GenerateNormalsResult generateNormals(
     std::unordered_map<std::string, int> newVertMap;
     std::vector<glm::vec3> newPositions;
     std::vector<glm::vec3> newNormals;
-    std::vector<glm::ivec3> newTriangles;
+    std::vector<glm::i16vec3> newTriangles;
     newPositions.reserve(positions.size());
     newNormals.reserve(positions.size());
     newVertMap.reserve(positions.size());
