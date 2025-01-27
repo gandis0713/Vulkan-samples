@@ -25,7 +25,7 @@ void WGPUDeferredRenderingSample::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kJipu);
+    changeAPI(APIType::kDawn);
 }
 
 void WGPUDeferredRenderingSample::onBeforeUpdate()
