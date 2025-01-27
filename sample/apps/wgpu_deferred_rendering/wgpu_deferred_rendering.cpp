@@ -935,6 +935,13 @@ void WGPUDeferredRenderingSample::createLightBufferComputeBindGroupLayout()
             },
         }
     };
+
+    WGPUBindGroupLayoutDescriptor bindGroupLayoutDescriptor{};
+    bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
+    bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
+
+    m_lightBufferComputeBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_lightBufferComputeBindGroupLayout);
 }
 
 void WGPUDeferredRenderingSample::createLightBufferComputeBindGroup()
