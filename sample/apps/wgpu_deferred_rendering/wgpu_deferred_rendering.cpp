@@ -95,6 +95,12 @@ void WGPUDeferredRenderingSample::initializeContext()
 
     createVertexBuffer();
     createIndexBuffer();
+    createFloat16Texture();
+    createAlbedoTexture();
+    createDepthTexture();
+    createFloat16TextureView();
+    createAlbedoTextureView();
+    createDepthTextureView();
 }
 
 void WGPUDeferredRenderingSample::finalizeContext()
@@ -109,6 +115,42 @@ void WGPUDeferredRenderingSample::finalizeContext()
     {
         wgpu.BufferRelease(m_indexBuffer);
         m_indexBuffer = nullptr;
+    }
+
+    if (m_float16Texture)
+    {
+        wgpu.TextureRelease(m_float16Texture);
+        m_float16Texture = nullptr;
+    }
+
+    if (m_albedoTexture)
+    {
+        wgpu.TextureRelease(m_albedoTexture);
+        m_albedoTexture = nullptr;
+    }
+
+    if (m_depthTexture)
+    {
+        wgpu.TextureRelease(m_depthTexture);
+        m_depthTexture = nullptr;
+    }
+
+    if (m_float16TextureView)
+    {
+        wgpu.TextureViewRelease(m_float16TextureView);
+        m_float16TextureView = nullptr;
+    }
+
+    if (m_albedoTextureView)
+    {
+        wgpu.TextureViewRelease(m_albedoTextureView);
+        m_albedoTextureView = nullptr;
+    }
+
+    if (m_depthTextureView)
+    {
+        wgpu.TextureViewRelease(m_depthTextureView);
+        m_depthTextureView = nullptr;
     }
 
     WGPUSample::finalizeContext();
@@ -160,6 +202,99 @@ void WGPUDeferredRenderingSample::createIndexBuffer()
 
         wgpu.BufferUnmap(m_indexBuffer);
     }
+}
+
+void WGPUDeferredRenderingSample::createFloat16Texture()
+{
+    // Create the float16 texture.
+    WGPUTextureDescriptor textureDescriptor{};
+    textureDescriptor.dimension = WGPUTextureDimension_2D;
+    textureDescriptor.size.width = m_width;
+    textureDescriptor.size.height = m_height;
+    textureDescriptor.size.depthOrArrayLayers = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.format = WGPUTextureFormat_RGBA16Float;
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment;
+
+    m_float16Texture = wgpu.DeviceCreateTexture(m_device, &textureDescriptor);
+    assert(m_float16Texture);
+}
+
+void WGPUDeferredRenderingSample::createAlbedoTexture()
+{
+    // Create the albedo texture.
+    WGPUTextureDescriptor textureDescriptor{};
+    textureDescriptor.dimension = WGPUTextureDimension_2D;
+    textureDescriptor.size.width = m_width;
+    textureDescriptor.size.height = m_height;
+    textureDescriptor.size.depthOrArrayLayers = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.format = WGPUTextureFormat_BGRA8Unorm;
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment;
+
+    m_albedoTexture = wgpu.DeviceCreateTexture(m_device, &textureDescriptor);
+    assert(m_albedoTexture);
+}
+
+void WGPUDeferredRenderingSample::createDepthTexture()
+{
+    // Create the depth texture.
+    WGPUTextureDescriptor textureDescriptor{};
+    textureDescriptor.dimension = WGPUTextureDimension_2D;
+    textureDescriptor.size.width = m_width;
+    textureDescriptor.size.height = m_height;
+    textureDescriptor.size.depthOrArrayLayers = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.format = WGPUTextureFormat_Depth24Plus;
+    textureDescriptor.mipLevelCount = 1;
+    textureDescriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment;
+
+    m_depthTexture = wgpu.DeviceCreateTexture(m_device, &textureDescriptor);
+    assert(m_depthTexture);
+}
+
+void WGPUDeferredRenderingSample::createFloat16TextureView()
+{
+    WGPUTextureViewDescriptor textureViewDescriptor{};
+    textureViewDescriptor.format = WGPUTextureFormat_RGBA16Float;
+    textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.baseMipLevel = 0;
+    textureViewDescriptor.mipLevelCount = 1;
+    textureViewDescriptor.baseArrayLayer = 0;
+    textureViewDescriptor.arrayLayerCount = 1;
+
+    m_float16TextureView = wgpu.TextureCreateView(m_float16Texture, &textureViewDescriptor);
+    assert(m_float16TextureView);
+}
+
+void WGPUDeferredRenderingSample::createAlbedoTextureView()
+{
+    WGPUTextureViewDescriptor textureViewDescriptor{};
+    textureViewDescriptor.format = WGPUTextureFormat_BGRA8Unorm;
+    textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.baseMipLevel = 0;
+    textureViewDescriptor.mipLevelCount = 1;
+    textureViewDescriptor.baseArrayLayer = 0;
+    textureViewDescriptor.arrayLayerCount = 1;
+
+    m_albedoTextureView = wgpu.TextureCreateView(m_albedoTexture, &textureViewDescriptor);
+    assert(m_albedoTextureView);
+}
+
+void WGPUDeferredRenderingSample::createDepthTextureView()
+{
+    WGPUTextureViewDescriptor textureViewDescriptor{};
+    textureViewDescriptor.format = WGPUTextureFormat_Depth24Plus;
+    textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.baseMipLevel = 0;
+    textureViewDescriptor.mipLevelCount = 1;
+    textureViewDescriptor.baseArrayLayer = 0;
+    textureViewDescriptor.arrayLayerCount = 1;
+
+    m_depthTextureView = wgpu.TextureCreateView(m_depthTexture, &textureViewDescriptor);
+    assert(m_depthTextureView);
 }
 
 } // namespace jipu

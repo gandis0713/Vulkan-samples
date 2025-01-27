@@ -24,10 +24,22 @@ public:
 
     void createVertexBuffer();
     void createIndexBuffer();
+    void createFloat16Texture();
+    void createAlbedoTexture();
+    void createDepthTexture();
+    void createFloat16TextureView();
+    void createAlbedoTextureView();
+    void createDepthTextureView();
 
 private:
     WGPUBuffer m_vertexBuffer = nullptr;
     WGPUBuffer m_indexBuffer = nullptr;
+    WGPUTexture m_float16Texture = nullptr;
+    WGPUTexture m_albedoTexture = nullptr;
+    WGPUTexture m_depthTexture = nullptr;
+    WGPUTextureView m_float16TextureView = nullptr;
+    WGPUTextureView m_albedoTextureView = nullptr;
+    WGPUTextureView m_depthTextureView = nullptr;
 
 private:
     int m_mode = 0;
