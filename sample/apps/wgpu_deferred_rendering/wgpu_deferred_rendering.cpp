@@ -888,29 +888,6 @@ void WGPUDeferredRenderingSample::createLightBufferBindGroup()
 
 void WGPUDeferredRenderingSample::createLightBufferComputeBindGroupLayout()
 {
-    //     const lightsBufferComputeBindGroup = device.createBindGroup({
-    //         layout : lightUpdateComputePipeline.getBindGroupLayout(0),
-    //         entries : [
-    //             {
-    //                 binding : 0,
-    //                 resource : {
-    //                     buffer : lightsBuffer,
-    //                 },
-    //             },
-    //             {
-    //                 binding : 1,
-    //                 resource : {
-    //                     buffer : configUniformBuffer,
-    //                 },
-    //             },
-    //             {
-    //                 binding : 2,
-    //                 resource : {
-    //                     buffer : lightExtentBuffer,
-    //                 },
-    //             },
-    //         ],
-    //     });
 
     std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
         WGPUBindGroupLayoutEntry{
@@ -988,6 +965,37 @@ void WGPUDeferredRenderingSample::createLightPipelineLayout()
 
 void WGPUDeferredRenderingSample::createLightComputePipeline()
 {
+    // const lightUpdateComputePipeline = device.createComputePipeline({
+    //     layout : 'auto',
+    //     compute : {
+    //         module : device.createShaderModule({
+    //             code : lightUpdate,
+    //         }),
+    //     },
+    // });
+    // const lightsBufferBindGroup = device.createBindGroup({
+    //     layout : lightsBufferBindGroupLayout,
+    //     entries : [
+    //         {
+    //             binding : 0,
+    //             resource : {
+    //                 buffer : lightsBuffer,
+    //             },
+    //         },
+    //         {
+    //             binding : 1,
+    //             resource : {
+    //                 buffer : configUniformBuffer,
+    //             },
+    //         },
+    //         {
+    //             binding : 2,
+    //             resource : {
+    //                 buffer : cameraUniformBuffer,
+    //             },
+    //         },
+    //     ],
+    // });
 }
 
 void WGPUDeferredRenderingSample::createGBufferTextureBindGroupLayout()
