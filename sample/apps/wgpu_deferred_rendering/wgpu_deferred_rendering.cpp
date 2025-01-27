@@ -114,8 +114,8 @@ void WGPUDeferredRenderingSample::initializeContext()
 
     createShaderModules();
 
-    createGBufferWriteBindGroupLayout();
-    createGBufferWriteBindGroup();
+    createSceneUniformBindGroupLayout();
+    createSceneUniformBindGroup();
     createGBufferWritePipelineLayout();
     createGBufferWriteRenderPipeline();
 
@@ -246,16 +246,16 @@ void WGPUDeferredRenderingSample::finalizeContext()
         m_lightUpdateShaderModule = nullptr;
     }
 
-    if (m_gBufferWriteBindGroupLayout)
+    if (m_sceneUniformBindGroupLayout)
     {
-        wgpu.BindGroupLayoutRelease(m_gBufferWriteBindGroupLayout);
-        m_gBufferWriteBindGroupLayout = nullptr;
+        wgpu.BindGroupLayoutRelease(m_sceneUniformBindGroupLayout);
+        m_sceneUniformBindGroupLayout = nullptr;
     }
 
-    if (m_gBufferWriteBindGroup)
+    if (m_sceneUniformBindGroup)
     {
-        wgpu.BindGroupRelease(m_gBufferWriteBindGroup);
-        m_gBufferWriteBindGroup = nullptr;
+        wgpu.BindGroupRelease(m_sceneUniformBindGroup);
+        m_sceneUniformBindGroup = nullptr;
     }
 
     if (m_gBufferWritePipelineLayout)
@@ -563,7 +563,7 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     assert(m_depthTextureView);
 }
 
-void WGPUDeferredRenderingSample::createGBufferWriteBindGroupLayout()
+void WGPUDeferredRenderingSample::createSceneUniformBindGroupLayout()
 {
     std::array<WGPUBindGroupLayoutEntry, 2> bindGroupLayoutEntries{
         WGPUBindGroupLayoutEntry{
@@ -586,11 +586,11 @@ void WGPUDeferredRenderingSample::createGBufferWriteBindGroupLayout()
     bindGroupLayoutDescriptor.entryCount = bindGroupLayoutEntries.size();
     bindGroupLayoutDescriptor.entries = bindGroupLayoutEntries.data();
 
-    m_gBufferWriteBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
-    assert(m_gBufferWriteBindGroupLayout);
+    m_sceneUniformBindGroupLayout = wgpu.DeviceCreateBindGroupLayout(m_device, &bindGroupLayoutDescriptor);
+    assert(m_sceneUniformBindGroupLayout);
 }
 
-void WGPUDeferredRenderingSample::createGBufferWriteBindGroup()
+void WGPUDeferredRenderingSample::createSceneUniformBindGroup()
 {
     std::array<WGPUBindGroupEntry, 2> bindGroupEntries{
         WGPUBindGroupEntry{
@@ -608,19 +608,19 @@ void WGPUDeferredRenderingSample::createGBufferWriteBindGroup()
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
-    bindGroupDescriptor.layout = m_gBufferWriteBindGroupLayout;
+    bindGroupDescriptor.layout = m_sceneUniformBindGroupLayout;
     bindGroupDescriptor.entryCount = bindGroupEntries.size();
     bindGroupDescriptor.entries = bindGroupEntries.data();
 
-    m_gBufferWriteBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
-    assert(m_gBufferWriteBindGroup);
+    m_sceneUniformBindGroup = wgpu.DeviceCreateBindGroup(m_device, &bindGroupDescriptor);
+    assert(m_sceneUniformBindGroup);
 }
 
 void WGPUDeferredRenderingSample::createGBufferWritePipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.bindGroupLayoutCount = 1;
-    pipelineLayoutDescriptor.bindGroupLayouts = &m_gBufferWriteBindGroupLayout;
+    pipelineLayoutDescriptor.bindGroupLayouts = &m_sceneUniformBindGroupLayout;
 
     m_gBufferWritePipelineLayout = wgpu.DeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
     assert(m_gBufferWritePipelineLayout);
@@ -1038,7 +1038,7 @@ void WGPUDeferredRenderingSample::createGBufferTextureBindGroup()
     };
 
     WGPUBindGroupDescriptor bindGroupDescriptor{};
-    bindGroupDescriptor.layout = m_gBufferWriteBindGroupLayout;
+    bindGroupDescriptor.layout = m_sceneUniformBindGroupLayout;
     bindGroupDescriptor.entryCount = bindGroupEntries.size();
     bindGroupDescriptor.entries = bindGroupEntries.data();
 

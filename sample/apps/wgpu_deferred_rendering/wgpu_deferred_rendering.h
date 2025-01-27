@@ -38,8 +38,8 @@ public:
 
     void createShaderModules();
 
-    void createGBufferWriteBindGroupLayout();
-    void createGBufferWriteBindGroup();
+    void createSceneUniformBindGroupLayout();
+    void createSceneUniformBindGroup();
     void createGBufferWritePipelineLayout();
     void createGBufferWriteRenderPipeline();
 
@@ -88,8 +88,8 @@ private:
     WGPUShaderModule m_vertexWriteGBuffersShaderModule = nullptr;
     WGPUShaderModule m_lightUpdateShaderModule = nullptr;
 
-    WGPUBindGroupLayout m_gBufferWriteBindGroupLayout = nullptr;
-    WGPUBindGroup m_gBufferWriteBindGroup = nullptr;
+    WGPUBindGroupLayout m_sceneUniformBindGroupLayout = nullptr;
+    WGPUBindGroup m_sceneUniformBindGroup = nullptr;
     WGPUPipelineLayout m_gBufferWritePipelineLayout = nullptr;
     WGPURenderPipeline m_gBufferWriteRenderPipeline = nullptr;
 
