@@ -92,13 +92,74 @@ void WGPUDeferredRenderingSample::onDraw()
 void WGPUDeferredRenderingSample::initializeContext()
 {
     WGPUSample::initializeContext();
+
+    createVertexBuffer();
+    createIndexBuffer();
 }
 
 void WGPUDeferredRenderingSample::finalizeContext()
 {
-    // TODO: destroy resources
+    if (m_vertexBuffer)
+    {
+        wgpu.BufferRelease(m_vertexBuffer);
+        m_vertexBuffer = nullptr;
+    }
+
+    if (m_indexBuffer)
+    {
+        wgpu.BufferRelease(m_indexBuffer);
+        m_indexBuffer = nullptr;
+    }
 
     WGPUSample::finalizeContext();
+}
+
+void WGPUDeferredRenderingSample::createVertexBuffer()
+{
+    // Create the model vertex buffer.
+    const uint32_t vertexStride = 8;
+    WGPUBufferDescriptor vertexBufferDescriptor{};
+    vertexBufferDescriptor.size = m_dragonMesh.positions.size() * vertexStride * sizeof(float);
+    vertexBufferDescriptor.usage = WGPUBufferUsage_Vertex;
+    vertexBufferDescriptor.mappedAtCreation = true;
+
+    m_vertexBuffer = wgpu.DeviceCreateBuffer(m_device, &vertexBufferDescriptor);
+    assert(m_vertexBuffer);
+
+    void* mappedVertexPtr = wgpu.BufferGetMappedRange(m_vertexBuffer, 0, vertexBufferDescriptor.size);
+    auto vertexBuffer = reinterpret_cast<float*>(mappedVertexPtr);
+    for (auto i = 0; i < m_dragonMesh.positions.size(); ++i)
+    {
+        memcpy(vertexBuffer + vertexStride * i, &m_dragonMesh.positions[i], 3 * sizeof(float));
+        memcpy(vertexBuffer + vertexStride * i + 3, &m_dragonMesh.normals[i], 3 * sizeof(float));
+        memcpy(vertexBuffer + vertexStride * i + 6, &m_dragonMesh.uvs[i], 2 * sizeof(float));
+    }
+
+    wgpu.BufferUnmap(m_vertexBuffer);
+}
+
+void WGPUDeferredRenderingSample::createIndexBuffer()
+{
+    // Create the model index buffer.
+    const uint32_t indexCount = m_dragonMesh.triangles.size() * 3;
+    WGPUBufferDescriptor indexBufferDescriptor{};
+    indexBufferDescriptor.size = indexCount * sizeof(uint32_t);
+    indexBufferDescriptor.usage = WGPUBufferUsage_Index;
+    indexBufferDescriptor.mappedAtCreation = true;
+
+    m_indexBuffer = wgpu.DeviceCreateBuffer(m_device, &indexBufferDescriptor);
+    assert(m_indexBuffer);
+
+    {
+        void* mappedIndexPtr = wgpu.BufferGetMappedRange(m_indexBuffer, 0, indexBufferDescriptor.size);
+        auto indexBuffer = reinterpret_cast<uint32_t*>(mappedIndexPtr);
+        for (auto i = 0; i < m_dragonMesh.triangles.size(); ++i)
+        {
+            memcpy(indexBuffer + 3 * i, &m_dragonMesh.triangles[i], 3 * sizeof(uint32_t));
+        }
+
+        wgpu.BufferUnmap(m_indexBuffer);
+    }
 }
 
 } // namespace jipu

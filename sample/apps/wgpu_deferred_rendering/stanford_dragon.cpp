@@ -1,18 +1,18 @@
-#include "stanfordDragon.h"
+#include "stanford_dragon.h"
 #include "utils.h"
 
 StanfordDragonMesh::StanfordDragonMesh()
 {
     GenerateNormalsResult result = generateNormals(
         glm::pi<float>(),
-        positions, cells);
+        getPositions(), getCells());
 
-    std::vector<glm::vec2> uvs = computeProjectedPlaneUVs(positions, ProjectedPlane::XY);
+    std::vector<glm::vec2> uvs = computeProjectedPlaneUVs(result.positions, ProjectedPlane::XY);
 
     // Push indices for an additional ground plane
     result.triangles.insert(result.triangles.end(),
-                            { { positions.size(), positions.size() + 2, positions.size() + 1 },
-                              { positions.size(), positions.size() + 1, positions.size() + 3 } });
+                            { { result.positions.size(), result.positions.size() + 2, result.positions.size() + 1 },
+                              { result.positions.size(), result.positions.size() + 1, result.positions.size() + 3 } });
 
     // Push vertex attributes for an additional ground plane
     // prettier-ignore

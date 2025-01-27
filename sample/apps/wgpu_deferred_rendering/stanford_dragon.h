@@ -1,4 +1,6 @@
-#include "stanfordDragonData.h"
+#pragma once
+
+#include "stanford_dragon_data.h"
 
 struct StanfordDragonMesh
 {
