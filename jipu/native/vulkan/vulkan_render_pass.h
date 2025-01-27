@@ -50,6 +50,7 @@ public:
 
 public:
     const std::vector<RenderPassColorAttachment>& getColorAttachments() const;
+    const std::optional<VkAttachmentDescription>& getDepthStencilAttachment() const;
 
 public:
     VkRenderPass getVkRenderPass() const;

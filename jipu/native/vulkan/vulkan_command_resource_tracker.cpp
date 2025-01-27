@@ -112,7 +112,9 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             throw std::runtime_error("The framebuffer is null for tracking begin render pass command.");
 
         const auto& framebufferColorAttachments = framebuffer->getColorAttachments();
+        const auto& framebufferDepthStencilAttachment = framebuffer->getDepthStencilAttachment();
         const auto& renderPassColorAttachments = renderPass->getColorAttachments();
+        const auto& renderPassDepthStencilAttachment = renderPass->getDepthStencilAttachment();
 
         for (auto i = 0; i < framebufferColorAttachments.size(); ++i)
         {
@@ -123,7 +125,7 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             m_currentOperationResourceInfo.dst.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                .layout = renderPassColorAttachment.renderAttachment.initialLayout,
+                .layout = renderPassColorAttachment.renderAttachment.finalLayout,
                 .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
                 .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
                 .baseArrayLayer = vulkanTextureRenderView->getBaseArrayLayer(),
@@ -133,7 +135,7 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             m_currentOperationResourceInfo.src.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                 .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                .layout = renderPassColorAttachment.renderAttachment.finalLayout,
+                .layout = renderPassColorAttachment.renderAttachment.initialLayout,
                 .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
                 .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
                 .baseArrayLayer = vulkanTextureRenderView->getBaseArrayLayer(),
@@ -146,7 +148,7 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
                 m_currentOperationResourceInfo.dst.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                    .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
+                    .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
                     .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
                     .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
                     .baseArrayLayer = vulkanTextureResolveView->getBaseArrayLayer(),
@@ -156,15 +158,27 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
                 m_currentOperationResourceInfo.src.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                    .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
+                    .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
                     .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
                     .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
                     .baseArrayLayer = vulkanTextureResolveView->getBaseArrayLayer(),
                     .arrayLayerCount = vulkanTextureResolveView->getArrayLayerCount(),
                 };
             }
+        }
 
-            // TODO: depth stencil attachment
+        if (renderPassDepthStencilAttachment.has_value())
+        {
+            auto vulkanTextureDepthStencilView = downcast(framebufferDepthStencilAttachment);
+            m_currentOperationResourceInfo.src.textureViews[vulkanTextureDepthStencilView] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                .accessFlags = VK_ACCESS_SHADER_READ_BIT,
+                .layout = renderPassDepthStencilAttachment.value().finalLayout,
+                .baseMipLevel = vulkanTextureDepthStencilView->getBaseMipLevel(),
+                .mipLevelCount = vulkanTextureDepthStencilView->getMipLevelCount(),
+                .baseArrayLayer = vulkanTextureDepthStencilView->getBaseArrayLayer(),
+                .arrayLayerCount = vulkanTextureDepthStencilView->getArrayLayerCount(),
+            };
         }
     }
 }
@@ -352,6 +366,13 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
             }
             textureUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             textureUsageInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            // TODO: image layout
+            auto vulkanTexture = downcast(textureBinding.textureView->getTexture());
+            if (vulkanTexture->getFormat() == TextureFormat::kDepth32Float)
+            {
+                textureUsageInfo.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            }
 
             auto vulkanTextureView = downcast(textureBinding.textureView);
             textureUsageInfo.baseMipLevel = vulkanTextureView->getBaseMipLevel();

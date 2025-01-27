@@ -68,6 +68,11 @@ const std::vector<RenderPassColorAttachment>& VulkanRenderPass::getColorAttachme
     return m_descriptor.colorAttachmentDescriptions;
 }
 
+const std::optional<VkAttachmentDescription>& VulkanRenderPass::getDepthStencilAttachment() const
+{
+    return m_descriptor.depthStencilAttachment;
+}
+
 VkRenderPass VulkanRenderPass::getVkRenderPass() const
 {
     return m_renderPass;

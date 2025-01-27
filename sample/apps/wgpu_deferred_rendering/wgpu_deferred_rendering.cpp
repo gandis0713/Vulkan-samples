@@ -34,7 +34,7 @@ void WGPUDeferredRenderingSample::init()
 {
     WGPUSample::init();
 
-    changeAPI(APIType::kDawn);
+    changeAPI(APIType::kJipu);
 
     float aspect = static_cast<float>(m_width) / static_cast<float>(m_height);
     float fov = (2.0f * glm::pi<float>()) / 5.0f;
@@ -688,6 +688,7 @@ void WGPUDeferredRenderingSample::createFloat16TextureView()
     WGPUTextureViewDescriptor textureViewDescriptor{};
     textureViewDescriptor.format = WGPUTextureFormat_RGBA16Float;
     textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.aspect = WGPUTextureAspect_All;
     textureViewDescriptor.baseMipLevel = 0;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
@@ -702,6 +703,7 @@ void WGPUDeferredRenderingSample::createAlbedoTextureView()
     WGPUTextureViewDescriptor textureViewDescriptor{};
     textureViewDescriptor.format = WGPUTextureFormat_BGRA8Unorm;
     textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.aspect = WGPUTextureAspect_All;
     textureViewDescriptor.baseMipLevel = 0;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
@@ -716,6 +718,7 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     WGPUTextureViewDescriptor textureViewDescriptor{};
     textureViewDescriptor.format = WGPUTextureFormat_Depth24Plus;
     textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
+    textureViewDescriptor.aspect = WGPUTextureAspect_DepthOnly;
     textureViewDescriptor.baseMipLevel = 0;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
