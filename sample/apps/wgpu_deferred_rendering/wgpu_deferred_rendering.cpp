@@ -965,37 +965,14 @@ void WGPUDeferredRenderingSample::createLightPipelineLayout()
 
 void WGPUDeferredRenderingSample::createLightComputePipeline()
 {
-    // const lightUpdateComputePipeline = device.createComputePipeline({
-    //     layout : 'auto',
-    //     compute : {
-    //         module : device.createShaderModule({
-    //             code : lightUpdate,
-    //         }),
-    //     },
-    // });
-    // const lightsBufferBindGroup = device.createBindGroup({
-    //     layout : lightsBufferBindGroupLayout,
-    //     entries : [
-    //         {
-    //             binding : 0,
-    //             resource : {
-    //                 buffer : lightsBuffer,
-    //             },
-    //         },
-    //         {
-    //             binding : 1,
-    //             resource : {
-    //                 buffer : configUniformBuffer,
-    //             },
-    //         },
-    //         {
-    //             binding : 2,
-    //             resource : {
-    //                 buffer : cameraUniformBuffer,
-    //             },
-    //         },
-    //     ],
-    // });
+    std::string entryPoint = "main";
+    WGPUComputePipelineDescriptor computePipelineDescriptor{};
+    computePipelineDescriptor.layout = m_lightPipelineLayout;
+    computePipelineDescriptor.compute.module = m_lightUpdateShaderModule;
+    computePipelineDescriptor.compute.entryPoint = WGPUStringView{ .data = entryPoint.data(), .length = entryPoint.size() };
+
+    m_lightComputePipeline = wgpu.DeviceCreateComputePipeline(m_device, &computePipelineDescriptor);
+    assert(m_lightComputePipeline);
 }
 
 void WGPUDeferredRenderingSample::createGBufferTextureBindGroupLayout()
