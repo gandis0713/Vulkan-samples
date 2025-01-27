@@ -3,6 +3,7 @@
 #include "stanford_dragon.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace jipu
 {
@@ -109,6 +110,7 @@ private:
 
     glm::vec3 m_lightExtentMin{ -50.f, -30.f, -50.f };
     glm::vec3 m_lightExtentMax{ 50.f, 50.f, 50.f };
+    glm::mat4 m_projectionMatrix{ glm::mat4(1.0) };
 
     StanfordDragonMesh m_dragonMesh;
 };

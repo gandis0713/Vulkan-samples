@@ -3,9 +3,13 @@
 #include "file.h"
 #include "image.h"
 
+#include <chrono>
 #include <cmath>
 #include <random>
 #include <spdlog/spdlog.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace jipu
 {
@@ -31,6 +35,13 @@ void WGPUDeferredRenderingSample::init()
     WGPUSample::init();
 
     changeAPI(APIType::kDawn);
+
+    float aspect = static_cast<float>(m_width) / static_cast<float>(m_height);
+    float fov = (2.0f * glm::pi<float>()) / 5.0f;
+    float nearPlane = 1.0f;
+    float farPlane = 2000.0f;
+
+    m_projectionMatrix = glm::perspective(fov, aspect, nearPlane, farPlane);
 }
 
 void WGPUDeferredRenderingSample::onBeforeUpdate()
@@ -52,7 +63,35 @@ void WGPUDeferredRenderingSample::onUpdate()
 {
     WGPUSample::onUpdate();
 
-    // update
+    static const glm::vec3 eyePosition{ 0.f, 50.f, -100.f };
+    static const glm::vec3 upVector{ 0.f, 1.f, 0.f };
+    static const glm::vec3 origin{ 0.f, 0.f, 0.f };
+
+    auto getCameraViewProjMatrix = [&]() -> glm::mat4 {
+        // const rad = Math.PI * (Date.now() / 5000);
+        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000.0f;
+        const float rad = static_cast<float>(M_PI) * (now / 5000.0f);
+
+        // const rotation = mat4.rotateY(mat4.translation(origin), rad);
+        const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rad, glm::vec3(0, 1, 0));
+
+        // const rotatedEyePosition = vec3.transformMat4(eyePosition, rotation);
+        const glm::vec3 rotatedEyePosition = glm::vec3(rotation * glm::vec4(eyePosition, 1.0f));
+
+        // const viewMatrix = mat4.lookAt(rotatedEyePosition, origin, upVector);
+        const glm::mat4 viewMatrix = glm::lookAt(rotatedEyePosition, origin, upVector);
+
+        // return mat4.multiply(projectionMatrix, viewMatrix);
+        return m_projectionMatrix * viewMatrix;
+    };
+
+    {
+        const auto cameraViewProj = getCameraViewProjMatrix();
+        wgpu.QueueWriteBuffer(m_queue, m_cameraUniformBuffer, 0, &cameraViewProj, sizeof(cameraViewProj));
+
+        const auto cameraInvViewProj = glm::inverse(cameraViewProj);
+        wgpu.QueueWriteBuffer(m_queue, m_cameraUniformBuffer, 64, &cameraInvViewProj, sizeof(cameraInvViewProj));
+    }
 }
 
 void WGPUDeferredRenderingSample::onDraw()
@@ -366,6 +405,14 @@ void WGPUDeferredRenderingSample::createModelUniformBuffer()
 
     m_modelUniformBuffer = wgpu.DeviceCreateBuffer(m_device, &modelUniformBufferDescriptor);
     assert(m_modelUniformBuffer);
+
+    // Move the model so it's centered.
+    // const modelMatrix = mat4.translation([ 0, -45, 0 ]);
+    const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, -45, 0));
+    wgpu.QueueWriteBuffer(m_queue, m_modelUniformBuffer, 0, &modelMatrix, sizeof(modelMatrix));
+
+    const glm::mat4 invertTransposeModelMatrix = glm::transpose(modelMatrix);
+    wgpu.QueueWriteBuffer(m_queue, m_modelUniformBuffer, 64, &invertTransposeModelMatrix, sizeof(invertTransposeModelMatrix));
 }
 
 void WGPUDeferredRenderingSample::createCameraUniformBuffer()
@@ -563,6 +610,122 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     assert(m_depthTextureView);
 }
 
+void WGPUDeferredRenderingSample::createShaderModules()
+{
+    {
+        std::vector<char> fragmentDeferredRenderingShaderSource = utils::readFile(m_appDir / "fragmentDeferredRendering.wgsl", m_handle);
+
+        std::string fragmentDeferredRenderingShaderCode(fragmentDeferredRenderingShaderSource.begin(), fragmentDeferredRenderingShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor fragmentDeferredRenderingShaderModuleWGSLDescriptor{};
+        fragmentDeferredRenderingShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        fragmentDeferredRenderingShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = fragmentDeferredRenderingShaderCode.data(),
+            .length = fragmentDeferredRenderingShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor fragmentDeferredRenderingShaderModuleDescriptor{};
+        fragmentDeferredRenderingShaderModuleDescriptor.nextInChain = &fragmentDeferredRenderingShaderModuleWGSLDescriptor.chain;
+
+        m_fragmentDeferredRenderingShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentDeferredRenderingShaderModuleDescriptor);
+        assert(m_fragmentDeferredRenderingShaderModule);
+    }
+
+    {
+        std::vector<char> fragmentGBufferDebugViewShaderSource = utils::readFile(m_appDir / "fragmentGBuffersDebugView.wgsl", m_handle);
+
+        std::string fragmentGBufferDebugViewShaderCode(fragmentGBufferDebugViewShaderSource.begin(), fragmentGBufferDebugViewShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor fragmentGBufferDebugViewShaderModuleWGSLDescriptor{};
+        fragmentGBufferDebugViewShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        fragmentGBufferDebugViewShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = fragmentGBufferDebugViewShaderCode.data(),
+            .length = fragmentGBufferDebugViewShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor fragmentGBufferDebugViewShaderModuleDescriptor{};
+        fragmentGBufferDebugViewShaderModuleDescriptor.nextInChain = &fragmentGBufferDebugViewShaderModuleWGSLDescriptor.chain;
+
+        m_fragmentGBufferDebugViewShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentGBufferDebugViewShaderModuleDescriptor);
+        assert(m_fragmentGBufferDebugViewShaderModule);
+    }
+
+    {
+        std::vector<char> fragmentWriteGBuffersShaderSource = utils::readFile(m_appDir / "fragmentWriteGBuffers.wgsl", m_handle);
+
+        std::string fragmentWriteGBuffersShaderCode(fragmentWriteGBuffersShaderSource.begin(), fragmentWriteGBuffersShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor fragmentWriteGBuffersShaderModuleWGSLDescriptor{};
+        fragmentWriteGBuffersShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        fragmentWriteGBuffersShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = fragmentWriteGBuffersShaderCode.data(),
+            .length = fragmentWriteGBuffersShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor fragmentWriteGBuffersShaderModuleDescriptor{};
+        fragmentWriteGBuffersShaderModuleDescriptor.nextInChain = &fragmentWriteGBuffersShaderModuleWGSLDescriptor.chain;
+
+        m_fragmentWriteGBuffersShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentWriteGBuffersShaderModuleDescriptor);
+        assert(m_fragmentWriteGBuffersShaderModule);
+    }
+
+    {
+        std::vector<char> vertexTextureQuadShaderSource = utils::readFile(m_appDir / "vertexTextureQuad.wgsl", m_handle);
+
+        std::string vertexTextureQuadShaderCode(vertexTextureQuadShaderSource.begin(), vertexTextureQuadShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor vertexTextureQuadShaderModuleWGSLDescriptor{};
+        vertexTextureQuadShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        vertexTextureQuadShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = vertexTextureQuadShaderCode.data(),
+            .length = vertexTextureQuadShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor vertexTextureQuadShaderModuleDescriptor{};
+        vertexTextureQuadShaderModuleDescriptor.nextInChain = &vertexTextureQuadShaderModuleWGSLDescriptor.chain;
+
+        m_vertexTextureQuadShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexTextureQuadShaderModuleDescriptor);
+        assert(m_vertexTextureQuadShaderModule);
+    }
+
+    {
+        std::vector<char> vertexWriteGBuffersShaderSource = utils::readFile(m_appDir / "vertexWriteGBuffers.wgsl", m_handle);
+
+        std::string vertexWriteGBuffersShaderCode(vertexWriteGBuffersShaderSource.begin(), vertexWriteGBuffersShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor vertexWriteGBuffersShaderModuleWGSLDescriptor{};
+        vertexWriteGBuffersShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        vertexWriteGBuffersShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = vertexWriteGBuffersShaderCode.data(),
+            .length = vertexWriteGBuffersShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor vertexWriteGBuffersShaderModuleDescriptor{};
+        vertexWriteGBuffersShaderModuleDescriptor.nextInChain = &vertexWriteGBuffersShaderModuleWGSLDescriptor.chain;
+
+        m_vertexWriteGBuffersShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexWriteGBuffersShaderModuleDescriptor);
+        assert(m_vertexWriteGBuffersShaderModule);
+    }
+
+    {
+        std::vector<char> lightUpdateShaderSource = utils::readFile(m_appDir / "lightUpdate.wgsl", m_handle);
+        std::string lightUpdateShaderCode(lightUpdateShaderSource.begin(), lightUpdateShaderSource.end());
+
+        WGPUShaderModuleWGSLDescriptor lightUpdateShaderModuleWGSLDescriptor{};
+        lightUpdateShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
+        lightUpdateShaderModuleWGSLDescriptor.code = WGPUStringView{
+            .data = lightUpdateShaderCode.data(),
+            .length = lightUpdateShaderCode.size(),
+        };
+
+        WGPUShaderModuleDescriptor lightUpdateShaderModuleDescriptor{};
+        lightUpdateShaderModuleDescriptor.nextInChain = &lightUpdateShaderModuleWGSLDescriptor.chain;
+
+        m_lightUpdateShaderModule = wgpu.DeviceCreateShaderModule(m_device, &lightUpdateShaderModuleDescriptor);
+        assert(m_lightUpdateShaderModule);
+    }
+}
+
 void WGPUDeferredRenderingSample::createSceneUniformBindGroupLayout()
 {
     std::array<WGPUBindGroupLayoutEntry, 2> bindGroupLayoutEntries{
@@ -702,122 +865,6 @@ void WGPUDeferredRenderingSample::createGBufferWriteRenderPipeline()
 
     m_gBufferWriteRenderPipeline = wgpu.DeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
     assert(m_gBufferWriteRenderPipeline);
-}
-
-void WGPUDeferredRenderingSample::createShaderModules()
-{
-    {
-        std::vector<char> fragmentDeferredRenderingShaderSource = utils::readFile(m_appDir / "fragmentDeferredRendering.wgsl", m_handle);
-
-        std::string fragmentDeferredRenderingShaderCode(fragmentDeferredRenderingShaderSource.begin(), fragmentDeferredRenderingShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor fragmentDeferredRenderingShaderModuleWGSLDescriptor{};
-        fragmentDeferredRenderingShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        fragmentDeferredRenderingShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = fragmentDeferredRenderingShaderCode.data(),
-            .length = fragmentDeferredRenderingShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor fragmentDeferredRenderingShaderModuleDescriptor{};
-        fragmentDeferredRenderingShaderModuleDescriptor.nextInChain = &fragmentDeferredRenderingShaderModuleWGSLDescriptor.chain;
-
-        m_fragmentDeferredRenderingShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentDeferredRenderingShaderModuleDescriptor);
-        assert(m_fragmentDeferredRenderingShaderModule);
-    }
-
-    {
-        std::vector<char> fragmentGBufferDebugViewShaderSource = utils::readFile(m_appDir / "fragmentGBuffersDebugView.wgsl", m_handle);
-
-        std::string fragmentGBufferDebugViewShaderCode(fragmentGBufferDebugViewShaderSource.begin(), fragmentGBufferDebugViewShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor fragmentGBufferDebugViewShaderModuleWGSLDescriptor{};
-        fragmentGBufferDebugViewShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        fragmentGBufferDebugViewShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = fragmentGBufferDebugViewShaderCode.data(),
-            .length = fragmentGBufferDebugViewShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor fragmentGBufferDebugViewShaderModuleDescriptor{};
-        fragmentGBufferDebugViewShaderModuleDescriptor.nextInChain = &fragmentGBufferDebugViewShaderModuleWGSLDescriptor.chain;
-
-        m_fragmentGBufferDebugViewShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentGBufferDebugViewShaderModuleDescriptor);
-        assert(m_fragmentGBufferDebugViewShaderModule);
-    }
-
-    {
-        std::vector<char> fragmentWriteGBuffersShaderSource = utils::readFile(m_appDir / "fragmentWriteGBuffers.wgsl", m_handle);
-
-        std::string fragmentWriteGBuffersShaderCode(fragmentWriteGBuffersShaderSource.begin(), fragmentWriteGBuffersShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor fragmentWriteGBuffersShaderModuleWGSLDescriptor{};
-        fragmentWriteGBuffersShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        fragmentWriteGBuffersShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = fragmentWriteGBuffersShaderCode.data(),
-            .length = fragmentWriteGBuffersShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor fragmentWriteGBuffersShaderModuleDescriptor{};
-        fragmentWriteGBuffersShaderModuleDescriptor.nextInChain = &fragmentWriteGBuffersShaderModuleWGSLDescriptor.chain;
-
-        m_fragmentWriteGBuffersShaderModule = wgpu.DeviceCreateShaderModule(m_device, &fragmentWriteGBuffersShaderModuleDescriptor);
-        assert(m_fragmentWriteGBuffersShaderModule);
-    }
-
-    {
-        std::vector<char> vertexTextureQuadShaderSource = utils::readFile(m_appDir / "vertexTextureQuad.wgsl", m_handle);
-
-        std::string vertexTextureQuadShaderCode(vertexTextureQuadShaderSource.begin(), vertexTextureQuadShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor vertexTextureQuadShaderModuleWGSLDescriptor{};
-        vertexTextureQuadShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        vertexTextureQuadShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = vertexTextureQuadShaderCode.data(),
-            .length = vertexTextureQuadShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor vertexTextureQuadShaderModuleDescriptor{};
-        vertexTextureQuadShaderModuleDescriptor.nextInChain = &vertexTextureQuadShaderModuleWGSLDescriptor.chain;
-
-        m_vertexTextureQuadShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexTextureQuadShaderModuleDescriptor);
-        assert(m_vertexTextureQuadShaderModule);
-    }
-
-    {
-        std::vector<char> vertexWriteGBuffersShaderSource = utils::readFile(m_appDir / "vertexWriteGBuffers.wgsl", m_handle);
-
-        std::string vertexWriteGBuffersShaderCode(vertexWriteGBuffersShaderSource.begin(), vertexWriteGBuffersShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor vertexWriteGBuffersShaderModuleWGSLDescriptor{};
-        vertexWriteGBuffersShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        vertexWriteGBuffersShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = vertexWriteGBuffersShaderCode.data(),
-            .length = vertexWriteGBuffersShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor vertexWriteGBuffersShaderModuleDescriptor{};
-        vertexWriteGBuffersShaderModuleDescriptor.nextInChain = &vertexWriteGBuffersShaderModuleWGSLDescriptor.chain;
-
-        m_vertexWriteGBuffersShaderModule = wgpu.DeviceCreateShaderModule(m_device, &vertexWriteGBuffersShaderModuleDescriptor);
-        assert(m_vertexWriteGBuffersShaderModule);
-    }
-
-    {
-        std::vector<char> lightUpdateShaderSource = utils::readFile(m_appDir / "lightUpdate.wgsl", m_handle);
-        std::string lightUpdateShaderCode(lightUpdateShaderSource.begin(), lightUpdateShaderSource.end());
-
-        WGPUShaderModuleWGSLDescriptor lightUpdateShaderModuleWGSLDescriptor{};
-        lightUpdateShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderSourceWGSL;
-        lightUpdateShaderModuleWGSLDescriptor.code = WGPUStringView{
-            .data = lightUpdateShaderCode.data(),
-            .length = lightUpdateShaderCode.size(),
-        };
-
-        WGPUShaderModuleDescriptor lightUpdateShaderModuleDescriptor{};
-        lightUpdateShaderModuleDescriptor.nextInChain = &lightUpdateShaderModuleWGSLDescriptor.chain;
-
-        m_lightUpdateShaderModule = wgpu.DeviceCreateShaderModule(m_device, &lightUpdateShaderModuleDescriptor);
-        assert(m_lightUpdateShaderModule);
-    }
 }
 
 void WGPUDeferredRenderingSample::createLightBufferBindGroupLayout()
