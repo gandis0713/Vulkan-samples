@@ -225,6 +225,11 @@ const std::vector<TextureBindingLayout>& VulkanBindGroup::getTextureLayouts() co
     return m_layoutInfo.textures;
 }
 
+const std::vector<StorageTextureBindingLayout>& VulkanBindGroup::getStorageTextureLayouts() const
+{
+    return m_layoutInfo.storageTextures;
+}
+
 VkDescriptorSet VulkanBindGroup::getVkDescriptorSet() const
 {
     return m_descriptorSet;

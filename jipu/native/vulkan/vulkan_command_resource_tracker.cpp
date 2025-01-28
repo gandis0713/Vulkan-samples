@@ -24,9 +24,11 @@ void VulkanCommandResourceTracker::setComputePipeline(SetComputePipelineCommand*
 
 void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* command)
 {
+    auto vulkanBindGroup = downcast(command->bindGroup);
     // dst (read)
     {
-        auto bufferBindings = command->bindGroup->getBufferBindings();
+        // buffer
+        auto bufferBindings = vulkanBindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
             m_currentOperationResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
@@ -35,9 +37,43 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
             };
         }
 
-        auto textureBindings = command->bindGroup->getTextureBindings();
-        for (auto& textureBinding : textureBindings)
+        // texture
+        auto textureBindings = vulkanBindGroup->getTextureBindings();
+
+        auto textureBindingLayouts = vulkanBindGroup->getTextureLayouts();
+        for (const auto& textureBindingLayout : textureBindingLayouts)
         {
+            auto it = std::find_if(textureBindings.begin(), textureBindings.end(), [&](const auto& textureBinding) {
+                return textureBinding.index == textureBindingLayout.index;
+            });
+
+            if (it == textureBindings.end())
+                throw std::runtime_error("The texture binding layout is not found in the texture bindings.");
+
+            const auto& textureBinding = *it;
+            auto vulkanTextureView = downcast(textureBinding.textureView);
+            m_currentOperationResourceInfo.dst.textureViews[vulkanTextureView] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                .accessFlags = VK_ACCESS_SHADER_READ_BIT,
+                .layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                .baseMipLevel = vulkanTextureView->getBaseMipLevel(),
+                .mipLevelCount = vulkanTextureView->getMipLevelCount(),
+                .baseArrayLayer = vulkanTextureView->getBaseArrayLayer(),
+                .arrayLayerCount = vulkanTextureView->getArrayLayerCount(),
+            };
+        }
+
+        auto storageTextureLayouts = vulkanBindGroup->getStorageTextureLayouts();
+        for (const auto& storageTextureLayout : storageTextureLayouts)
+        {
+            auto it = std::find_if(textureBindings.begin(), textureBindings.end(), [&](const auto& textureBinding) {
+                return textureBinding.index == storageTextureLayout.index;
+            });
+
+            if (it == textureBindings.end())
+                throw std::runtime_error("The texture binding layout is not found in the storage texture bindings.");
+
+            const auto& textureBinding = *it;
             auto vulkanTextureView = downcast(textureBinding.textureView);
             m_currentOperationResourceInfo.dst.textureViews[vulkanTextureView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -49,13 +85,12 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
                 .arrayLayerCount = vulkanTextureView->getArrayLayerCount(),
             };
         }
-
-        // TODO: storage texture
     }
 
     // src (write)
     {
-        auto bufferBindings = command->bindGroup->getBufferBindings();
+        // buffer
+        auto bufferBindings = vulkanBindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
             m_currentOperationResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
@@ -64,9 +99,22 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
             };
         }
 
-        auto textureBindings = command->bindGroup->getTextureBindings();
-        for (auto& textureBinding : textureBindings)
+        // texture
+        auto textureBindings = vulkanBindGroup->getTextureBindings();
+
+        // doesn't need to collect texture for read only.
+        // storage texture is read and write.
+        auto storageTextureLayouts = vulkanBindGroup->getStorageTextureLayouts();
+        for (const auto& storageTextureLayout : storageTextureLayouts)
         {
+            auto it = std::find_if(textureBindings.begin(), textureBindings.end(), [&](const auto& textureBinding) {
+                return textureBinding.index == storageTextureLayout.index;
+            });
+
+            if (it == textureBindings.end())
+                throw std::runtime_error("The texture binding layout is not found in the storage texture bindings.");
+
+            const auto& textureBinding = *it;
             auto vulkanTextureView = downcast(textureBinding.textureView);
             m_currentOperationResourceInfo.src.textureViews[vulkanTextureView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -78,8 +126,6 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
                 .arrayLayerCount = vulkanTextureView->getArrayLayerCount(),
             };
         }
-
-        // TODO: storage texture
     }
 }
 
@@ -407,27 +453,27 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
 
 void VulkanCommandResourceTracker::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
-    // do nothing.
+    // TODO
 }
 
 void VulkanCommandResourceTracker::copyBufferToTexture(CopyBufferToTextureCommand* command)
 {
-    // do nothing.
+    // TODO
 }
 
 void VulkanCommandResourceTracker::copyTextureToBuffer(CopyTextureToBufferCommand* command)
 {
-    // do nothing.
+    // TODO
 }
 
 void VulkanCommandResourceTracker::copyTextureToTexture(CopyTextureToTextureCommand* command)
 {
-    // do nothing.
+    // TODO
 }
 
 void VulkanCommandResourceTracker::resolveQuerySet(ResolveQuerySetCommand* command)
 {
-    // do nothing.
+    // TODO
 }
 
 VulkanResourceTrackingResult VulkanCommandResourceTracker::finish()
