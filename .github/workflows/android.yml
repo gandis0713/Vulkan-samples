@@ -52,11 +52,10 @@ jobs:
         run: chmod +x gradlew
         working-directory: sample/android
 
-      # TODO : Please fix me.
-      # - run: ./gradlew clean assembleRelease
-      #   working-directory: sample/android
-      #   env:
-      #     ANDROID_NDK_VERSION: "27.0.12077973" # r26d
+      - run: ./gradlew clean assembleRelease
+        working-directory: sample/android
+        env:
+          ANDROID_NDK_VERSION: "27.0.12077973" # r26d
 
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
