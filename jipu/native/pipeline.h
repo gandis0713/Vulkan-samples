@@ -29,6 +29,7 @@ struct ProgrammableStage
 {
     ShaderModule* shaderModule = nullptr;
     std::string entryPoint = "main"; // TODO: use std::string_view
+    std::unordered_map<std::string_view, double> constants{};
 };
 
 /**
