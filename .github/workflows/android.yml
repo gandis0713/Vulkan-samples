@@ -52,7 +52,7 @@ jobs:
         run: chmod +x gradlew
         working-directory: sample/android
 
-      - run: ./gradlew clean assembleRelease
+      - run: ./gradlew assembleRelease
         working-directory: sample/android
         env:
           ANDROID_NDK_VERSION: "27.0.12077973" # r26d
