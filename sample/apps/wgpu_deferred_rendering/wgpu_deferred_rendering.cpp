@@ -102,54 +102,53 @@ void WGPUDeferredRenderingSample::onDraw()
     WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
     {
-        {
-            std::array<WGPURenderPassColorAttachment, 2> colorAttachments{
-                WGPURenderPassColorAttachment{
-                    .view = m_float16TextureView,
-                    .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                    .loadOp = WGPULoadOp_Clear,
-                    .storeOp = WGPUStoreOp_Store,
-                    .clearValue = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 1.0f },
-                },
-                WGPURenderPassColorAttachment{
-                    .view = m_albedoTextureView,
-                    .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                    .loadOp = WGPULoadOp_Clear,
-                    .storeOp = WGPUStoreOp_Store,
-                    .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
-                },
-            };
+        std::array<WGPURenderPassColorAttachment, 2> colorAttachments{
+            WGPURenderPassColorAttachment{
+                .view = m_float16TextureView,
+                .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                .loadOp = WGPULoadOp_Clear,
+                .storeOp = WGPUStoreOp_Store,
+                .clearValue = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 1.0f },
+            },
+            WGPURenderPassColorAttachment{
+                .view = m_albedoTextureView,
+                .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                .loadOp = WGPULoadOp_Clear,
+                .storeOp = WGPUStoreOp_Store,
+                .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
+            },
+        };
 
-            WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
-            depthStencilAttachment.view = m_depthTextureView;
-            depthStencilAttachment.depthLoadOp = WGPULoadOp_Clear;
-            depthStencilAttachment.depthStoreOp = WGPUStoreOp_Store;
-            depthStencilAttachment.depthClearValue = 1.0f;
+        WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
+        depthStencilAttachment.view = m_depthTextureView;
+        depthStencilAttachment.depthLoadOp = WGPULoadOp_Clear;
+        depthStencilAttachment.depthStoreOp = WGPUStoreOp_Store;
+        depthStencilAttachment.depthClearValue = 1.0f;
 
-            WGPURenderPassDescriptor renderPassDescriptor{};
-            renderPassDescriptor.colorAttachmentCount = colorAttachments.size();
-            renderPassDescriptor.colorAttachments = colorAttachments.data();
-            renderPassDescriptor.depthStencilAttachment = &depthStencilAttachment;
+        WGPURenderPassDescriptor renderPassDescriptor{};
+        renderPassDescriptor.colorAttachmentCount = colorAttachments.size();
+        renderPassDescriptor.colorAttachments = colorAttachments.data();
+        renderPassDescriptor.depthStencilAttachment = &depthStencilAttachment;
 
-            WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
-            wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_gBufferWriteRenderPipeline);
-            wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_sceneUniformBindGroup, 0, nullptr);
-            wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_vertexBuffer, 0, m_dragonMesh.positions.size() * 8 * sizeof(float));
-            wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_indexBuffer, WGPUIndexFormat_Uint16, 0, m_dragonMesh.triangles.size() * 3 * sizeof(uint16_t));
-            wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, static_cast<uint32_t>(m_dragonMesh.triangles.size() * 3), 1, 0, 0, 0);
-            wgpu.RenderPassEncoderEnd(renderPassEncoder);
-            wgpu.RenderPassEncoderRelease(renderPassEncoder);
-        }
-        {
-            WGPUComputePassDescriptor computePassDescriptor{};
-            WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
-            wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_lightComputePipeline);
-            wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, m_lightBufferComputeBindGroup, 0, nullptr);
-            wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(static_cast<float>(kMaxNumLights) / 64), 1, 1);
-            wgpu.ComputePassEncoderEnd(computePassEncoder);
-            wgpu.ComputePassEncoderRelease(computePassEncoder);
-        }
-
+        WGPURenderPassEncoder renderPassEncoder = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
+        wgpu.RenderPassEncoderSetPipeline(renderPassEncoder, m_gBufferWriteRenderPipeline);
+        wgpu.RenderPassEncoderSetBindGroup(renderPassEncoder, 0, m_sceneUniformBindGroup, 0, nullptr);
+        wgpu.RenderPassEncoderSetVertexBuffer(renderPassEncoder, 0, m_vertexBuffer, 0, m_dragonMesh.positions.size() * 8 * sizeof(float));
+        wgpu.RenderPassEncoderSetIndexBuffer(renderPassEncoder, m_indexBuffer, WGPUIndexFormat_Uint16, 0, m_dragonMesh.triangles.size() * 3 * sizeof(uint16_t));
+        wgpu.RenderPassEncoderDrawIndexed(renderPassEncoder, static_cast<uint32_t>(m_dragonMesh.triangles.size() * 3), 1, 0, 0, 0);
+        wgpu.RenderPassEncoderEnd(renderPassEncoder);
+        wgpu.RenderPassEncoderRelease(renderPassEncoder);
+    }
+    {
+        WGPUComputePassDescriptor computePassDescriptor{};
+        WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
+        wgpu.ComputePassEncoderSetPipeline(computePassEncoder, m_lightComputePipeline);
+        wgpu.ComputePassEncoderSetBindGroup(computePassEncoder, 0, m_lightBufferComputeBindGroup, 0, nullptr);
+        wgpu.ComputePassEncoderDispatchWorkgroups(computePassEncoder, std::ceil(static_cast<float>(kMaxNumLights) / 64), 1, 1);
+        wgpu.ComputePassEncoderEnd(computePassEncoder);
+        wgpu.ComputePassEncoderRelease(computePassEncoder);
+    }
+    {
         std::array<WGPURenderPassColorAttachment, 1> textureQuadColorAttachments{
             WGPURenderPassColorAttachment{
                 .view = surfaceTextureView,
