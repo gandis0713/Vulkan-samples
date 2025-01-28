@@ -878,7 +878,7 @@ void DeferredSample::createOffscreenPipeline()
     // Rasterization
     RasterizationStage rasterizationStage{};
     rasterizationStage.sampleCount = m_sampleCount;
-    rasterizationStage.cullMode = CullMode::kNone;
+    rasterizationStage.cullMode = CullMode::kBack;
     rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
     // shader module
@@ -911,6 +911,8 @@ void DeferredSample::createOffscreenPipeline()
 
     DepthStencilStage depthStencil{};
     depthStencil.format = m_depthStencilTexture->getFormat();
+    depthStencil.depthWriteEnabled = true;
+    depthStencil.depthCompareFunction = CompareFunction::kLess;
 
     RenderPipelineDescriptor descriptor{
         m_offscreen.pipelineLayout.get(),
