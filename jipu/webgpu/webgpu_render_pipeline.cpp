@@ -94,6 +94,15 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
             }
         }
 
+        {
+            for (auto i = 0; i < descriptor->fragment->constantCount; ++i)
+            {
+                auto const constant = descriptor->fragment->constants[i];
+                const std::string_view key{ constant.key.data, constant.key.length != WGPU_STRLEN ? constant.key.length : strlen(constant.key.data) };
+                fragmentStage.constants[key] = constant.value;
+            }
+        }
+
         fragmentStage.entryPoint = std::string(descriptor->fragment->entryPoint.data,
                                                descriptor->fragment->entryPoint.length != WGPU_STRLEN ? descriptor->fragment->entryPoint.length : strlen(descriptor->fragment->entryPoint.data));
         fragmentStage.shaderModule = reinterpret_cast<WebGPUShaderModule*>(descriptor->fragment->module)->getShaderModule();

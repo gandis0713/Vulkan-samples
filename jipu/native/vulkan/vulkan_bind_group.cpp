@@ -58,7 +58,6 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
     auto textureDescriptorSetLayouts = downcast(descriptor.layout)->getTextureDescriptorSetLayouts();
     // update texture
 
-    spdlog::debug("charles textureSize: {}", textureSize);
     for (auto i = 0; i < textureSize; ++i)
     {
         const TextureBinding& texture = descriptor.textures[i];
