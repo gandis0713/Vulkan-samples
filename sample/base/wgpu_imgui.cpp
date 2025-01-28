@@ -165,7 +165,7 @@ void WGPUImGui::window(const char* title, std::vector<std::function<void()>> uis
     // set windows position and size
     {
         auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 200 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(20, 200), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
     }
 
@@ -182,11 +182,6 @@ void WGPUImGui::record(std::vector<std::function<void()>> cmds)
 
 void WGPUImGui::initialize()
 {
-#if defined(__ANDROID__)
-    m_padding.top = 80.0f;
-    m_padding.bottom = 170.0f;
-#endif
-
     // IMGUI_CHECKVERSION();
     ImGuiContext* imguiContext = ImGui::CreateContext();
     if (imguiContext == nullptr)

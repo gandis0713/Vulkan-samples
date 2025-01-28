@@ -60,7 +60,7 @@ void NativeImGui::window(const char* title, std::vector<std::function<void()>> u
     // set windows position and size
     {
         auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 200 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(20, 200), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
     }
 
@@ -82,11 +82,6 @@ void NativeImGui::init(Device* device, Queue* queue, Swapchain* swapchain)
 {
     m_device = device;
     m_queue = queue;
-
-#if defined(__ANDROID__)
-    m_padding.top = 80.0f;
-    m_padding.bottom = 170.0f;
-#endif
 
     // IMGUI_CHECKVERSION();
     ImGuiContext* imguiContext = ImGui::CreateContext();
