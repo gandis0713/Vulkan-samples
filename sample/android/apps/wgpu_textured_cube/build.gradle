@@ -40,7 +40,6 @@ android {
                 arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
                 arguments += "-DANDROID_ARM_NEON=ON"
                 arguments += "-DANDROID_STL=c++_shared"
-                arguments += "-DVCPKG_TARGET_TRIPLET=arm64-android"
 
                 targets += "${sampleName}"
             }
