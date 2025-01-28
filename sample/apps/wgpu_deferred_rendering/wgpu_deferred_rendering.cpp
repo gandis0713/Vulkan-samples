@@ -37,7 +37,7 @@ void WGPUDeferredRenderingSample::init()
     changeAPI(APIType::kJipu);
 
     float aspect = static_cast<float>(m_width) / static_cast<float>(m_height);
-    float fov = (2.0f * glm::pi<float>()) / 5.0f;
+    float fov = (2.0f * M_PI) / 5.0f;
     float nearPlane = 1.0f;
     float farPlane = 2000.0f;
 
@@ -101,6 +101,7 @@ void WGPUDeferredRenderingSample::onDraw()
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
     WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
+    // write GBuffer
     {
         std::array<WGPURenderPassColorAttachment, 2> colorAttachments{
             WGPURenderPassColorAttachment{
@@ -139,6 +140,7 @@ void WGPUDeferredRenderingSample::onDraw()
         wgpu.RenderPassEncoderEnd(renderPassEncoder);
         wgpu.RenderPassEncoderRelease(renderPassEncoder);
     }
+    // update lights
     {
         WGPUComputePassDescriptor computePassDescriptor{};
         WGPUComputePassEncoder computePassEncoder = wgpu.CommandEncoderBeginComputePass(commandEncoder, &computePassDescriptor);
@@ -148,6 +150,7 @@ void WGPUDeferredRenderingSample::onDraw()
         wgpu.ComputePassEncoderEnd(computePassEncoder);
         wgpu.ComputePassEncoderRelease(computePassEncoder);
     }
+    // deferred rendering
     {
         std::array<WGPURenderPassColorAttachment, 1> textureQuadColorAttachments{
             WGPURenderPassColorAttachment{
@@ -513,11 +516,10 @@ void WGPUDeferredRenderingSample::createModelUniformBuffer()
     assert(m_modelUniformBuffer);
 
     // Move the model so it's centered.
-    // const modelMatrix = mat4.translation([ 0, -45, 0 ]);
     const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, -45, 0));
     wgpu.QueueWriteBuffer(m_queue, m_modelUniformBuffer, 0, &modelMatrix, sizeof(modelMatrix));
 
-    const glm::mat4 invertTransposeModelMatrix = glm::transpose(modelMatrix);
+    const glm::mat4 invertTransposeModelMatrix = glm::transpose(glm::inverse(modelMatrix));
     wgpu.QueueWriteBuffer(m_queue, m_modelUniformBuffer, 64, &invertTransposeModelMatrix, sizeof(invertTransposeModelMatrix));
 }
 
@@ -684,6 +686,7 @@ void WGPUDeferredRenderingSample::createFloat16TextureView()
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
     textureViewDescriptor.arrayLayerCount = 1;
+    textureViewDescriptor.usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding;
 
     m_float16TextureView = wgpu.TextureCreateView(m_float16Texture, &textureViewDescriptor);
     assert(m_float16TextureView);
@@ -699,6 +702,7 @@ void WGPUDeferredRenderingSample::createAlbedoTextureView()
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
     textureViewDescriptor.arrayLayerCount = 1;
+    textureViewDescriptor.usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding;
 
     m_albedoTextureView = wgpu.TextureCreateView(m_albedoTexture, &textureViewDescriptor);
     assert(m_albedoTextureView);
@@ -709,11 +713,12 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     WGPUTextureViewDescriptor textureViewDescriptor{};
     textureViewDescriptor.format = WGPUTextureFormat_Depth24Plus;
     textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
-    textureViewDescriptor.aspect = WGPUTextureAspect_All;
+    textureViewDescriptor.aspect = WGPUTextureAspect_DepthOnly;
     textureViewDescriptor.baseMipLevel = 0;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
     textureViewDescriptor.arrayLayerCount = 1;
+    textureViewDescriptor.usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding;
 
     m_depthTextureView = wgpu.TextureCreateView(m_depthTexture, &textureViewDescriptor);
     assert(m_depthTextureView);

@@ -4,7 +4,7 @@
 StanfordDragonMesh::StanfordDragonMesh()
 {
     GenerateNormalsResult result = generateNormals(
-        glm::pi<float>(),
+        M_PI,
         getPositions(), getCells());
 
     positions = std::move(result.positions);
@@ -21,10 +21,10 @@ StanfordDragonMesh::StanfordDragonMesh()
     // Push vertex attributes for an additional ground plane
     // prettier-ignore
     positions.insert(positions.end(),
-                     { { -100, 0, -100 },
-                       { 100, 0, 100 },
-                       { -100, 0, 100 },
-                       { 100, 0, -100 } });
+                     { { -100, 20, -100 },
+                       { 100, 20, 100 },
+                       { -100, 20, 100 },
+                       { 100, 20, -100 } });
     normals.insert(normals.end(),
                    { { 0, 1, 0 },
                      { 0, 1, 0 },
