@@ -102,16 +102,6 @@ void WGPUDeferredRenderingSample::onDraw()
     WGPUCommandEncoder commandEncoder = wgpu.DeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
     {
-        std::array<WGPURenderPassColorAttachment, 1> textureQuadColorAttachments{
-            WGPURenderPassColorAttachment{
-                .view = nullptr,
-                .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                .loadOp = WGPULoadOp_Clear,
-                .storeOp = WGPUStoreOp_Store,
-                .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
-            },
-        };
-
         {
             std::array<WGPURenderPassColorAttachment, 2> colorAttachments{
                 WGPURenderPassColorAttachment{
@@ -160,14 +150,22 @@ void WGPUDeferredRenderingSample::onDraw()
             wgpu.ComputePassEncoderRelease(computePassEncoder);
         }
 
+        std::array<WGPURenderPassColorAttachment, 1> textureQuadColorAttachments{
+            WGPURenderPassColorAttachment{
+                .view = surfaceTextureView,
+                .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                .loadOp = WGPULoadOp_Clear,
+                .storeOp = WGPUStoreOp_Store,
+                .clearValue = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f },
+            },
+        };
+
+        WGPURenderPassDescriptor textureQuadPassDescriptor{};
+        textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
+        textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
+
         if (m_mode == 0)
         {
-            textureQuadColorAttachments[0].view = surfaceTextureView;
-
-            WGPURenderPassDescriptor textureQuadPassDescriptor{};
-            textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
-            textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
-
             WGPURenderPassEncoder textureQuadPass = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &textureQuadPassDescriptor);
             wgpu.RenderPassEncoderSetPipeline(textureQuadPass, m_deferredRenderingRenderPipeline);
             wgpu.RenderPassEncoderSetBindGroup(textureQuadPass, 0, m_gBufferTextureBindGroup, 0, nullptr);
@@ -178,12 +176,6 @@ void WGPUDeferredRenderingSample::onDraw()
         }
         else
         {
-            textureQuadColorAttachments[0].view = surfaceTextureView;
-
-            WGPURenderPassDescriptor textureQuadPassDescriptor{};
-            textureQuadPassDescriptor.colorAttachmentCount = textureQuadColorAttachments.size();
-            textureQuadPassDescriptor.colorAttachments = textureQuadColorAttachments.data();
-
             WGPURenderPassEncoder textureQuadPass = wgpu.CommandEncoderBeginRenderPass(commandEncoder, &textureQuadPassDescriptor);
             wgpu.RenderPassEncoderSetPipeline(textureQuadPass, m_gBuffersDebugViewRenderPipeline);
             wgpu.RenderPassEncoderSetBindGroup(textureQuadPass, 0, m_gBufferTextureBindGroup, 0, nullptr);
@@ -718,7 +710,7 @@ void WGPUDeferredRenderingSample::createDepthTextureView()
     WGPUTextureViewDescriptor textureViewDescriptor{};
     textureViewDescriptor.format = WGPUTextureFormat_Depth24Plus;
     textureViewDescriptor.dimension = WGPUTextureViewDimension_2D;
-    textureViewDescriptor.aspect = WGPUTextureAspect_DepthOnly;
+    textureViewDescriptor.aspect = WGPUTextureAspect_All;
     textureViewDescriptor.baseMipLevel = 0;
     textureViewDescriptor.mipLevelCount = 1;
     textureViewDescriptor.baseArrayLayer = 0;
