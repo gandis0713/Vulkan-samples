@@ -29,7 +29,8 @@ public:
     ~VulkanShaderModule() override;
 
     VkShaderModule getVkShaderModule(const VulkanPipelineLayoutInfo& layoutInfo,
-                                     const std::string_view entryPoint) const;
+                                     const std::string_view entryPoint,
+                                     const std::unordered_map<std::string_view, double> constants) const;
     const VulkanShaderModuleInfo& getInfo() const;
 
 private:
@@ -47,6 +48,7 @@ struct VulkanShaderModuleMetaData
     VulkanShaderModuleInfo modulInfo{};
     VulkanPipelineLayoutInfo layoutInfo{};
     std::string entryPoint;
+    std::unordered_map<std::string_view, double> constants{};
 };
 
 class VulkanShaderModuleCache
