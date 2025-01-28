@@ -60,6 +60,15 @@
             "environment": [],
         },
         {
+            "name": "[WGPU] [windows x64] Deferred Rendering",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_deferred_rendering/wgpu_deferred_rendering.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "[Native] [windows x64] Triangle",
             "type": "cppvsdbg",
             "request": "launch",
@@ -230,6 +239,23 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_particles/wgpu_particles",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[WGPU] [arm64 osx] Deferred Rendering",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_deferred_rendering/wgpu_deferred_rendering",
             "args": [],
             "stopAtEntry": false,
             "environment": [

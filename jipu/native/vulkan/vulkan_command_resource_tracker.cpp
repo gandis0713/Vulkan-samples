@@ -24,7 +24,7 @@ void VulkanCommandResourceTracker::setComputePipeline(SetComputePipelineCommand*
 
 void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* command)
 {
-    // dst
+    // dst (read)
     {
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
@@ -53,7 +53,7 @@ void VulkanCommandResourceTracker::setComputeBindGroup(SetBindGroupCommand* comm
         // TODO: storage texture
     }
 
-    // src
+    // src (write)
     {
         auto bufferBindings = command->bindGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
@@ -101,19 +101,70 @@ void VulkanCommandResourceTracker::endComputePass(EndComputePassCommand* command
 
 void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
 {
-    // src
+    auto renderPass = command->renderPass.lock();
+    if (!renderPass)
+        throw std::runtime_error("The render pass is null for tracking begin render pass command.");
+
+    auto framebuffer = command->framebuffer.lock();
+    if (!framebuffer)
+        throw std::runtime_error("The framebuffer is null for tracking begin render pass command.");
+
+    const auto& framebufferColorAttachments = framebuffer->getColorAttachments();
+    const auto& framebufferDepthStencilAttachment = framebuffer->getDepthStencilAttachment();
+    const auto& renderPassColorAttachments = renderPass->getColorAttachments();
+    const auto& renderPassDepthStencilAttachment = renderPass->getDepthStencilAttachment();
+
+    // src (write)
     {
-        auto renderPass = command->renderPass.lock();
-        if (!renderPass)
-            throw std::runtime_error("The render pass is null for tracking begin render pass command.");
+        for (auto i = 0; i < framebufferColorAttachments.size(); ++i)
+        {
+            const auto& framebufferColorAttachment = framebufferColorAttachments[i];
+            const auto& renderPassColorAttachment = renderPassColorAttachments[i];
 
-        auto framebuffer = command->framebuffer.lock();
-        if (!framebuffer)
-            throw std::runtime_error("The framebuffer is null for tracking begin render pass command.");
+            auto vulkanTextureRenderView = downcast(framebufferColorAttachment.renderView);
+            m_currentOperationResourceInfo.src.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                .layout = renderPassColorAttachment.renderAttachment.initialLayout,
+                .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
+                .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
+                .baseArrayLayer = vulkanTextureRenderView->getBaseArrayLayer(),
+                .arrayLayerCount = vulkanTextureRenderView->getArrayLayerCount(),
+            };
 
-        const auto& framebufferColorAttachments = framebuffer->getColorAttachments();
-        const auto& renderPassColorAttachments = renderPass->getColorAttachments();
+            if (framebufferColorAttachment.resolveView)
+            {
+                auto vulkanTextureResolveView = downcast(framebufferColorAttachment.resolveView);
+                m_currentOperationResourceInfo.src.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
+                    .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                    .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
+                    .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
+                    .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
+                    .baseArrayLayer = vulkanTextureResolveView->getBaseArrayLayer(),
+                    .arrayLayerCount = vulkanTextureResolveView->getArrayLayerCount(),
+                };
+            }
+        }
 
+        if (renderPassDepthStencilAttachment.has_value())
+        {
+            auto vulkanTextureDepthStencilView = downcast(framebufferDepthStencilAttachment);
+            m_currentOperationResourceInfo.src.textureViews[vulkanTextureDepthStencilView] = TextureUsageInfo{
+                .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                .accessFlags = VK_ACCESS_SHADER_READ_BIT,
+                .layout = renderPassDepthStencilAttachment.value().finalLayout,
+                .baseMipLevel = vulkanTextureDepthStencilView->getBaseMipLevel(),
+                .mipLevelCount = vulkanTextureDepthStencilView->getMipLevelCount(),
+                .baseArrayLayer = vulkanTextureDepthStencilView->getBaseArrayLayer(),
+                .arrayLayerCount = vulkanTextureDepthStencilView->getArrayLayerCount(),
+            };
+        }
+    }
+
+    // dst (read or use)
+    {
+        // we need to VkImage in swapchain
         for (auto i = 0; i < framebufferColorAttachments.size(); ++i)
         {
             const auto& framebufferColorAttachment = framebufferColorAttachments[i];
@@ -123,16 +174,6 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             m_currentOperationResourceInfo.dst.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                .layout = renderPassColorAttachment.renderAttachment.initialLayout,
-                .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
-                .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
-                .baseArrayLayer = vulkanTextureRenderView->getBaseArrayLayer(),
-                .arrayLayerCount = vulkanTextureRenderView->getArrayLayerCount(),
-            };
-
-            m_currentOperationResourceInfo.src.textureViews[vulkanTextureRenderView] = TextureUsageInfo{
-                .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                 .layout = renderPassColorAttachment.renderAttachment.finalLayout,
                 .baseMipLevel = vulkanTextureRenderView->getBaseMipLevel(),
                 .mipLevelCount = vulkanTextureRenderView->getMipLevelCount(),
@@ -146,16 +187,6 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
                 m_currentOperationResourceInfo.dst.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                    .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
-                    .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
-                    .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
-                    .baseArrayLayer = vulkanTextureResolveView->getBaseArrayLayer(),
-                    .arrayLayerCount = vulkanTextureResolveView->getArrayLayerCount(),
-                };
-
-                m_currentOperationResourceInfo.src.textureViews[vulkanTextureResolveView] = TextureUsageInfo{
-                    .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                    .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                     .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
                     .baseMipLevel = vulkanTextureResolveView->getBaseMipLevel(),
                     .mipLevelCount = vulkanTextureResolveView->getMipLevelCount(),
@@ -163,8 +194,6 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
                     .arrayLayerCount = vulkanTextureResolveView->getArrayLayerCount(),
                 };
             }
-
-            // TODO: depth stencil attachment
         }
     }
 }
@@ -176,7 +205,7 @@ void VulkanCommandResourceTracker::setRenderPipeline(SetRenderPipelineCommand* c
 
 void VulkanCommandResourceTracker::setVertexBuffer(SetVertexBufferCommand* command)
 {
-    // dst
+    // dst (read)
     {
         m_currentOperationResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
@@ -187,7 +216,7 @@ void VulkanCommandResourceTracker::setVertexBuffer(SetVertexBufferCommand* comma
 
 void VulkanCommandResourceTracker::setIndexBuffer(SetIndexBufferCommand* command)
 {
-    // dst
+    // dst (read)
     {
         m_currentOperationResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
@@ -281,7 +310,7 @@ void VulkanCommandResourceTracker::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* command)
 {
-    // dst
+    // dst (read)
     {
         auto bindGroup = downcast(command->bindGroup);
 
@@ -353,6 +382,13 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
             textureUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             textureUsageInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+            // TODO: image layout
+            auto vulkanTexture = downcast(textureBinding.textureView->getTexture());
+            if (vulkanTexture->getFormat() == TextureFormat::kDepth32Float)
+            {
+                textureUsageInfo.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            }
+
             auto vulkanTextureView = downcast(textureBinding.textureView);
             textureUsageInfo.baseMipLevel = vulkanTextureView->getBaseMipLevel();
             textureUsageInfo.mipLevelCount = vulkanTextureView->getMipLevelCount();
@@ -363,9 +399,9 @@ void VulkanCommandResourceTracker::setRenderBindGroup(SetBindGroupCommand* comma
         }
     }
 
-    // src
+    // src (write)
     {
-        // TODO
+        // do nothing
     }
 }
 

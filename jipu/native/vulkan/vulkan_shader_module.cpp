@@ -126,12 +126,14 @@ VulkanShaderModule::~VulkanShaderModule()
 }
 
 VkShaderModule VulkanShaderModule::getVkShaderModule(const VulkanPipelineLayoutInfo& layoutInfo,
-                                                     std::string_view entryPoint) const
+                                                     std::string_view entryPoint,
+                                                     const std::unordered_map<std::string_view, double> constants) const
 {
     VulkanShaderModuleMetaData metaData{
         .modulInfo = m_info,
         .layoutInfo = layoutInfo,
-        .entryPoint = std::string(entryPoint)
+        .entryPoint = std::string(entryPoint),
+        .constants = constants
     };
 
     return m_device->getShaderModuleCache()->getVkShaderModule(metaData);
@@ -183,6 +185,12 @@ size_t VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMeta
         }
     }
 
+    for (const auto& [key, value] : metaData.constants)
+    {
+        combineHash(hash, key);
+        combineHash(hash, value);
+    }
+
     return hash;
 }
 
@@ -192,7 +200,8 @@ bool VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMetaDa
     if (lhs.entryPoint != rhs.entryPoint ||
         lhs.modulInfo.type != rhs.modulInfo.type ||
         lhs.modulInfo.code != rhs.modulInfo.code ||
-        lhs.layoutInfo.bindGroupLayoutInfos.size() != rhs.layoutInfo.bindGroupLayoutInfos.size())
+        lhs.layoutInfo.bindGroupLayoutInfos.size() != rhs.layoutInfo.bindGroupLayoutInfos.size() ||
+        lhs.constants.size() != rhs.constants.size())
     {
         return false;
     }
@@ -244,6 +253,14 @@ bool VulkanShaderModuleCache::Functor::operator()(const VulkanShaderModuleMetaDa
             {
                 return false;
             }
+        }
+    }
+
+    for (const auto& [key, value] : lhs.constants)
+    {
+        if (rhs.constants.find(key) == rhs.constants.end() || rhs.constants.at(key) != value)
+        {
+            return false;
         }
     }
 
@@ -315,6 +332,20 @@ VkShaderModule VulkanShaderModuleCache::createWGSLShaderModule(const VulkanShade
     transformManager.append(std::make_unique<tint::ast::transform::SingleEntryPoint>());
     transformInputs.Add<tint::ast::transform::SingleEntryPoint::Config>(
         std::string(metaData.entryPoint));
+
+    if (!metaData.constants.empty())
+    {
+        tint::inspector::Inspector inspector(tintProgram);
+        std::vector<tint::inspector::EntryPoint> entryPoints = inspector.GetEntryPoints();
+        tint::ast::transform::SubstituteOverride::Config cfg;
+        const auto& name2Id = inspector.GetNamedOverrideIds();
+        for (auto& [key, overrideId] : name2Id)
+        {
+            cfg.map.insert({ overrideId, metaData.constants.at(key) });
+        }
+        transformManager.Add<tint::ast::transform::SubstituteOverride>();
+        transformInputs.Add<tint::ast::transform::SubstituteOverride::Config>(cfg);
+    }
 
     tint::ast::transform::DataMap transform_outputs;
     tint::Program tintProgram2 = transformManager.Run(tintProgram, transformInputs, transform_outputs);

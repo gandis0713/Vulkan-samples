@@ -51,8 +51,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: sample/android
-
-      # TODO : Please fix me.
+      
+      # please fix me.
       # - run: ./gradlew clean assembleRelease
       #   working-directory: sample/android
       #   env:

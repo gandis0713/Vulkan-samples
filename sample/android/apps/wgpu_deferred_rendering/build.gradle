@@ -1,0 +1,105 @@
+import java.nio.file.Paths
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Paths
+def sampleName = "wgpu_deferred_rendering"
+def rootDir = Paths.get(project.projectDir.getParent()).getParent().getParent().getParent()
+def appDir = "${rootDir}/sample/apps/${sampleName}"
+def shaderDir = "${appDir}/shaders"
+def resDir = "${appDir}/res"
+
+// Environments
+def vcpkgRootDir = System.getenv("VCPKG_ROOT")
+def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
+def androidNDKVersion = "27.0.12077973"
+
+android {
+    compileSdk 33
+    // ndkPath "${androidSDKRootDir}/ndk/${androidNDKVersion}"
+    ndkVersion androidNDKVersion
+
+    defaultConfig {
+        applicationId "com.gandis.jipu"
+        minSdk 26
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            abiFilters += 'arm64-v8a'
+        //    abiFilters += 'armeabi-v7a'
+        //    abiFilters += 'x86_64'
+        //    abiFilters += 'x86'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments += "-DCMAKE_TOOLCHAIN_FILE=${vcpkgRootDir}/scripts/buildsystems/vcpkg.cmake"
+                arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
+                arguments += "-DANDROID_ARM_NEON=ON"
+                arguments += "-DANDROID_STL=c++_shared"
+
+                targets += "${sampleName}"
+            }
+        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    sourceSets {
+        main.assets.srcDirs += "${shaderDir}"
+        main.assets.srcDirs += "${resDir}"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    externalNativeBuild {
+        cmake {
+            path file("${rootDir}/CMakeLists.txt")
+            version '3.22.1'
+        }
+    }
+    buildFeatures {
+        viewBinding true
+        prefab true // for game-activity
+    }
+    namespace 'com.gandis.jipu'
+}
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.games:games-activity:1.1.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+task copyTask {
+    copy {
+        from '../../res/drawable'
+        into "src/main/res/drawable"
+        include 'icon.png'
+    }
+    copy {
+        from '../../res/values'
+        into "src/main/res/values"
+        include 'themes.xml', "colors.xml"
+    }
+}
+
+preBuild.dependsOn copyTask
