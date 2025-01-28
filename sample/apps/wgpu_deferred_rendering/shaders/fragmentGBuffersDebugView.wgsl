@@ -17,8 +17,8 @@ fn main(
       vec2i(floor(coord.xy)),
       0
     );
-    // remap depth into something a bit more visible
-    let depth = (1.0 - rawDepth) * 50.0;
+    // remap depth into something a bit more visible. use 30.0 instead of original 50.0
+    let depth = (1.0 - rawDepth) * 30.0;
     result = vec4(depth);
   } else if (c.x < 0.66667) {
     result = textureLoad(
