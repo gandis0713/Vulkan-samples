@@ -560,98 +560,6 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
                                1,
                                &region);
 
-    // if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
-    // {
-    //     VkImage image = vulkanTexture->getVkImage();
-
-    //     int32_t width = static_cast<int32_t>(texture.texture->getWidth());
-    //     int32_t height = static_cast<int32_t>(texture.texture->getHeight());
-    //     for (uint32_t i = 1; i < mipLevels; ++i)
-    //     {
-
-    //         auto srcCurrentMipLevel = i - 1;
-    //         auto dstCurrentMipLevel = i;
-    //         auto srcCurrentLayout = vulkanTexture->getCurrentLayout(srcCurrentMipLevel);
-    //         auto dstCurrentLayout = vulkanTexture->getCurrentLayout(dstCurrentMipLevel);
-    //         // change layout
-    //         {
-    //             VkImageSubresourceRange srcSubresourceRange{};
-    //             srcSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //             srcSubresourceRange.baseMipLevel = srcCurrentMipLevel;
-    //             srcSubresourceRange.levelCount = 1;
-    //             srcSubresourceRange.baseArrayLayer = 0;
-    //             srcSubresourceRange.layerCount = 1;
-
-    //             VkImageMemoryBarrier barrier{};
-    //             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    //             barrier.pNext = VK_NULL_HANDLE;
-    //             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    //             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    //             barrier.oldLayout = srcCurrentLayout;
-    //             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    //             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.image = vulkanTexture->getVkImage();
-    //             barrier.subresourceRange = srcSubresourceRange;
-
-    //             VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    //             VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-    //             vulkanTexture->cmdPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
-    //         }
-
-    //         VkImageBlit blit{};
-    //         blit.srcOffsets[0] = { 0, 0, 0 };
-    //         blit.srcOffsets[1] = { width, height, 1 };
-    //         blit.srcSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //         blit.srcSubresource.mipLevel = srcCurrentMipLevel;
-    //         blit.srcSubresource.baseArrayLayer = 0;
-    //         blit.srcSubresource.layerCount = 1;
-    //         blit.dstOffsets[0] = { 0, 0, 0 };
-    //         blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
-    //         blit.dstSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //         blit.dstSubresource.mipLevel = dstCurrentMipLevel;
-    //         blit.dstSubresource.baseArrayLayer = 0;
-    //         blit.dstSubresource.layerCount = 1;
-
-    //         vkAPI.CmdBlitImage(commandBuffer,
-    //                            image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-    //                            image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //                            1, &blit,
-    //                            VK_FILTER_LINEAR);
-
-    //         // restore layout
-    //         {
-    //             VkImageSubresourceRange dstSubresourceRange{};
-    //             dstSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //             dstSubresourceRange.baseMipLevel = dstCurrentMipLevel;
-    //             dstSubresourceRange.levelCount = 1;
-    //             dstSubresourceRange.baseArrayLayer = 0;
-    //             dstSubresourceRange.layerCount = 1;
-
-    //             VkImageMemoryBarrier barrier{};
-    //             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    //             barrier.pNext = VK_NULL_HANDLE;
-    //             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    //             barrier.dstAccessMask = VK_ACCESS_NONE;
-    //             barrier.oldLayout = dstCurrentLayout;
-    //             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    //             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.image = vulkanTexture->getVkImage();
-    //             barrier.subresourceRange = dstSubresourceRange;
-
-    //             VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    //             VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-    //             vulkanTexture->cmdPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
-    //         }
-
-    //         width = std::max(width >> 1, 1);
-    //         height = std::max(height >> 1, 1);
-    //     }
-    // }
-
     // restore layout
     // TODO: restore layout if need to use the texture in the next command.
     {
@@ -731,6 +639,7 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
         vulkanTexture->cmdPipelineBarrier(m_commandBuffer->getVkCommandBuffer(), srcStage, dstStage, barrier);
     }
 
+    // copy texture to buffer
     vkAPI.CmdCopyImageToBuffer(m_commandBuffer->getVkCommandBuffer(), srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstBuffer, 1, &region);
 
     // restore layout
