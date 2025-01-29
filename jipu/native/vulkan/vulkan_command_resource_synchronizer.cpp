@@ -81,17 +81,15 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
 
     // create render pass and framebuffer after synchronization
     {
-        RenderPassEncoderDescriptor descriptor{};
-        descriptor.colorAttachments = command->colorAttachments;
-        descriptor.depthStencilAttachment = command->depthStencilAttachment;
-        descriptor.occlusionQuerySet = command->occlusionQuerySet;
-        descriptor.timestampWrites = command->timestampWrites;
+        auto vulkanDevice = m_commandRecorder->getCommandBuffer()->getDevice();
+        auto vulkanRenderPass = vulkanDevice->getRenderPass(generateVulkanRenderPassDescriptor(command->colorAttachments, command->depthStencilAttachment));
+        auto vulkanFramebuffer = vulkanDevice->getFrameBuffer(generateVulkanFramebufferDescriptor(vulkanRenderPass, command->colorAttachments, command->depthStencilAttachment));
 
-        auto vkdescriptor = generateVulkanRenderPassEncoderDescriptor(m_commandRecorder->getCommandBuffer()->getDevice(), descriptor);
-        command->renderPass = vkdescriptor.renderPass;
-        command->framebuffer = vkdescriptor.framebuffer;
-        command->renderArea = vkdescriptor.renderArea;
-        command->clearValues = vkdescriptor.clearValues;
+        command->renderPass = vulkanRenderPass;
+        command->framebuffer = vulkanFramebuffer;
+        command->renderArea.offset = { 0, 0 };
+        command->renderArea.extent = { vulkanFramebuffer->getWidth(), vulkanFramebuffer->getHeight() };
+        command->clearValues = generateClearColor(command->colorAttachments, command->depthStencilAttachment);
     }
 }
 
