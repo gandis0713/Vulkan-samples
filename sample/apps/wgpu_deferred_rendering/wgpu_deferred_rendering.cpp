@@ -986,14 +986,14 @@ void WGPUDeferredRenderingSample::createLightBufferBindGroupLayout()
     std::array<WGPUBindGroupLayoutEntry, 3> bindGroupLayoutEntries{
         WGPUBindGroupLayoutEntry{
             .binding = 0,
-            .visibility = WGPUShaderStage_Fragment,
+            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Compute,
             .buffer = WGPUBufferBindingLayout{
                 .type = WGPUBufferBindingType_ReadOnlyStorage,
             },
         },
         WGPUBindGroupLayoutEntry{
             .binding = 1,
-            .visibility = WGPUShaderStage_Fragment,
+            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Compute,
             .buffer = WGPUBufferBindingLayout{
                 .type = WGPUBufferBindingType_Uniform,
             },
