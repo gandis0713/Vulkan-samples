@@ -25,7 +25,6 @@ std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const R
 
 std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor)
 {
-    // TODO: encode begin render pass command
     return std::make_unique<VulkanRenderPassEncoder>(this, descriptor);
 }
 
