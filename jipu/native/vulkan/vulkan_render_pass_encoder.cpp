@@ -20,18 +20,26 @@ namespace jipu
 namespace
 {
 
-VkImageLayout generateInitialLayout(const ColorAttachment& colorAttachment)
+VkImageLayout generateColorFinalLayout(VulkanTexture* texture)
 {
-    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    return texture->getOwner() == VulkanTextureOwner::kSwapchain ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+}
 
-    if (colorAttachment.loadOp == LoadOp::kLoad)
-    {
-        auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
+VkImageLayout generateColorInitialLayout(VulkanTexture* texture, LoadOp loadOp)
+{
+    auto finalLayout = generateColorFinalLayout(texture);
+    return loadOp == LoadOp::kLoad ? finalLayout : texture->getCurrentLayout();
+}
 
-        layout = downcast(renderView->getTexture())->getFinalLayout();
-    }
+VkImageLayout generateDepthStencilFinalLayout(VulkanTexture* texture)
+{
+    return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+}
 
-    return layout;
+VkImageLayout generateDepthStencilInitialLayout(VulkanTexture* texture, LoadOp depthLoadOp)
+{
+    auto finalLayout = generateDepthStencilFinalLayout(texture);
+    return depthLoadOp == LoadOp::kLoad ? finalLayout : texture->getCurrentLayout();
 }
 
 std::vector<VkClearValue> generateClearColor(const RenderPassEncoderDescriptor& descriptor)
@@ -89,34 +97,34 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
 
     for (const auto& colorAttachment : descriptor.colorAttachments)
     {
-        const auto texture = downcast(colorAttachment.renderView->getTexture());
+        const auto vulkanRenderTexture = downcast(colorAttachment.renderView->getTexture());
 
         VkAttachmentDescription renderAttachment{};
-        renderAttachment.format = ToVkFormat(texture->getFormat());
+        renderAttachment.format = ToVkFormat(vulkanRenderTexture->getFormat());
         renderAttachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
         renderAttachment.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-        renderAttachment.samples = ToVkSampleCountFlagBits(colorAttachment.renderView->getTexture()->getSampleCount());
+        renderAttachment.samples = ToVkSampleCountFlagBits(vulkanRenderTexture->getSampleCount());
         renderAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         renderAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        renderAttachment.initialLayout = generateInitialLayout(colorAttachment);
-        renderAttachment.finalLayout = texture->getFinalLayout();
+        renderAttachment.initialLayout = generateColorInitialLayout(vulkanRenderTexture, colorAttachment.loadOp);
+        renderAttachment.finalLayout = generateColorFinalLayout(vulkanRenderTexture);
 
         RenderPassColorAttachment renderPassColorAttachment{};
         renderPassColorAttachment.renderAttachment = renderAttachment;
 
         if (colorAttachment.resolveView)
         {
-            const auto texture = downcast(colorAttachment.resolveView->getTexture());
+            const auto vulkanResolveTexture = downcast(colorAttachment.resolveView->getTexture());
 
             VkAttachmentDescription resolveAttachment{};
-            resolveAttachment.format = ToVkFormat(texture->getFormat());
+            resolveAttachment.format = ToVkFormat(vulkanResolveTexture->getFormat());
             resolveAttachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
             resolveAttachment.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
             resolveAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             resolveAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             resolveAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
-            resolveAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            resolveAttachment.initialLayout = generateColorInitialLayout(vulkanResolveTexture, colorAttachment.loadOp);
+            resolveAttachment.finalLayout = generateColorFinalLayout(vulkanResolveTexture);
 
             renderPassColorAttachment.resolveAttachment = resolveAttachment;
         }
@@ -128,17 +136,17 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     {
         auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
 
-        const auto texture = downcast(depthStencilAttachment.textureView->getTexture());
+        const auto vulkanTexture = downcast(depthStencilAttachment.textureView->getTexture());
 
         VkAttachmentDescription attachment{};
-        attachment.format = ToVkFormat(texture->getFormat());
+        attachment.format = ToVkFormat(vulkanTexture->getFormat());
         attachment.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
         attachment.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
         attachment.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
         attachment.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
-        attachment.samples = ToVkSampleCountFlagBits(depthStencilAttachment.textureView->getTexture()->getSampleCount());
-        attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachment.samples = ToVkSampleCountFlagBits(vulkanTexture->getSampleCount());
+        attachment.initialLayout = generateDepthStencilInitialLayout(vulkanTexture, depthStencilAttachment.depthLoadOp);
+        attachment.finalLayout = generateDepthStencilFinalLayout(vulkanTexture);
 
         vkdescriptor.depthStencilAttachment = attachment;
     }
@@ -246,22 +254,15 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
 }
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor)
-    : VulkanRenderPassEncoder(commandEncoder, generateVulkanRenderPassEncoderDescriptor(commandEncoder->getDevice(), descriptor))
-{
-}
-
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const VulkanRenderPassEncoderDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
     , m_descriptor(descriptor)
 {
     BeginRenderPassCommand command{
         { .type = CommandType::kBeginRenderPass },
-        .renderPass = descriptor.renderPass,
-        .framebuffer = descriptor.framebuffer,
-        .renderArea = descriptor.renderArea,
-        .clearValues = descriptor.clearValues,
+        .colorAttachments = descriptor.colorAttachments,
+        .depthStencilAttachment = descriptor.depthStencilAttachment,
         .occlusionQuerySet = descriptor.occlusionQuerySet,
-        .timestampWrites = descriptor.timestampWrites
+        .timestampWrites = descriptor.timestampWrites,
     };
 
     m_commandEncoder->addCommand(std::make_unique<BeginRenderPassCommand>(std::move(command)));

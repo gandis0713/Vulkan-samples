@@ -78,6 +78,21 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
 
     // all resources in a render pass should be synchronized before the render pass
     sync();
+
+    // create render pass and framebuffer after synchronization
+    {
+        RenderPassEncoderDescriptor descriptor{};
+        descriptor.colorAttachments = command->colorAttachments;
+        descriptor.depthStencilAttachment = command->depthStencilAttachment;
+        descriptor.occlusionQuerySet = command->occlusionQuerySet;
+        descriptor.timestampWrites = command->timestampWrites;
+
+        auto vkdescriptor = generateVulkanRenderPassEncoderDescriptor(m_commandRecorder->getCommandBuffer()->getDevice(), descriptor);
+        command->renderPass = vkdescriptor.renderPass;
+        command->framebuffer = vkdescriptor.framebuffer;
+        command->renderArea = vkdescriptor.renderArea;
+        command->clearValues = vkdescriptor.clearValues;
+    }
 }
 
 void VulkanCommandResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)

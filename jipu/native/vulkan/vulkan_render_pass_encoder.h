@@ -36,7 +36,6 @@ class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 public:
     VulkanRenderPassEncoder() = delete;
     VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor);
-    VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
@@ -81,7 +80,7 @@ private:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-    const VulkanRenderPassEncoderDescriptor m_descriptor{};
+    const RenderPassEncoderDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
