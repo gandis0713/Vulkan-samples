@@ -23,14 +23,6 @@ VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanComma
 void VulkanCommandResourceSynchronizer::beginComputePass(BeginComputePassCommand* command)
 {
     increaseOperationIndex();
-
-    // sync
-    //   Synchronization could be attempted in the dispatch function,
-    //   but since the tracker has already collected the src and dst resources for each pass,
-    //   synchronization is performed at the beginning of the pass.
-    {
-        sync();
-    }
 }
 
 void VulkanCommandResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* command)
@@ -45,7 +37,7 @@ void VulkanCommandResourceSynchronizer::setComputeBindGroup(SetBindGroupCommand*
 
 void VulkanCommandResourceSynchronizer::dispatch(DispatchCommand* command)
 {
-    // do nothing.
+    sync();
 }
 
 void VulkanCommandResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
@@ -63,9 +55,8 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
     increaseOperationIndex();
 
     // sync
-    //   Synchronization could be attempted in the draw function,
-    //   but since the tracker has already collected the src and dst resources for each pass,
-    //   synchronization is performed at the beginning of the pass.
+    //   Synchronization must be attempted in the beginRenderPass function,
+    //   Vulkan has limitations on using pipeline barriers within a render pass.
     {
         sync();
     }
