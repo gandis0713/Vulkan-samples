@@ -172,6 +172,8 @@ void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
 
 void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* command)
 {
+    m_commandResourceSyncronizer.setComputePipeline(command);
+
     m_computePipeline = downcast(command->pipeline);
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
@@ -219,11 +221,15 @@ void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 
 void VulkanCommandRecorder::dispatchIndirect(DispatchIndirectCommand* command)
 {
+    m_commandResourceSyncronizer.dispatchIndirect(command);
+
     // TODO: dispatch indirect
 }
 
 void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 {
+    m_commandResourceSyncronizer.endComputePass(command);
+
     // do nothing.
 }
 
@@ -266,6 +272,8 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 
 void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
 {
+    m_commandResourceSyncronizer.setRenderPipeline(command);
+
     m_renderPipeline = downcast(command->pipeline);
 
     m_commandBuffer->getDevice()->vkAPI.CmdBindPipeline(m_commandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipeline->getVkPipeline());
@@ -296,6 +304,8 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
 
 void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
 {
+    m_commandResourceSyncronizer.setVertexBuffer(command);
+
     auto slot = command->slot;
     auto buffer = command->buffer;
 
@@ -307,6 +317,8 @@ void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
 
 void VulkanCommandRecorder::setIndexBuffer(SetIndexBufferCommand* command)
 {
+    m_commandResourceSyncronizer.setIndexBuffer(command);
+
     auto buffer = command->buffer;
     auto format = command->format;
 
@@ -316,6 +328,8 @@ void VulkanCommandRecorder::setIndexBuffer(SetIndexBufferCommand* command)
 
 void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
 {
+    m_commandResourceSyncronizer.setViewport(command);
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
@@ -334,6 +348,8 @@ void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
 
 void VulkanCommandRecorder::setScissor(SetScissorCommand* command)
 {
+    m_commandResourceSyncronizer.setScissor(command);
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
@@ -350,6 +366,8 @@ void VulkanCommandRecorder::setScissor(SetScissorCommand* command)
 
 void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 {
+    m_commandResourceSyncronizer.setBlendConstant(command);
+
     auto color = command->color;
 
     float blendConstants[4] = { static_cast<float>(color.r),
@@ -362,6 +380,9 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 
 void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
 {
+    // do not call executeBundle in command resource synchronizer.
+    // it is called in each command function.
+
     for (auto& renderBundle : command->renderBundles)
     {
         auto vulkanRenderBundle = downcast(renderBundle);
@@ -404,6 +425,8 @@ void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
 
 void VulkanCommandRecorder::draw(DrawCommand* command)
 {
+    m_commandResourceSyncronizer.draw(command);
+
     auto vertexCount = command->vertexCount;
     auto instanceCount = command->instanceCount;
     auto firstVertex = command->firstVertex;
@@ -414,6 +437,8 @@ void VulkanCommandRecorder::draw(DrawCommand* command)
 
 void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 {
+    m_commandResourceSyncronizer.drawIndexed(command);
+
     auto indexCount = command->indexCount;
     auto instanceCount = command->instanceCount;
     auto indexOffset = command->indexOffset;
@@ -430,11 +455,11 @@ void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 
 void VulkanCommandRecorder::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
 {
+    m_commandResourceSyncronizer.beginOcclusionQuery(command);
+
     auto queryIndex = command->queryIndex;
     auto querySet = command->querySet;
-
     auto vulkanOcclusionQuerySet = downcast(querySet);
-
     auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
     vkAPI.CmdBeginQuery(m_commandBuffer->getVkCommandBuffer(),
                         vulkanOcclusionQuerySet->getVkQueryPool(),
@@ -444,12 +469,11 @@ void VulkanCommandRecorder::beginOcclusionQuery(BeginOcclusionQueryCommand* comm
 
 void VulkanCommandRecorder::endOcclusionQuery(EndOcclusionQueryCommand* command)
 {
+    m_commandResourceSyncronizer.endOcclusionQuery(command);
+
     auto querySet = command->querySet;
-
     auto vulkanOcclusionQuerySet = downcast(querySet);
-
     auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
-
     vkAPI.CmdEndQuery(m_commandBuffer->getVkCommandBuffer(),
                       vulkanOcclusionQuerySet->getVkQueryPool(),
                       0);
@@ -457,6 +481,7 @@ void VulkanCommandRecorder::endOcclusionQuery(EndOcclusionQueryCommand* command)
 
 void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
 {
+    m_commandResourceSyncronizer.endRenderPass(command);
 
     const auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
     vkAPI.CmdEndRenderPass(m_commandBuffer->getVkCommandBuffer());
@@ -473,6 +498,8 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
+    m_commandResourceSyncronizer.copyBufferToBuffer(command);
+
     auto& src = command->src;
     auto& dst = command->dst;
     auto& size = command->size;
@@ -492,6 +519,8 @@ void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* comman
 
 void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* command)
 {
+    m_commandResourceSyncronizer.copyBufferToTexture(command);
+
     auto& buffer = command->buffer;
     auto& texture = command->texture;
     auto& extent = command->extent;
@@ -584,6 +613,8 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
 
 void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* command)
 {
+    m_commandResourceSyncronizer.copyTextureToBuffer(command);
+
     auto& texture = command->texture;
     auto& buffer = command->buffer;
     auto& extent = command->extent;
@@ -666,6 +697,8 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
 
 void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* command)
 {
+    m_commandResourceSyncronizer.copyTextureToTexture(command);
+
     auto& src = command->src;
     auto& dst = command->dst;
     auto& extent = command->extent;
@@ -819,6 +852,8 @@ void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* co
 
 void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
 {
+    m_commandResourceSyncronizer.resolveQuerySet(command);
+
     auto querySet = command->querySet;
     auto firstQuery = command->firstQuery;
     auto destination = command->destination;
