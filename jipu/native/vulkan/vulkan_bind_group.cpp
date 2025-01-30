@@ -76,18 +76,12 @@ VulkanBindGroupDescriptor generateVulkanBindGroupDescriptor(const BindGroupDescr
             {
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
             }
-            else if (stageFlags & VK_SHADER_STAGE_VERTEX_BIT)
+            else if (stageFlags & VK_SHADER_STAGE_VERTEX_BIT || stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT)
             {
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            }
-            else if (stageFlags & VK_SHADER_STAGE_FRAGMENT_BIT)
-            {
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                if (vulkanTexture->getFormat() == TextureFormat::kDepth32Float)
-                {
+                if (vulkanTexture->isDepthStencil())
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-                }
+                else
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
         }
 
