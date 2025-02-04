@@ -23,12 +23,6 @@ std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const R
     return std::make_unique<VulkanRenderPassEncoder>(this, descriptor);
 }
 
-std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor)
-{
-    // TODO: encode begin render pass command
-    return std::make_unique<VulkanRenderPassEncoder>(this, descriptor);
-}
-
 void VulkanCommandEncoder::copyBufferToBuffer(const CopyBuffer& src, const CopyBuffer& dst, uint64_t size)
 {
     CopyBufferToBufferCommand command{

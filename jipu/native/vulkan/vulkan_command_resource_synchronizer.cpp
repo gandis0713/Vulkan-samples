@@ -32,17 +32,7 @@ void VulkanCommandResourceSynchronizer::setComputePipeline(SetComputePipelineCom
 
 void VulkanCommandResourceSynchronizer::setComputeBindGroup(SetBindGroupCommand* command)
 {
-    auto bufferBindings = command->bindGroup->getBufferBindings();
-    for (auto& bufferBinding : bufferBindings)
-    {
-        m_activatedDstResource.buffers.insert(bufferBinding.buffer);
-    }
-
-    auto textureBindings = command->bindGroup->getTextureBindings();
-    for (auto& textureBinding : textureBindings)
-    {
-        m_activatedDstResource.textureViews.insert(textureBinding.textureView);
-    }
+    // do nothing.
 }
 
 void VulkanCommandResourceSynchronizer::dispatch(DispatchCommand* command)
@@ -52,7 +42,7 @@ void VulkanCommandResourceSynchronizer::dispatch(DispatchCommand* command)
 
 void VulkanCommandResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
 {
-    // TODO
+    // do nothing.
 }
 
 void VulkanCommandResourceSynchronizer::endComputePass(EndComputePassCommand* command)
@@ -64,20 +54,25 @@ void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* 
 {
     increaseOperationIndex();
 
-    // all dst buffer resources in a render pass are active
-    for (auto& [buffer, _] : m_operationResourceInfos[currentOperationIndex()].dst.buffers)
+    // sync
+    //   Synchronization must be attempted in the beginRenderPass function,
+    //   Vulkan has limitations on using pipeline barriers within a render pass.
     {
-        m_activatedDstResource.buffers.insert(buffer);
+        sync();
     }
 
-    // all dst texture resources in a render pass are active
-    for (auto& [texture, _] : m_operationResourceInfos[currentOperationIndex()].dst.textureViews)
+    // create render pass and framebuffer after synchronization
     {
-        m_activatedDstResource.textureViews.insert(texture);
-    }
+        auto vulkanDevice = m_commandRecorder->getCommandBuffer()->getDevice();
+        auto vulkanRenderPass = vulkanDevice->getRenderPass(generateVulkanRenderPassDescriptor(command->colorAttachments, command->depthStencilAttachment));
+        auto vulkanFramebuffer = vulkanDevice->getFrameBuffer(generateVulkanFramebufferDescriptor(vulkanRenderPass, command->colorAttachments, command->depthStencilAttachment));
 
-    // all resources in a render pass should be synchronized before the render pass
-    sync();
+        command->renderPass = vulkanRenderPass;
+        command->framebuffer = vulkanFramebuffer;
+        command->renderArea.offset = { 0, 0 };
+        command->renderArea.extent = { vulkanFramebuffer->getWidth(), vulkanFramebuffer->getHeight() };
+        command->clearValues = generateClearColor(command->colorAttachments, command->depthStencilAttachment);
+    }
 }
 
 void VulkanCommandResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
@@ -137,17 +132,7 @@ void VulkanCommandResourceSynchronizer::endRenderPass(EndRenderPassCommand* comm
 
 void VulkanCommandResourceSynchronizer::setRenderBindGroup(SetBindGroupCommand* command)
 {
-    auto bufferBindings = command->bindGroup->getBufferBindings();
-    for (auto& bufferBinding : bufferBindings)
-    {
-        m_activatedDstResource.buffers.insert(bufferBinding.buffer);
-    }
-
-    auto textureBindings = command->bindGroup->getTextureBindings();
-    for (auto& textureBinding : textureBindings)
-    {
-        m_activatedDstResource.textureViews.insert(textureBinding.textureView);
-    }
+    // do nothing.
 }
 
 void VulkanCommandResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
@@ -178,30 +163,6 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
 ResourceSyncResult VulkanCommandResourceSynchronizer::finish()
 {
     return ResourceSyncResult{ .notSyncedOperationResourceInfos = m_operationResourceInfos };
-}
-
-void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
-{
-    auto& srcStageMask = barrier.srcStageMask;
-    auto& dstStageMask = barrier.dstStageMask;
-    auto& dependencyFlags = barrier.dependencyFlags;
-    auto& memoryBarriers = barrier.memoryBarriers;
-    auto& bufferMemoryBarriers = barrier.bufferMemoryBarriers;
-    auto& imageMemoryBarriers = barrier.imageMemoryBarriers;
-
-    auto vulkanDevice = m_commandRecorder->getCommandBuffer()->getDevice();
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    vkAPI.CmdPipelineBarrier(m_commandRecorder->getCommandBuffer()->getVkCommandBuffer(),
-                             srcStageMask,
-                             dstStageMask,
-                             dependencyFlags,
-                             static_cast<uint32_t>(memoryBarriers.size()),
-                             memoryBarriers.data(),
-                             static_cast<uint32_t>(memoryBarriers.size()),
-                             bufferMemoryBarriers.data(),
-                             static_cast<uint32_t>(memoryBarriers.size()),
-                             imageMemoryBarriers.data());
 }
 
 bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
@@ -295,30 +256,27 @@ void VulkanCommandResourceSynchronizer::sync()
         auto buffer = it->first;
         auto dstBufferUsageInfo = it->second;
 
-        if (m_activatedDstResource.buffers.contains(buffer))
+        if (findSrcBuffer(buffer))
         {
-            if (findSrcBuffer(buffer))
-            {
-                auto vulkanBuffer = downcast(buffer);
-                auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer); // extract src resource
+            auto vulkanBuffer = downcast(buffer);
+            auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer); // extract src resource
 
-                VkBufferMemoryBarrier bufferMemoryBarrier{
-                    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                    .pNext = nullptr,
-                    .srcAccessMask = srcBufferUsageInfo.accessFlags,
-                    .dstAccessMask = dstBufferUsageInfo.accessFlags,
-                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .buffer = vulkanBuffer->getVkBuffer(),
-                    .offset = 0,
-                    .size = VK_WHOLE_SIZE,
-                };
+            VkBufferMemoryBarrier bufferMemoryBarrier{
+                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = srcBufferUsageInfo.accessFlags,
+                .dstAccessMask = dstBufferUsageInfo.accessFlags,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer = vulkanBuffer->getVkBuffer(),
+                .offset = 0,
+                .size = VK_WHOLE_SIZE,
+            };
 
-                it = currentDstOperationBuffers.erase(it); // extract dst resource
+            it = currentDstOperationBuffers.erase(it); // extract dst resource
 
-                vulkanBuffer->cmdPipelineBarrier(commandBuffer, srcBufferUsageInfo.stageFlags, dstBufferUsageInfo.stageFlags, bufferMemoryBarrier);
-                continue;
-            }
+            vulkanBuffer->cmdPipelineBarrier(commandBuffer, srcBufferUsageInfo.stageFlags, dstBufferUsageInfo.stageFlags, bufferMemoryBarrier);
+            continue;
         }
 
         ++it; // increase iterator
@@ -331,19 +289,47 @@ void VulkanCommandResourceSynchronizer::sync()
         auto textureView = it->first;
         auto dstTextureUsageInfo = it->second;
 
-        if (m_activatedDstResource.textureViews.contains(textureView))
+        if (findSrcTextureView(textureView))
         {
-            if (findSrcTextureView(textureView))
-            {
-                auto srcTextureUsageInfo = extractSrcTextureUsageInfo(textureView);
+            auto srcTextureUsageInfo = extractSrcTextureUsageInfo(textureView);
 
-                auto vulkanTexture = downcast(textureView->getTexture());
+            auto vulkanTexture = downcast(textureView->getTexture());
+            VkImageMemoryBarrier imageMemoryBarrier{
+                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = srcTextureUsageInfo.accessFlags,
+                .dstAccessMask = dstTextureUsageInfo.accessFlags,
+                .oldLayout = srcTextureUsageInfo.layout,
+                .newLayout = dstTextureUsageInfo.layout,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = vulkanTexture->getVkImage(),
+                .subresourceRange = {
+                    .aspectMask = ToVkImageAspectFlags(downcast(textureView)->getAspect()),
+                    .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
+                    .levelCount = dstTextureUsageInfo.mipLevelCount,
+                    .baseArrayLayer = dstTextureUsageInfo.baseArrayLayer,
+                    .layerCount = dstTextureUsageInfo.arrayLayerCount,
+                },
+            };
+
+            it = currentDstOperationTextureViews.erase(it); // extract dst resource
+
+            vulkanTexture->cmdPipelineBarrier(commandBuffer, srcTextureUsageInfo.stageFlags, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
+            continue;
+        }
+        else // TODO: image layout
+        {
+            auto vulkanTexture = downcast(textureView->getTexture());
+            if (vulkanTexture->getCurrentLayout(dstTextureUsageInfo.baseMipLevel) == VK_IMAGE_LAYOUT_UNDEFINED && vulkanTexture->getOwner() != VulkanTextureOwner::kSwapchain)
+            {
+
                 VkImageMemoryBarrier imageMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
-                    .srcAccessMask = srcTextureUsageInfo.accessFlags,
+                    .srcAccessMask = VK_ACCESS_NONE,
                     .dstAccessMask = dstTextureUsageInfo.accessFlags,
-                    .oldLayout = srcTextureUsageInfo.layout,
+                    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                     .newLayout = dstTextureUsageInfo.layout,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -357,46 +343,12 @@ void VulkanCommandResourceSynchronizer::sync()
                     },
                 };
 
-                it = currentDstOperationTextureViews.erase(it); // extract dst resource
-
-                vulkanTexture->cmdPipelineBarrier(commandBuffer, srcTextureUsageInfo.stageFlags, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
-                continue;
-            }
-            else // TODO: image layout
-            {
-                auto vulkanTexture = downcast(textureView->getTexture());
-                if (vulkanTexture->getCurrentLayout(dstTextureUsageInfo.baseMipLevel) == VK_IMAGE_LAYOUT_UNDEFINED && vulkanTexture->getOwner() != VulkanTextureOwner::kSwapchain)
-                {
-
-                    VkImageMemoryBarrier imageMemoryBarrier{
-                        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                        .pNext = nullptr,
-                        .srcAccessMask = VK_ACCESS_NONE,
-                        .dstAccessMask = dstTextureUsageInfo.accessFlags,
-                        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                        .newLayout = dstTextureUsageInfo.layout,
-                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .image = vulkanTexture->getVkImage(),
-                        .subresourceRange = {
-                            .aspectMask = ToVkImageAspectFlags(downcast(textureView)->getAspect()),
-                            .baseMipLevel = dstTextureUsageInfo.baseMipLevel,
-                            .levelCount = dstTextureUsageInfo.mipLevelCount,
-                            .baseArrayLayer = dstTextureUsageInfo.baseArrayLayer,
-                            .layerCount = dstTextureUsageInfo.arrayLayerCount,
-                        },
-                    };
-
-                    vulkanTexture->cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
-                }
+                vulkanTexture->cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, dstTextureUsageInfo.stageFlags, imageMemoryBarrier);
             }
         }
 
         ++it; // increase iterator
     }
-
-    // clear active resource
-    m_activatedDstResource.clear();
 }
 
 } // namespace jipu

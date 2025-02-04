@@ -80,6 +80,7 @@ public:
     void cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
     VulkanTextureOwner getOwner() const;
+    bool isDepthStencil() const;
 
 protected:
     VulkanDevice* m_device = nullptr;

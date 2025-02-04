@@ -172,6 +172,8 @@ void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
 
 void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* command)
 {
+    m_commandResourceSyncronizer.setComputePipeline(command);
+
     m_computePipeline = downcast(command->pipeline);
 
     const VulkanAPI& vkAPI = m_commandBuffer->getDevice()->vkAPI;
@@ -219,11 +221,15 @@ void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 
 void VulkanCommandRecorder::dispatchIndirect(DispatchIndirectCommand* command)
 {
+    m_commandResourceSyncronizer.dispatchIndirect(command);
+
     // TODO: dispatch indirect
 }
 
 void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 {
+    m_commandResourceSyncronizer.endComputePass(command);
+
     // do nothing.
 }
 
@@ -266,6 +272,8 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 
 void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
 {
+    m_commandResourceSyncronizer.setRenderPipeline(command);
+
     m_renderPipeline = downcast(command->pipeline);
 
     m_commandBuffer->getDevice()->vkAPI.CmdBindPipeline(m_commandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipeline->getVkPipeline());
@@ -296,6 +304,8 @@ void VulkanCommandRecorder::setRenderBindGroup(SetBindGroupCommand* command)
 
 void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
 {
+    m_commandResourceSyncronizer.setVertexBuffer(command);
+
     auto slot = command->slot;
     auto buffer = command->buffer;
 
@@ -307,6 +317,8 @@ void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
 
 void VulkanCommandRecorder::setIndexBuffer(SetIndexBufferCommand* command)
 {
+    m_commandResourceSyncronizer.setIndexBuffer(command);
+
     auto buffer = command->buffer;
     auto format = command->format;
 
@@ -316,6 +328,8 @@ void VulkanCommandRecorder::setIndexBuffer(SetIndexBufferCommand* command)
 
 void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
 {
+    m_commandResourceSyncronizer.setViewport(command);
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
@@ -334,6 +348,8 @@ void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
 
 void VulkanCommandRecorder::setScissor(SetScissorCommand* command)
 {
+    m_commandResourceSyncronizer.setScissor(command);
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
@@ -350,6 +366,8 @@ void VulkanCommandRecorder::setScissor(SetScissorCommand* command)
 
 void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 {
+    m_commandResourceSyncronizer.setBlendConstant(command);
+
     auto color = command->color;
 
     float blendConstants[4] = { static_cast<float>(color.r),
@@ -362,6 +380,9 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 
 void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
 {
+    // do not call executeBundle in command resource synchronizer.
+    // it is called in each command function.
+
     for (auto& renderBundle : command->renderBundles)
     {
         auto vulkanRenderBundle = downcast(renderBundle);
@@ -404,6 +425,8 @@ void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
 
 void VulkanCommandRecorder::draw(DrawCommand* command)
 {
+    m_commandResourceSyncronizer.draw(command);
+
     auto vertexCount = command->vertexCount;
     auto instanceCount = command->instanceCount;
     auto firstVertex = command->firstVertex;
@@ -414,6 +437,8 @@ void VulkanCommandRecorder::draw(DrawCommand* command)
 
 void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 {
+    m_commandResourceSyncronizer.drawIndexed(command);
+
     auto indexCount = command->indexCount;
     auto instanceCount = command->instanceCount;
     auto indexOffset = command->indexOffset;
@@ -430,11 +455,11 @@ void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 
 void VulkanCommandRecorder::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
 {
+    m_commandResourceSyncronizer.beginOcclusionQuery(command);
+
     auto queryIndex = command->queryIndex;
     auto querySet = command->querySet;
-
     auto vulkanOcclusionQuerySet = downcast(querySet);
-
     auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
     vkAPI.CmdBeginQuery(m_commandBuffer->getVkCommandBuffer(),
                         vulkanOcclusionQuerySet->getVkQueryPool(),
@@ -444,12 +469,11 @@ void VulkanCommandRecorder::beginOcclusionQuery(BeginOcclusionQueryCommand* comm
 
 void VulkanCommandRecorder::endOcclusionQuery(EndOcclusionQueryCommand* command)
 {
+    m_commandResourceSyncronizer.endOcclusionQuery(command);
+
     auto querySet = command->querySet;
-
     auto vulkanOcclusionQuerySet = downcast(querySet);
-
     auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
-
     vkAPI.CmdEndQuery(m_commandBuffer->getVkCommandBuffer(),
                       vulkanOcclusionQuerySet->getVkQueryPool(),
                       0);
@@ -457,6 +481,7 @@ void VulkanCommandRecorder::endOcclusionQuery(EndOcclusionQueryCommand* command)
 
 void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
 {
+    m_commandResourceSyncronizer.endRenderPass(command);
 
     const auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
     vkAPI.CmdEndRenderPass(m_commandBuffer->getVkCommandBuffer());
@@ -473,6 +498,8 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
+    m_commandResourceSyncronizer.copyBufferToBuffer(command);
+
     auto& src = command->src;
     auto& dst = command->dst;
     auto& size = command->size;
@@ -492,6 +519,8 @@ void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* comman
 
 void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* command)
 {
+    m_commandResourceSyncronizer.copyBufferToTexture(command);
+
     auto& buffer = command->buffer;
     auto& texture = command->texture;
     auto& extent = command->extent;
@@ -560,98 +589,6 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
                                1,
                                &region);
 
-    // if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
-    // {
-    //     VkImage image = vulkanTexture->getVkImage();
-
-    //     int32_t width = static_cast<int32_t>(texture.texture->getWidth());
-    //     int32_t height = static_cast<int32_t>(texture.texture->getHeight());
-    //     for (uint32_t i = 1; i < mipLevels; ++i)
-    //     {
-
-    //         auto srcCurrentMipLevel = i - 1;
-    //         auto dstCurrentMipLevel = i;
-    //         auto srcCurrentLayout = vulkanTexture->getCurrentLayout(srcCurrentMipLevel);
-    //         auto dstCurrentLayout = vulkanTexture->getCurrentLayout(dstCurrentMipLevel);
-    //         // change layout
-    //         {
-    //             VkImageSubresourceRange srcSubresourceRange{};
-    //             srcSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //             srcSubresourceRange.baseMipLevel = srcCurrentMipLevel;
-    //             srcSubresourceRange.levelCount = 1;
-    //             srcSubresourceRange.baseArrayLayer = 0;
-    //             srcSubresourceRange.layerCount = 1;
-
-    //             VkImageMemoryBarrier barrier{};
-    //             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    //             barrier.pNext = VK_NULL_HANDLE;
-    //             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    //             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    //             barrier.oldLayout = srcCurrentLayout;
-    //             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    //             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.image = vulkanTexture->getVkImage();
-    //             barrier.subresourceRange = srcSubresourceRange;
-
-    //             VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    //             VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-    //             vulkanTexture->cmdPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
-    //         }
-
-    //         VkImageBlit blit{};
-    //         blit.srcOffsets[0] = { 0, 0, 0 };
-    //         blit.srcOffsets[1] = { width, height, 1 };
-    //         blit.srcSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //         blit.srcSubresource.mipLevel = srcCurrentMipLevel;
-    //         blit.srcSubresource.baseArrayLayer = 0;
-    //         blit.srcSubresource.layerCount = 1;
-    //         blit.dstOffsets[0] = { 0, 0, 0 };
-    //         blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
-    //         blit.dstSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //         blit.dstSubresource.mipLevel = dstCurrentMipLevel;
-    //         blit.dstSubresource.baseArrayLayer = 0;
-    //         blit.dstSubresource.layerCount = 1;
-
-    //         vkAPI.CmdBlitImage(commandBuffer,
-    //                            image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-    //                            image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    //                            1, &blit,
-    //                            VK_FILTER_LINEAR);
-
-    //         // restore layout
-    //         {
-    //             VkImageSubresourceRange dstSubresourceRange{};
-    //             dstSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
-    //             dstSubresourceRange.baseMipLevel = dstCurrentMipLevel;
-    //             dstSubresourceRange.levelCount = 1;
-    //             dstSubresourceRange.baseArrayLayer = 0;
-    //             dstSubresourceRange.layerCount = 1;
-
-    //             VkImageMemoryBarrier barrier{};
-    //             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    //             barrier.pNext = VK_NULL_HANDLE;
-    //             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-    //             barrier.dstAccessMask = VK_ACCESS_NONE;
-    //             barrier.oldLayout = dstCurrentLayout;
-    //             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    //             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    //             barrier.image = vulkanTexture->getVkImage();
-    //             barrier.subresourceRange = dstSubresourceRange;
-
-    //             VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    //             VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-    //             vulkanTexture->cmdPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
-    //         }
-
-    //         width = std::max(width >> 1, 1);
-    //         height = std::max(height >> 1, 1);
-    //     }
-    // }
-
     // restore layout
     // TODO: restore layout if need to use the texture in the next command.
     {
@@ -676,6 +613,8 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
 
 void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* command)
 {
+    m_commandResourceSyncronizer.copyTextureToBuffer(command);
+
     auto& texture = command->texture;
     auto& buffer = command->buffer;
     auto& extent = command->extent;
@@ -731,6 +670,7 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
         vulkanTexture->cmdPipelineBarrier(m_commandBuffer->getVkCommandBuffer(), srcStage, dstStage, barrier);
     }
 
+    // copy texture to buffer
     vkAPI.CmdCopyImageToBuffer(m_commandBuffer->getVkCommandBuffer(), srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstBuffer, 1, &region);
 
     // restore layout
@@ -757,6 +697,8 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
 
 void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* command)
 {
+    m_commandResourceSyncronizer.copyTextureToTexture(command);
+
     auto& src = command->src;
     auto& dst = command->dst;
     auto& extent = command->extent;
@@ -910,6 +852,8 @@ void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* co
 
 void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
 {
+    m_commandResourceSyncronizer.resolveQuerySet(command);
+
     auto querySet = command->querySet;
     auto firstQuery = command->firstQuery;
     auto destination = command->destination;

@@ -17,26 +17,11 @@ class VulkanDevice;
 class VulkanRenderPass;
 class VulkanFramebuffer;
 class VulkanCommandEncoder;
-
-struct VulkanRenderPassEncoderDescriptor
-{
-    const void* next = nullptr;
-    std::weak_ptr<VulkanRenderPass> renderPass{};
-    std::weak_ptr<VulkanFramebuffer> framebuffer{};
-    VkRect2D renderArea{};
-    std::vector<VkClearValue> clearValues{};
-
-    // TODO: convert timestampWrites for vulkan.
-    QuerySet* occlusionQuerySet = nullptr;
-    RenderPassTimestampWrites timestampWrites{};
-};
-
 class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
     VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor);
-    VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
@@ -81,14 +66,18 @@ private:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
-    const VulkanRenderPassEncoderDescriptor m_descriptor{};
+    const RenderPassEncoderDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
 // Generate Helper
-VulkanRenderPassDescriptor VULKAN_EXPORT generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
-VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(std::shared_ptr<VulkanRenderPass> renderPass, const RenderPassEncoderDescriptor& descriptor);
-VulkanRenderPassEncoderDescriptor VULKAN_EXPORT generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor);
+VulkanRenderPassDescriptor VULKAN_EXPORT generateVulkanRenderPassDescriptor(const std::vector<ColorAttachment>& colorAttachments,
+                                                                            const std::optional<DepthStencilAttachment>& depthStencilAttachment);
+VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(std::shared_ptr<VulkanRenderPass> renderPass,
+                                                                              const std::vector<ColorAttachment>& colorAttachments,
+                                                                              const std::optional<DepthStencilAttachment>& depthStencilAttachment);
+std::vector<VkClearValue> generateClearColor(const std::vector<ColorAttachment>& colorAttachments,
+                                             const std::optional<DepthStencilAttachment>& depthStencilAttachment);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

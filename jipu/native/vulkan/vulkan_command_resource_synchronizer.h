@@ -83,33 +83,9 @@ private:
     void sync();
 
 private:
-    struct PipelineBarrier
-    {
-        VkPipelineStageFlags srcStageMask;
-        VkPipelineStageFlags dstStageMask;
-        VkDependencyFlags dependencyFlags;
-        std::vector<VkMemoryBarrier> memoryBarriers{};
-        std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers{};
-        std::vector<VkImageMemoryBarrier> imageMemoryBarriers{};
-    };
-
-    void cmdPipelineBarrier(const PipelineBarrier& barrier);
-
-private:
     VulkanCommandRecorder* m_commandRecorder = nullptr;
     std::vector<OperationResourceInfo> m_operationResourceInfos{};
     int32_t m_currentOperationIndex = -1;
-
-    struct
-    {
-        std::unordered_set<Buffer*> buffers{};
-        std::unordered_set<TextureView*> textureViews{};
-        void clear()
-        {
-            buffers.clear();
-            textureViews.clear();
-        }
-    } m_activatedDstResource;
 };
 
 } // namespace jipu

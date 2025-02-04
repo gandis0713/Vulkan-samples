@@ -30,6 +30,7 @@ public: // for information about bind group layout.
     const std::vector<BufferBindingLayout>& getBufferLayouts() const;
     const std::vector<SamplerBindingLayout>& getSamplerLayouts() const;
     const std::vector<TextureBindingLayout>& getTextureLayouts() const;
+    const std::vector<StorageTextureBindingLayout>& getStorageTextureLayouts() const;
 
 public:
     VkDescriptorSet getVkDescriptorSet() const;

@@ -56,9 +56,6 @@ public:
     std::unique_ptr<CommandBuffer> finish(const CommandBufferDescriptor& descriptor) override;
 
 public:
-    std::unique_ptr<RenderPassEncoder> beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor);
-
-public:
     void addCommand(std::unique_ptr<Command> command);
     CommandEncodingResult extractResult();
 

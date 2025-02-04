@@ -214,6 +214,18 @@ VulkanTextureOwner VulkanTexture::getOwner() const
     return m_owner;
 }
 
+bool VulkanTexture::isDepthStencil() const
+{
+    if (m_descriptor.format == VK_FORMAT_D16_UNORM ||
+        m_descriptor.format == VK_FORMAT_D16_UNORM_S8_UINT ||
+        m_descriptor.format == VK_FORMAT_D24_UNORM_S8_UINT ||
+        m_descriptor.format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+        m_descriptor.format == VK_FORMAT_D32_SFLOAT)
+        return true;
+
+    return false;
+}
+
 // Convert Helper
 
 VkFormat ToVkFormat(TextureFormat format)
