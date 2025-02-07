@@ -85,6 +85,13 @@ private:
 private:
     VulkanRenderPipeline* m_renderPipeline = nullptr;
     VulkanComputePipeline* m_computePipeline = nullptr;
+
+private:
+    // Render Pass Information
+    std::shared_ptr<VulkanRenderPass> m_renderPass{};
+    std::shared_ptr<VulkanFramebuffer> m_framebuffer{};
+
+    bool m_isUseSecondaryBuffer = false;
 };
 
 // Generator

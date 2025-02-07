@@ -82,6 +82,8 @@ public:
     VulkanTextureOwner getOwner() const;
     bool isDepthStencil() const;
 
+    VkImageView getOrCreateVkImageView(const TextureViewDescriptor& descriptor);
+
 protected:
     VulkanDevice* m_device = nullptr;
     const VulkanTextureDescriptor m_descriptor{};
@@ -90,6 +92,8 @@ protected:
 private:
     VulkanTextureResource m_resource;
     VulkanTextureOwner m_owner;
+
+    std::unique_ptr<VulkanImageViewCache> m_imageViewCache = nullptr;
 };
 
 DOWN_CAST(VulkanTexture, Texture);

@@ -39,8 +39,11 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    for (const auto& command : m_descriptor.commandEncodingResult.commands)
+    auto commandCount = m_descriptor.commandEncodingResult.commands.size();
+
+    for (auto i = 0; i < commandCount; ++i)
     {
+        const auto& command = m_descriptor.commandEncodingResult.commands[i];
         switch (command->type)
         {
         case CommandType::kBeginComputePass:
@@ -58,9 +61,24 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
         case CommandType::kDispatchIndirect:
             dispatchIndirect(reinterpret_cast<DispatchIndirectCommand*>(command.get()));
             break;
-        case CommandType::kBeginRenderPass:
+        case CommandType::kBeginRenderPass: {
+            for (auto j = i; j < commandCount; ++j)
+            {
+                const auto& command = m_descriptor.commandEncodingResult.commands[j];
+                if (command->type == CommandType::kExecuteBundle)
+                {
+                    m_isUseSecondaryBuffer = true;
+                    break;
+                }
+
+                if (command->type == CommandType::kEndRenderPass)
+                {
+                    break;
+                }
+            }
             beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command.get()));
-            break;
+        }
+        break;
         case CommandType::kSetRenderPipeline:
             setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
             break;
@@ -99,6 +117,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
             break;
         case CommandType::kEndRenderPass:
             endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command.get()));
+
             break;
         case CommandType::kSetComputeBindGroup:
             setComputeBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
@@ -237,6 +256,26 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 {
     m_commandResourceSyncronizer.beginRenderPass(command);
 
+    // create render pass and framebuffer after synchronization.
+    // because the render pass depends on the synchronization result such as image layout.
+    VkRect2D renderArea{};
+    std::vector<VkClearValue> clearValues{};
+    {
+        auto vulkanDevice = getCommandBuffer()->getDevice();
+        auto vulkanRenderPass = vulkanDevice->getRenderPass(generateVulkanRenderPassDescriptor(command->colorAttachments, command->depthStencilAttachment));
+        auto vulkanFramebuffer = vulkanDevice->getFrameBuffer(generateVulkanFramebufferDescriptor(vulkanRenderPass, command->colorAttachments, command->depthStencilAttachment));
+
+        m_renderPass = vulkanRenderPass;
+        m_framebuffer = vulkanFramebuffer;
+
+        command->renderPass = vulkanRenderPass;
+        command->framebuffer = vulkanFramebuffer;
+
+        renderArea.offset = { 0, 0 };
+        renderArea.extent = { vulkanFramebuffer->getWidth(), vulkanFramebuffer->getHeight() };
+        clearValues = generateClearColor(command->colorAttachments, command->depthStencilAttachment);
+    }
+
     const auto& vkAPI = m_commandBuffer->getDevice()->vkAPI;
     // if (command->timestampWrites.querySet)
     // {
@@ -251,23 +290,17 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
     //                             command->timestampWrites.beginQueryIndex);
     // }
 
-    auto renderPass = command->renderPass.lock();
-    if (!renderPass)
-        throw std::runtime_error("The render pass is null for begin render pass command.");
-
-    auto framebuffer = command->framebuffer.lock();
-    if (!framebuffer)
-        throw std::runtime_error("The framebuffer is null for begin render pass command.");
-
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass->getVkRenderPass();
-    renderPassInfo.framebuffer = framebuffer->getVkFrameBuffer();
-    renderPassInfo.renderArea = command->renderArea;
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(command->clearValues.size());
-    renderPassInfo.pClearValues = command->clearValues.data();
+    renderPassInfo.renderPass = m_renderPass->getVkRenderPass();
+    renderPassInfo.framebuffer = m_framebuffer->getVkFrameBuffer();
+    renderPassInfo.renderArea = renderArea;
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
-    vkAPI.CmdBeginRenderPass(m_commandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    VkSubpassContents subpassContents = m_isUseSecondaryBuffer ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
+
+    vkAPI.CmdBeginRenderPass(m_commandBuffer->getVkCommandBuffer(), &renderPassInfo, subpassContents);
 }
 
 void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
@@ -330,6 +363,9 @@ void VulkanCommandRecorder::setViewport(SetViewportCommand* command)
 {
     m_commandResourceSyncronizer.setViewport(command);
 
+    if (m_isUseSecondaryBuffer)
+        return;
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
@@ -350,18 +386,21 @@ void VulkanCommandRecorder::setScissor(SetScissorCommand* command)
 {
     m_commandResourceSyncronizer.setScissor(command);
 
+    if (m_isUseSecondaryBuffer)
+        return;
+
     auto x = command->x;
     auto y = command->y;
     auto width = command->width;
     auto height = command->height;
 
-    VkRect2D scissorRect{};
-    scissorRect.offset.x = x;
-    scissorRect.offset.y = y;
-    scissorRect.extent.width = width;
-    scissorRect.extent.height = height;
+    VkRect2D scissor{};
+    scissor.offset.x = x;
+    scissor.offset.y = y;
+    scissor.extent.width = width;
+    scissor.extent.height = height;
 
-    m_commandBuffer->getDevice()->vkAPI.CmdSetScissor(m_commandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
+    m_commandBuffer->getDevice()->vkAPI.CmdSetScissor(m_commandBuffer->getVkCommandBuffer(), 0, 1, &scissor);
 }
 
 void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
@@ -380,46 +419,18 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 
 void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
 {
-    // do not call executeBundle in command resource synchronizer.
-    // it is called in each command function.
-
     for (auto& renderBundle : command->renderBundles)
     {
         auto vulkanRenderBundle = downcast(renderBundle);
-        const auto& commands = vulkanRenderBundle->getCommands();
-        for (auto& command : commands)
-        {
-            switch (command->type)
-            {
-            case CommandType::kSetRenderPipeline:
-                setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
-                break;
-            case CommandType::kSetVertexBuffer:
-                setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
-                break;
-            case CommandType::kSetIndexBuffer:
-                setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
-                break;
-            case CommandType::kDraw:
-                draw(reinterpret_cast<DrawCommand*>(command.get()));
-                break;
-            case CommandType::kDrawIndexed:
-                drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
-                break;
-            case CommandType::kDrawIndirect:
-                // TODO
-                break;
-            case CommandType::kDrawIndexedIndirect:
-                // TODO
-                break;
-            case CommandType::kSetRenderBindGroup:
-                setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
-                break;
-            default:
-                throw std::runtime_error("Unknown command type.");
-                break;
-            }
-        }
+
+        VulkanCommandBufferInheritanceInfo info{
+            .renderPass = m_renderPass->getVkRenderPass(),
+            .framebuffer = m_framebuffer->getVkFrameBuffer(),
+            .subpass = 0,
+        };
+
+        auto vkCommandBuffer = vulkanRenderBundle->getCommandBuffer(info);
+        m_commandBuffer->getDevice()->vkAPI.CmdExecuteCommands(m_commandBuffer->getVkCommandBuffer(), 1, &vkCommandBuffer);
     }
 }
 
@@ -494,6 +505,8 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
     //                             vulkanQuerySet->getVkQueryPool(),
     //                             m_descriptor.timestampWrites.endQueryIndex);
     // }
+
+    m_isUseSecondaryBuffer = false;
 }
 
 void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* command)

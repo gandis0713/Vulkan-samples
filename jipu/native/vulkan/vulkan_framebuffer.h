@@ -14,8 +14,8 @@ class VulkanRenderPass;
 class VulkanTextureView;
 struct FramebufferColorAttachment
 {
-    VulkanTextureView* renderView = nullptr;
-    VulkanTextureView* resolveView = nullptr;
+    VkImageView renderView = VK_NULL_HANDLE;
+    VkImageView resolveView = VK_NULL_HANDLE;
 };
 
 struct VulkanFramebufferDescriptor
@@ -24,7 +24,7 @@ struct VulkanFramebufferDescriptor
     VkFramebufferCreateFlags flags = 0u;
     VkRenderPass renderPass = VK_NULL_HANDLE;
     std::vector<FramebufferColorAttachment> colorAttachments{};
-    VulkanTextureView* depthStencilAttachment = nullptr;
+    VkImageView depthStencilAttachment = VK_NULL_HANDLE;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t layers = 0;
@@ -40,7 +40,7 @@ public:
 
 public:
     const std::vector<FramebufferColorAttachment>& getColorAttachments() const;
-    VulkanTextureView* getDepthStencilAttachment() const;
+    VkImageView getDepthStencilAttachment() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
 

@@ -1,4 +1,5 @@
 #include "vulkan_texture_view.h"
+#include "jipu/common/hash.h"
 #include "vulkan_device.h"
 #include "vulkan_texture.h"
 
@@ -12,30 +13,12 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDe
     , m_texture(texture)
     , m_descriptor(descriptor)
 {
-    VkImageViewCreateInfo imageViewCreateInfo{};
-    imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    imageViewCreateInfo.image = texture->getVkImage();
-    imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
-    imageViewCreateInfo.format = ToVkFormat(texture->getFormat());
-
-    imageViewCreateInfo.components = VkComponentMapping{ VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
-                                                         VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-
-    imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
-    imageViewCreateInfo.subresourceRange.baseMipLevel = descriptor.baseMipLevel;
-    imageViewCreateInfo.subresourceRange.levelCount = descriptor.mipLevelCount;
-    imageViewCreateInfo.subresourceRange.baseArrayLayer = descriptor.baseArrayLayer;
-    imageViewCreateInfo.subresourceRange.layerCount = descriptor.arrayLayerCount;
-
-    if (m_device->vkAPI.CreateImageView(m_device->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create image views!");
-    }
+    m_imageView = texture->getOrCreateVkImageView(descriptor);
 }
 
 VulkanTextureView::~VulkanTextureView()
 {
-    m_device->getDeleter()->safeDestroy(m_imageView);
+    // do not destroy or release the image view. because the image view is owned by cache in texture.
 }
 
 TextureViewDimension VulkanTextureView::getDimension() const
@@ -93,8 +76,88 @@ VkImageView VulkanTextureView::getVkImageView() const
     return m_imageView;
 }
 
-// Convert Helper
+// VulkanImageViewCache
 
+size_t VulkanImageViewCache::Functor::operator()(const TextureViewDescriptor& descriptor) const
+{
+    size_t hash = 0;
+
+    combineHash(hash, descriptor.dimension);
+    combineHash(hash, descriptor.aspect);
+    combineHash(hash, descriptor.baseMipLevel);
+    combineHash(hash, descriptor.mipLevelCount);
+    combineHash(hash, descriptor.baseArrayLayer);
+    combineHash(hash, descriptor.arrayLayerCount);
+
+    return hash;
+}
+
+bool VulkanImageViewCache::Functor::operator()(const TextureViewDescriptor& lhs,
+                                               const TextureViewDescriptor& rhs) const
+{
+    if (lhs.dimension != rhs.dimension ||
+        lhs.aspect != rhs.aspect ||
+        lhs.baseMipLevel != rhs.baseMipLevel ||
+        lhs.mipLevelCount != rhs.mipLevelCount ||
+        lhs.baseArrayLayer != rhs.baseArrayLayer ||
+        lhs.arrayLayerCount != rhs.arrayLayerCount)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+VulkanImageViewCache::VulkanImageViewCache(VulkanTexture* texture)
+    : m_texture(texture)
+{
+}
+
+VkImageView VulkanImageViewCache::getVkImageView(const TextureViewDescriptor& descriptor)
+{
+    auto it = m_cache.find(descriptor);
+    if (it != m_cache.end())
+    {
+        return it->second;
+    }
+
+    VkImageViewCreateInfo imageViewCreateInfo{};
+    imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageViewCreateInfo.image = m_texture->getVkImage();
+    imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
+    imageViewCreateInfo.format = ToVkFormat(m_texture->getFormat());
+
+    imageViewCreateInfo.components = VkComponentMapping{ VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+                                                         VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+
+    imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
+    imageViewCreateInfo.subresourceRange.baseMipLevel = descriptor.baseMipLevel;
+    imageViewCreateInfo.subresourceRange.levelCount = descriptor.mipLevelCount;
+    imageViewCreateInfo.subresourceRange.baseArrayLayer = descriptor.baseArrayLayer;
+    imageViewCreateInfo.subresourceRange.layerCount = descriptor.arrayLayerCount;
+
+    auto vulkanDevice = downcast(m_texture->getDevice());
+    VkImageView imageView = VK_NULL_HANDLE;
+    if (vulkanDevice->vkAPI.CreateImageView(vulkanDevice->getVkDevice(), &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create image views!");
+    }
+
+    m_cache[descriptor] = imageView;
+
+    return imageView;
+}
+
+void VulkanImageViewCache::clear()
+{
+    for (auto& [_, imageView] : m_cache)
+    {
+        m_texture->getDevice()->getDeleter()->safeDestroy(imageView);
+    }
+    m_cache.clear();
+}
+
+// Convert Helper
 VkImageViewType ToVkImageViewType(TextureViewDimension type)
 {
     switch (type)
