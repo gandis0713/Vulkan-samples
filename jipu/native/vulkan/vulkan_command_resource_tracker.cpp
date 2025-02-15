@@ -351,44 +351,7 @@ void VulkanCommandResourceTracker::drawIndexed(DrawIndexedCommand* command)
 
 void VulkanCommandResourceTracker::executeBundle(ExecuteBundleCommand* command)
 {
-    for (auto& renderBundle : command->renderBundles)
-    {
-        auto vulkanRenderBundle = downcast(renderBundle);
-        const auto& commands = vulkanRenderBundle->getCommands();
-        for (auto& command : commands)
-        {
-            switch (command->type)
-            {
-            case CommandType::kSetRenderPipeline:
-                setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
-                break;
-            case CommandType::kSetVertexBuffer:
-                setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
-                break;
-            case CommandType::kSetIndexBuffer:
-                setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
-                break;
-            case CommandType::kDraw:
-                draw(reinterpret_cast<DrawCommand*>(command.get()));
-                break;
-            case CommandType::kDrawIndexed:
-                drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
-                break;
-            case CommandType::kDrawIndirect:
-                // TODO
-                break;
-            case CommandType::kDrawIndexedIndirect:
-                // TODO
-                break;
-            case CommandType::kSetRenderBindGroup:
-                setRenderBindGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
-                break;
-            default:
-                throw std::runtime_error("Unknown command type.");
-                break;
-            }
-        }
-    }
+    // do nothing.
 }
 
 void VulkanCommandResourceTracker::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
