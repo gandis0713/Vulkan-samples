@@ -84,8 +84,8 @@ private:
     glm::mat4 m_projectionMatrix{ glm::mat4(1.0) };
     glm::mat4 m_modelViewProjectionMatrix{ glm::mat4(1.0) };
 
-    int m_asteroidCount = 1000;
-    int m_currentAsteroidCount = 1000;
+    int m_asteroidCount = 10000;
+    int m_currentAsteroidCount = 10000;
     bool m_useRenderBundles = true;
 };
 

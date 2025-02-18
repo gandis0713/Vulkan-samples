@@ -155,26 +155,29 @@ void VulkanSubmit::addComputeBindGroup(SetBindGroupCommand* command)
 
 void VulkanSubmit::add(BeginRenderPassCommand* command)
 {
+    const auto& colorAttachments = command->colorAttachments;
+    for (auto& colorAttachment : colorAttachments)
+    {
+        addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
+        add(downcast(colorAttachment.renderView)->getVkImageView());
+        if (colorAttachment.resolveView)
+        {
+            addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
+            add(downcast(colorAttachment.resolveView)->getVkImageView());
+        }
+    }
+
+    if (command->depthStencilAttachment.has_value())
+    {
+        auto depthTextureView = command->depthStencilAttachment.value().textureView;
+        auto depthTexture = depthTextureView->getTexture();
+        addSrcImage(downcast(depthTexture)->getVulkanTextureResource());
+        add(downcast(depthTextureView)->getVkImageView());
+    }
+
     auto framebuffer = command->framebuffer.lock();
     if (framebuffer)
     {
-        for (auto& colorAttachment : framebuffer->getColorAttachments())
-        {
-            addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVulkanTextureResource());
-            add(downcast(colorAttachment.renderView)->getVkImageView());
-            if (colorAttachment.resolveView)
-            {
-                addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVulkanTextureResource());
-                add(downcast(colorAttachment.resolveView)->getVkImageView());
-            }
-        }
-
-        auto depthStencilAttachment = framebuffer->getDepthStencilAttachment();
-        if (depthStencilAttachment)
-        {
-            addSrcImage(downcast(depthStencilAttachment->getTexture())->getVulkanTextureResource());
-            add(downcast(depthStencilAttachment)->getVkImageView());
-        }
         add(framebuffer->getVkFrameBuffer());
     }
 

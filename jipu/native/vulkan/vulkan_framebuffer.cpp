@@ -19,14 +19,14 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebuff
     std::vector<VkImageView> attachments{};
     for (const auto attachment : descriptor.colorAttachments)
     {
-        attachments.push_back(attachment.renderView->getVkImageView());
+        attachments.push_back(attachment.renderView);
         if (attachment.resolveView)
-            attachments.push_back(attachment.resolveView->getVkImageView());
+            attachments.push_back(attachment.resolveView);
     }
 
     if (descriptor.depthStencilAttachment)
     {
-        attachments.push_back(descriptor.depthStencilAttachment->getVkImageView());
+        attachments.push_back(descriptor.depthStencilAttachment);
     }
 
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -55,7 +55,7 @@ const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttach
     return m_descriptor.colorAttachments;
 }
 
-VulkanTextureView* VulkanFramebuffer::getDepthStencilAttachment() const
+VkImageView VulkanFramebuffer::getDepthStencilAttachment() const
 {
     return m_descriptor.depthStencilAttachment;
 }
@@ -77,8 +77,9 @@ VkFramebuffer VulkanFramebuffer::getVkFrameBuffer() const
 
 size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
 {
-    size_t hash = jipu::hash(reinterpret_cast<uint64_t>(descriptor.renderPass));
+    size_t hash = 0;
 
+    combineHash(hash, descriptor.renderPass);
     combineHash(hash, descriptor.flags);
     combineHash(hash, descriptor.width);
     combineHash(hash, descriptor.height);
@@ -87,7 +88,13 @@ size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescri
     for (const auto& attachment : descriptor.colorAttachments)
     {
         combineHash(hash, reinterpret_cast<uint64_t>(attachment.renderView));
-        combineHash(hash, reinterpret_cast<uint64_t>(attachment.resolveView));
+        if (attachment.resolveView)
+            combineHash(hash, reinterpret_cast<uint64_t>(attachment.resolveView));
+    }
+
+    if (descriptor.depthStencilAttachment)
+    {
+        combineHash(hash, reinterpret_cast<uint64_t>(descriptor.depthStencilAttachment));
     }
 
     return hash;
@@ -101,16 +108,30 @@ bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescript
         lhs.height == rhs.height &&
         lhs.layers == rhs.layers &&
         lhs.renderPass == rhs.renderPass &&
-        lhs.colorAttachments.size() == rhs.colorAttachments.size() &&
-        lhs.depthStencilAttachment == rhs.depthStencilAttachment)
+        lhs.colorAttachments.size() == rhs.colorAttachments.size())
     {
         for (auto i = 0; i < lhs.colorAttachments.size(); ++i)
         {
             if (lhs.colorAttachments[i].renderView != rhs.colorAttachments[i].renderView)
+            {
                 return false;
+            }
 
-            if (lhs.colorAttachments[i].resolveView != rhs.colorAttachments[i].resolveView)
+            if (lhs.colorAttachments[i].resolveView && rhs.colorAttachments[i].resolveView)
+            {
+                if (lhs.colorAttachments[i].resolveView != rhs.colorAttachments[i].resolveView)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (lhs.depthStencilAttachment && rhs.depthStencilAttachment)
+        {
+            if (lhs.depthStencilAttachment != rhs.depthStencilAttachment)
+            {
                 return false;
+            }
         }
 
         return true;
@@ -132,7 +153,6 @@ std::shared_ptr<VulkanFramebuffer> VulkanFramebufferCache::getFrameBuffer(const 
     {
         return it->second;
     }
-
     auto framebuffer = std::make_shared<VulkanFramebuffer>(m_device, descriptor);
 
     m_cache.emplace(descriptor, framebuffer);
@@ -151,8 +171,8 @@ bool VulkanFramebufferCache::invalidate(VkImageView imageView)
 
         for (auto& attachment : descriptor.colorAttachments)
         {
-            if ((attachment.renderView && attachment.renderView->getVkImageView() == imageView) ||
-                (attachment.resolveView && attachment.resolveView->getVkImageView() == imageView))
+            if ((attachment.renderView && attachment.renderView == imageView) ||
+                (attachment.resolveView && attachment.resolveView == imageView))
             {
                 shouldErase = true;
                 break;
@@ -160,7 +180,7 @@ bool VulkanFramebufferCache::invalidate(VkImageView imageView)
         }
 
         if (!shouldErase && descriptor.depthStencilAttachment &&
-            descriptor.depthStencilAttachment->getVkImageView() == imageView)
+            descriptor.depthStencilAttachment == imageView)
         {
             shouldErase = true;
         }

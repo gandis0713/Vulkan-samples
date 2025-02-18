@@ -71,7 +71,6 @@ struct EndComputePassCommand : public Command
 
 struct BeginRenderPassCommand : public Command
 {
-    // descriptor information
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
     QuerySet* occlusionQuerySet = nullptr;
@@ -80,8 +79,6 @@ struct BeginRenderPassCommand : public Command
     // render pass and framebuffer must be created before synchronization.
     std::weak_ptr<VulkanRenderPass> renderPass{};
     std::weak_ptr<VulkanFramebuffer> framebuffer{};
-    VkRect2D renderArea{};
-    std::vector<VkClearValue> clearValues{};
 };
 
 struct EndRenderPassCommand : public Command

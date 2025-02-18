@@ -40,8 +40,31 @@ protected:
 protected:
     VkImageView m_imageView = VK_NULL_HANDLE;
 };
-
 DOWN_CAST(VulkanTextureView, TextureView);
+
+class VULKAN_EXPORT VulkanImageViewCache final
+{
+public:
+    VulkanImageViewCache(VulkanTexture* texture);
+    ~VulkanImageViewCache() = default;
+
+    VkImageView getVkImageView(const TextureViewDescriptor& descriptor);
+
+    void clear();
+
+private:
+    VulkanTexture* m_texture = nullptr;
+
+private:
+    struct Functor
+    {
+        size_t operator()(const TextureViewDescriptor& descriptor) const;
+        bool operator()(const TextureViewDescriptor& lhs, const TextureViewDescriptor& rhs) const;
+    };
+    using Cache = std::unordered_map<TextureViewDescriptor, VkImageView, Functor, Functor>;
+
+    Cache m_cache{};
+};
 
 // Convert Helper
 VkImageViewType ToVkImageViewType(TextureViewDimension type);

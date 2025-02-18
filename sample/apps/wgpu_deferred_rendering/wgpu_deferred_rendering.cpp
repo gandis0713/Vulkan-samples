@@ -14,7 +14,7 @@
 namespace jipu
 {
 
-static const int kMaxNumLights = 1024;
+static const int kMaxNumLights = 2048;
 static const uint32_t lightDataStride = 8;
 static glm::vec3 lightExtentMin{ -50.f, -30.f, -50.f };
 static glm::vec3 lightExtentMax{ 50.f, 50.f, 50.f };

@@ -46,6 +46,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& desc
 VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
+    , m_imageViewCache(nullptr)
 {
     if (m_descriptor.extent.width == 0 || m_descriptor.extent.height == 0 || m_descriptor.extent.depth == 0)
     {
@@ -92,10 +93,15 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
     }
 
     m_layouts.resize(m_descriptor.mipLevels, m_descriptor.initialLayout);
+
+    m_imageViewCache = std::make_unique<VulkanImageViewCache>(this);
 }
 
 VulkanTexture::~VulkanTexture()
 {
+    if (m_imageViewCache)
+        m_imageViewCache->clear();
+
     if (m_owner == VulkanTextureOwner::kSelf)
     {
         m_device->getDeleter()->safeDestroy(m_resource.image, m_resource.memory);
@@ -224,6 +230,11 @@ bool VulkanTexture::isDepthStencil() const
         return true;
 
     return false;
+}
+
+VkImageView VulkanTexture::getOrCreateVkImageView(const TextureViewDescriptor& descriptor)
+{
+    return m_imageViewCache->getVkImageView(descriptor);
 }
 
 // Convert Helper

@@ -222,16 +222,18 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(std::shared_ptr<
 
     for (const auto attachment : colorAttachments)
     {
-        FramebufferColorAttachment framebufferColorAttachment{
-            .renderView = downcast(attachment.renderView),
-            .resolveView = downcast(attachment.resolveView),
-        };
+        FramebufferColorAttachment framebufferColorAttachment{};
+        framebufferColorAttachment.renderView = downcast(attachment.renderView)->getVkImageView();
+
+        if (attachment.resolveView)
+            framebufferColorAttachment.resolveView = downcast(attachment.resolveView)->getVkImageView();
+
         vkdescriptor.colorAttachments.push_back(framebufferColorAttachment);
     }
 
     if (depthStencilAttachment.has_value())
     {
-        vkdescriptor.depthStencilAttachment = downcast(depthStencilAttachment.value().textureView);
+        vkdescriptor.depthStencilAttachment = downcast(depthStencilAttachment.value().textureView)->getVkImageView();
     }
 
     return vkdescriptor;
